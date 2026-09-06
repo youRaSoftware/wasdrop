@@ -29,8 +29,8 @@ class GameHud extends StatelessWidget {
           ),
           // Следующий шар.
           Container(
-            width: 44,
-            height: 44,
+            width: AppDimens.minTapTarget,
+            height: AppDimens.minTapTarget,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -40,17 +40,13 @@ class GameHud extends StatelessWidget {
             child: BallView(tier: state.next, diameter: 22),
           ),
           const SizedBox(width: 8),
-          SizedBox(
-            width: 44,
-            height: 44,
-            child: IconButton(
-              onPressed: cubit.pause,
-              style: IconButton.styleFrom(
-                backgroundColor: AppColors.surface,
-                side: const BorderSide(color: AppColors.stroke, width: 2),
-              ),
-              icon: const Icon(Icons.pause,
-                  size: 20, color: AppColors.textPrimary),
+          IconCircleButton(
+            size: AppDimens.minTapTarget,
+            onPressed: cubit.pause,
+            child: const Icon(
+              Icons.pause,
+              size: 20,
+              color: AppColors.textPrimary,
             ),
           ),
         ],

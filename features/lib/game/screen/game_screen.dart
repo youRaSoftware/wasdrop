@@ -14,6 +14,7 @@ class GameScreen extends StatelessWidget {
       lazy: false,
       create: (BuildContext context) => GameCubit(
         statsRepository: appLocator<StatsRepository>(),
+        audio: appLocator<AudioService>(),
       ),
       child: const GameForm(),
     );

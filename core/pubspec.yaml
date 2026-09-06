@@ -13,6 +13,8 @@ dependencies:
 
   data:
     path: ../data
+  domain:
+    path: ../domain
   navigation:
     path: ../navigation
 
@@ -20,6 +22,7 @@ dependencies:
   go_router: ^14.6.3
   flutter_bloc: ^8.1.6
   equatable: ^2.0.7
+  flame_audio: ^2.12.2
 
 dev_dependencies:
   flutter_test:

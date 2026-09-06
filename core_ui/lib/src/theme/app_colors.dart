@@ -16,6 +16,15 @@ class AppColors {
   static const Color secondarySurface = Color(0xFFF1EADA);
   static const Color secondaryText = Color(0xFF6B5F45);
 
+  /// Белый: кольцо вспышки слияния, блик на шаре.
+  static const Color flash = Color(0xFFFFFFFF);
+
+  /// Затемнение под оверлеями паузы и проигрыша.
+  static const Color scrim = Color(0x882B210E);
+
+  /// Мягкая тень панелей и ручки тумблера.
+  static const Color panelShadow = Color(0x2E2B210E);
+
   static const Color accent = Color(0xFFF76B15);
   static const Color accentTop = Color(0xFFFF8A34);
   static const Color accentShadow = Color(0xFFD95806);

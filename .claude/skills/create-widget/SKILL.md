@@ -97,7 +97,7 @@ class SecondaryButton extends StatelessWidget {
 
 `StatelessWidget` by default. `StatefulWidget` only for an `AnimationController` (press-scale / flash), a controller the widget owns, or a transient local toggle that has no business in cubit state.
 
-Press feedback pattern (if requested): `AnimationController` 100 ms, `Tween(1.0 → 0.95)`, `onTapDown → forward`, `onTapUp/Cancel → reverse`, wrap in `ScaleTransition`. Haptics are behind `SettingsModel.hapticsOn` — do not call `HapticFeedback` from core_ui; expose an `onPressed` and let the feature decide.
+Interactive widgets are built on `AppPressable` (`core_ui/lib/src/widgets/app_pressable.dart`): it animates the press amount 0…1 and hands it to your `builder`, fires `ButtonFeedback.trigger()` (sound + haptic, gated by settings) and then `onPressed`. Do not write your own `GestureDetector` + `AnimationController` for a button, and never call `HapticFeedback` or audio from core_ui.
 
 ## Composition rules
 

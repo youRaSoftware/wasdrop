@@ -18,8 +18,8 @@ dependencies:
   domain:
     path: ../domain
 
-  flame: ^1.23.0
-  flame_forge2d: ^0.18.2
+  flame: ^1.38.0
+  flame_forge2d: ^0.20.0
 
 dev_dependencies:
   flutter_test:

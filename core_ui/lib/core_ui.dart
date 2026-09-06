@@ -4,4 +4,5 @@ export 'src/theme/app_colors.dart';
 export 'src/theme/app_dimens.dart';
 export 'src/theme/app_fonts.dart';
 export 'src/theme/app_theme.dart';
+export 'src/feedback/button_feedback.dart';
 export 'src/widgets/widgets.dart';

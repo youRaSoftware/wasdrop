@@ -1,6 +1,8 @@
 import 'package:core_ui/core_ui.dart';
 import 'package:flutter/material.dart';
 
+/// Оверлей проигрыша (мокап, кадр 6): счёт, бейдж «НОВЫЙ РЕКОРД» или
+/// текущий рекорд, Заново / В меню, под разделителем — продолжить за рекламу.
 class GameOverOverlay extends StatelessWidget {
   final int score;
   final int bestScore;
@@ -21,98 +23,70 @@ class GameOverOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: const Color(0x8C2B210E),
-      child: Center(
-        child: Container(
-          width: 288,
-          padding: const EdgeInsets.all(AppDimens.panelPadding),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppDimens.panelRadius),
+    return AppOverlay(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Center(
+            child: Text(
+              'ИГРА ОКОНЧЕНА',
+              style: AppFonts.overlayTitle.copyWith(
+                fontSize: 18,
+                color: AppColors.textSecondary,
+                letterSpacing: 1.4,
+              ),
+            ),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Center(
-                child: Text(
-                  'ИГРА ОКОНЧЕНА',
-                  style: AppFonts.overlayTitle.copyWith(
-                    fontSize: 18,
-                    color: AppColors.textSecondary,
-                    letterSpacing: 1.4,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Center(
-                child: Text(
-                  '$score',
-                  style: AppFonts.score.copyWith(fontSize: 44),
-                ),
-              ),
-              if (isNewRecord) ...<Widget>[
-                const SizedBox(height: 12),
-                Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 6),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      gradient: const LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: <Color>[AppColors.goldTop, AppColors.gold],
-                      ),
-                    ),
-                    child: Text(
-                      '🏆 НОВЫЙ РЕКОРД',
-                      style: AppFonts.button.copyWith(
-                          fontSize: 13, color: AppColors.goldText),
-                    ),
-                  ),
-                ),
-              ] else ...<Widget>[
-                const SizedBox(height: 8),
-                Center(
-                  child: Text(
-                    'рекорд — $bestScore',
-                    style:
-                        AppFonts.best.copyWith(color: AppColors.textTertiary),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 16),
-              PrimaryButton(label: 'Заново', onPressed: onRestart),
-              const SizedBox(height: 12),
-              TextButton(
-                onPressed: onMenu,
-                child: Text(
-                  'В меню',
-                  style: AppFonts.button
-                      .copyWith(color: AppColors.textSecondary, fontSize: 15),
-                ),
-              ),
-              const Divider(color: AppColors.stroke),
-              OutlinedButton(
-                onPressed: onContinueAd,
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(48),
-                  side: const BorderSide(color: AppColors.stroke, width: 2),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
+          const SizedBox(height: 12),
+          Center(
+            child: Text('$score', style: AppFonts.score.copyWith(fontSize: 44)),
+          ),
+          if (isNewRecord) ...<Widget>[
+            const SizedBox(height: 12),
+            Center(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: <Color>[AppColors.goldTop, AppColors.gold],
                   ),
                 ),
                 child: Text(
-                  '▶ Продолжить за рекламу',
+                  '🏆 НОВЫЙ РЕКОРД',
                   style: AppFonts.button.copyWith(
-                      fontSize: 14, color: AppColors.textSecondary),
+                    fontSize: 13,
+                    color: AppColors.goldText,
+                  ),
                 ),
               ),
-            ],
+            ),
+          ] else ...<Widget>[
+            const SizedBox(height: 8),
+            Center(
+              child: Text(
+                'рекорд — $bestScore',
+                style: AppFonts.best.copyWith(color: AppColors.textTertiary),
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          PrimaryButton(label: 'Заново', onPressed: onRestart),
+          const SizedBox(height: 4),
+          AppTextButton(label: 'В меню', onPressed: onMenu),
+          const Divider(color: AppColors.stroke),
+          const SizedBox(height: 4),
+          SecondaryButton(
+            label: '▶ Продолжить за рекламу',
+            height: 48,
+            outlined: true,
+            onPressed: onContinueAd,
           ),
-        ),
+        ],
       ),
     );
   }

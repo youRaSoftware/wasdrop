@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Warm gradient sampled from the app icon (top #FFE8AD → bottom #FFD17D). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:startColor="#FFE8AD"
+        android:endColor="#FFD17D"
+        android:type="linear" />
+</shape>

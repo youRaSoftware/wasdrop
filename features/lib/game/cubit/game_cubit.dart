@@ -7,9 +7,10 @@ part 'game_state.dart';
 
 class GameCubit extends Cubit<GameState> {
   final StatsRepository statsRepository;
+  final AudioService audio;
   final Random _random = Random();
 
-  GameCubit({required this.statsRepository})
+  GameCubit({required this.statsRepository, required this.audio})
       : super(const GameState(
           score: 0,
           bestScore: 0,
@@ -22,11 +23,16 @@ class GameCubit extends Cubit<GameState> {
 
   Future<void> _init() async {
     final GameStatsModel stats = await statsRepository.getStats();
-    emit(state.copyWith(
+    _safeEmit(state.copyWith(
       bestScore: stats.bestScore,
       current: _rollTier(),
       next: _rollTier(),
     ));
+  }
+
+  void _safeEmit(GameState next) {
+    if (isClosed) return;
+    emit(next);
   }
 
   /// Тиры 1–5, взвешенно к младшим.
@@ -42,26 +48,29 @@ class GameCubit extends Cubit<GameState> {
 
   /// Движок сообщает о слиянии двух шаров тира [tier].
   void onMerge(BallTier tier) {
-    emit(state.copyWith(score: state.score + tier.mergeScore));
+    audio.merge(tier);
+    _safeEmit(state.copyWith(score: state.score + tier.mergeScore));
   }
 
   /// Движок сообщает, что текущий шар брошен.
   void onDropped() {
-    emit(state.copyWith(current: state.next, next: _rollTier()));
+    audio.drop();
+    _safeEmit(state.copyWith(current: state.next, next: _rollTier()));
   }
 
-  void pause() => emit(state.copyWith(status: GameStatus.paused));
+  void pause() => _safeEmit(state.copyWith(status: GameStatus.paused));
 
-  void resume() => emit(state.copyWith(status: GameStatus.playing));
+  void resume() => _safeEmit(state.copyWith(status: GameStatus.playing));
 
   Future<void> gameOver() async {
     final bool isRecord = state.score > state.bestScore;
+    audio.gameOver(isRecord: isRecord);
     final GameStatsModel stats = await statsRepository.getStats();
     await statsRepository.saveStats(stats.copyWith(
       bestScore: max(stats.bestScore, state.score),
       gamesPlayed: stats.gamesPlayed + 1,
     ));
-    emit(state.copyWith(
+    _safeEmit(state.copyWith(
       status: GameStatus.gameOver,
       isNewRecord: isRecord,
       bestScore: max(state.bestScore, state.score),
@@ -69,7 +78,7 @@ class GameCubit extends Cubit<GameState> {
   }
 
   void restart() {
-    emit(state.copyWith(
+    _safeEmit(state.copyWith(
       score: 0,
       status: GameStatus.playing,
       isNewRecord: false,
@@ -80,6 +89,6 @@ class GameCubit extends Cubit<GameState> {
 
   /// TODO: rewarded ad, потом снять верхний слой шаров и продолжить.
   void continueAfterAd() {
-    emit(state.copyWith(status: GameStatus.playing));
+    _safeEmit(state.copyWith(status: GameStatus.playing));
   }
 }
