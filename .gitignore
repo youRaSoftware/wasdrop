@@ -1,0 +1,153 @@
+# ============================================
+# WasDrop — Flutter/Dart .gitignore
+# ============================================
+
+# ============================================
+# Auto Generated Code
+# ============================================
+**/*.g.dart
+**/*.freezed.dart
+**/generated_plugin_registrant.dart
+**/generated/**
+
+# ============================================
+# Build Artifacts
+# ============================================
+build/
+**/build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.packages.generated
+*.lock
+
+# ============================================
+# IDE & Editor Files
+# ============================================
+# IntelliJ / Android Studio
+*.iml
+*.ipr
+*.iws
+.idea/
+**/android/app/.cxx
+
+# VS Code
+.vscode/
+.classpath
+.project
+.settings/
+.cursor/
+.cursorrules
+
+# ============================================
+# Platform Specific
+# ============================================
+
+# Android
+**/android/**/gradle-wrapper.jar
+.gradle/
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
+**/android/**/GeneratedPluginRegistrant.java
+**/android/key.properties
+*.jks
+*.keystore
+
+# iOS / macOS
+**/ios/**/*.mode1v3
+**/ios/**/*.mode2v3
+**/ios/**/*.moved-aside
+**/ios/**/*.pbxuser
+**/ios/**/*.perspectivev3
+**/ios/**/*sync/
+**/ios/**/.sconsign.dblite
+**/ios/**/.tags*
+**/ios/**/.vagrant/
+**/ios/**/DerivedData/
+**/ios/**/Icon?
+**/ios/**/Pods/
+**/ios/**/.symlinks/
+**/ios/**/profile
+**/ios/**/xcuserdata
+**/ios/.generated/
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/ephemeral
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/ios/exportOptions.plist
+**/Flutter/ephemeral/
+**/Pods/
+**/xcuserdata/
+
+# ============================================
+# Testing & Coverage
+# ============================================
+coverage/
+**/coverage/
+test/.test_coverage.dart
+
+# ============================================
+# Environment & Secrets
+# ============================================
+.env
+.env.local
+.env.*.local
+**/key.properties
+*.pem
+*.key
+
+# ============================================
+# Version Control Tools
+# ============================================
+.fvm/
+.fvmrc.lock
+.swiftpm/
+migrate_working_dir/
+
+# ============================================
+# Logs & Temporary Files
+# ============================================
+*.log
+*.swp
+*.swo
+*~
+.DS_Store
+.history
+
+# ============================================
+# Symbols & Debugging
+# ============================================
+app.*.symbols
+app.*.map.json
+*.class
+
+# ============================================
+# Project Specific
+# ============================================
+# Run configurations (only *.run.xml are tracked)
+.run/*
+!.run/*.run.xml
+
+# Claude Code: shared config is committed, local settings are not
+.claude/settings.local.json
+
+# ============================================
+# Exceptions (Files that should NOT be ignored)
+# ============================================
+!**/ios/**/default.mode1v3
+!**/ios/**/default.mode2v3
+!**/ios/**/default.pbxuser
+!**/ios/**/default.perspectivev3
+!.gitignore
+!.claude/

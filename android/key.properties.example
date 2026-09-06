@@ -1,0 +1,7 @@
+# Copy to android/key.properties (ignored by git) and fill in the release keystore.
+# Generate a keystore:
+#   keytool -genkey -v -keystore ~/wasdrop-release.jks -keyalg RSA -keysize 2048 -validity 10000 -alias wasdrop
+storeFile=/Users/<you>/wasdrop-release.jks
+storePassword=CHANGE_ME
+keyAlias=wasdrop
+keyPassword=CHANGE_ME

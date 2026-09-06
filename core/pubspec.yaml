@@ -1,0 +1,27 @@
+name: core
+version: 0.0.1
+publish_to: none
+description: core module
+
+environment:
+  sdk: ">=3.5.0"
+  flutter: ">=3.27.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  data:
+    path: ../data
+  navigation:
+    path: ../navigation
+
+  get_it: ^8.0.3
+  go_router: ^14.6.3
+  flutter_bloc: ^8.1.6
+  equatable: ^2.0.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
