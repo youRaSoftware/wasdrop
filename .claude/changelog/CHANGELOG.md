@@ -22,6 +22,15 @@ On release, rename `[Unreleased]` to `[X.Y.Z] — YYYY-MM-DD` and start a fresh 
 - Новое: музыка и звуки (бросок, слияние, проигрыш, рекорд, нажатия) с вибрацией; тумблеры «Звук» и «Вибрация» в паузе, кнопка звука в меню
 - Новое: живые кнопки (проседают и сжимаются при нажатии), анимированное появление меню и панелей паузы и проигрыша
 - Новое: иконка приложения (пять шаров на тёплом фоне), адаптивная иконка на Android
+- Новое: все 11 фруктов нарисованы спрайтами (в стакане, в подсказке «следующий» и в меню) и «ойкают» при ударе — сплющиваются и открывают рот
+- Изменено: все фрукты ещё крупнее — вишня теперь размером с прежнюю клубнику, арбуз почти во всю ширину стакана
+- Исправлено: мелкие фрукты при падении на дно проваливались в него и «всплывали» обратно; фрукт, рождённый слиянием на дне, тоже появлялся из-под пола
+- Изменено: физика стала «тяжелее» и живее — фрукты падают быстрее и с ускорением, скатываются по склону кучи, а не замирают, слегка отскакивают при ударе; слившийся фрукт сохраняет разгон родителей
+- Исправлено: соседние фрукты больше не «заходят» друг на друга — рисунок точнее совпадает с физическим телом, и одинаковые фрукты, лежащие вплотную, надёжно сливаются
+- Изменено: виноград, лимон и клубника физически овальные, а не круглые — катятся с покачиванием, ложатся на бок и вклиниваются между соседями носиками
+- Новое: шесть тем-обоев (Крем, Персиковый закат, Мятный сад, Ночной сад, Пудрово-розовая, Небо и облака) — фон, стакан и линия проигрыша перекрашиваются, у ночной звёзды, у неба облака, у розовой лепестки; выбор в паузе и в настройках, запоминается
+- Изменено: новые шрифты — Rubik для интерфейса и Unbounded для лого и заголовков; вместо эмодзи нарисованные иконки (кубок, звук, настройки, пауза, повтор, домой, реклама)
+- Новое: экран настроек (⚙️ в меню): тумблеры «Звуки», «Музыка», «Вибрация», «Линия прицела»; статистика — рекорд, сыгранные игры, слияния, самый большой фрукт — со сбросом; цепочка всех 11 фруктов с названиями; версия и лицензии
 
 ### EN
 
@@ -36,3 +45,12 @@ On release, rename `[Unreleased]` to `[X.Y.Z] — YYYY-MM-DD` and start a fresh 
 - New: music and sound effects (drop, merge, game over, record, taps) with haptics; Sound and Vibration toggles in pause, a sound button in the menu
 - New: tactile buttons (they sink and squeeze when pressed), animated entrance for the menu and the pause / game-over panels
 - New: app icon (five balls on a warm background), adaptive icon on Android
+- New: all 11 fruits are drawn as sprites (in the jar, in the «next» hint and in the menu) and go «oof» on impact — squash and open their mouth
+- Changed: all fruits are bigger again — the cherry is now the size of the old strawberry, the watermelon nearly spans the jar
+- Fixed: small fruits sank into the floor on landing and floated back up; a fruit born from a merge on the floor also emerged from under it
+- Changed: heavier, livelier physics — fruits fall faster and accelerate, roll down the pile instead of freezing, bounce slightly on impact; a merged fruit keeps its parents' momentum
+- Fixed: neighbouring fruits no longer overlap each other — the artwork matches the physical body more precisely, and equal fruits lying side by side merge reliably
+- Changed: the grape, lemon and strawberry are physically oval rather than round — they wobble as they roll, come to rest on their side and wedge between neighbours with their tips
+- New: six wallpaper themes (Cream, Peach Sunset, Mint Garden, Night Garden, Powder Rose, Sky and Clouds) — background, jar and game-over line recolour, with stars, clouds or petals; pick one in pause or in settings, the choice is remembered
+- Changed: new typefaces — Rubik for the interface and Unbounded for the logo and titles; drawn icons (trophy, sound, settings, pause, restart, home, ad) replace emoji
+- New: settings screen (⚙️ in the menu): Sounds, Music, Vibration and Aim line toggles; statistics — best score, games played, merges, biggest fruit — with a reset; the chain of all 11 fruits with names; version and licenses

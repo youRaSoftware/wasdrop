@@ -11,3 +11,4 @@ export 'constants/route_constants.dart';
 export 'constants/storage_constants.dart';
 export 'di/app_di.dart';
 export 'services/audio_service.dart';
+export 'services/settings_service.dart';

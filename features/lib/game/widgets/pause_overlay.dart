@@ -3,8 +3,9 @@ import 'package:core_ui/core_ui.dart';
 import 'package:domain/domain.dart';
 import 'package:flutter/material.dart';
 
-/// Оверлей паузы (мокап, кадр 5): Продолжить / Заново / В меню и тумблеры
-/// «Звук» и «Вибрация», привязанные к [AudioService.settings].
+/// Оверлей паузы (мокап, кадр 5): Продолжить / Заново / В меню, тумблеры
+/// «Звук» и «Вибрация» и пикер тем-обоев — всё привязано к
+/// [SettingsService.settings].
 class PauseOverlay extends StatelessWidget {
   final VoidCallback onResume;
   final VoidCallback onRestart;
@@ -19,10 +20,10 @@ class PauseOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AudioService audio = appLocator<AudioService>();
+    final SettingsService settings = appLocator<SettingsService>();
 
     return AppOverlay(
-      width: 280,
+      width: 300,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -31,26 +32,45 @@ class PauseOverlay extends StatelessWidget {
           const SizedBox(height: 16),
           PrimaryButton(label: 'Продолжить', onPressed: onResume),
           const SizedBox(height: 12),
-          SecondaryButton(label: 'Заново', onPressed: onRestart),
+          SecondaryButton(
+            label: 'Заново',
+            icon: const AppIcon(AppIcons.restart, size: 20),
+            onPressed: onRestart,
+          ),
           const SizedBox(height: 4),
-          AppTextButton(label: 'В меню', onPressed: onMenu),
+          AppTextButton(
+            label: 'В меню',
+            icon: const AppIcon(AppIcons.menuHome, size: 20),
+            onPressed: onMenu,
+          ),
           const Divider(color: AppColors.stroke),
           const SizedBox(height: 4),
           ValueListenableBuilder<SettingsModel>(
-            valueListenable: audio.settings,
-            builder: (BuildContext context, SettingsModel settings, Widget? _) {
+            valueListenable: settings.settings,
+            builder: (BuildContext context, SettingsModel value, Widget? _) {
               return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   AppToggleRow(
                     label: 'Звук',
-                    value: settings.soundOn,
-                    onChanged: audio.setSoundOn,
+                    value: value.soundOn,
+                    onChanged: settings.setSoundOn,
                   ),
                   AppToggleRow(
                     label: 'Вибрация',
-                    value: settings.hapticsOn,
-                    onChanged: audio.setHapticsOn,
+                    value: value.hapticsOn,
+                    onChanged: settings.setHapticsOn,
                   ),
+                  const Divider(color: AppColors.stroke),
+                  const SizedBox(height: 6),
+                  const Text('ОБОИ', style: AppFonts.best),
+                  const SizedBox(height: 10),
+                  ThemePicker(
+                    themes: GameThemes.all,
+                    selectedId: value.themeId,
+                    onSelect: settings.setThemeId,
+                  ),
+                  const SizedBox(height: 2),
                 ],
               );
             },

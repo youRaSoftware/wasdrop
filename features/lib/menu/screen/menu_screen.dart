@@ -3,9 +3,14 @@ import 'package:core_ui/core_ui.dart';
 import 'package:domain/domain.dart';
 import 'package:flutter/material.dart';
 
-/// Меню (мокап, кадр 1): лого, плашка рекорда, ИГРАТЬ, 🔊 / ⚙️ и
+import '../../game/engine/fruit_assets.dart';
+
+/// Меню (мокап, кадр 1): лого, плашка рекорда, ИГРАТЬ, звук / настройки и
 /// декоративные шары по краям. Элементы появляются каскадом.
 class MenuScreen extends StatefulWidget {
+  static const Key settingsButtonKey = Key('menu_settings');
+  static const Key soundButtonKey = Key('menu_sound');
+
   const MenuScreen({super.key});
 
   @override
@@ -47,7 +52,8 @@ class _MenuScreenState extends State<MenuScreen>
 
   @override
   Widget build(BuildContext context) {
-    final AudioService audio = appLocator<AudioService>();
+    final SettingsService settings = appLocator<SettingsService>();
+    final GameTheme theme = AppThemeScope.of(context);
 
     return AppScaffold(
       body: Stack(
@@ -57,21 +63,33 @@ class _MenuScreenState extends State<MenuScreen>
             alignment: const Alignment(-1.25, -0.55),
             child: _Reveal(
               animation: _step(0.3, 0.9),
-              child: const BallView(tier: BallTier.t6, diameter: 88),
+              child: BallView(
+                tier: BallTier.t6,
+                diameter: 88,
+                image: FruitAssets.idle(BallTier.t6),
+              ),
             ),
           ),
           Align(
             alignment: const Alignment(1.3, -0.1),
             child: _Reveal(
               animation: _step(0.4, 1),
-              child: const BallView(tier: BallTier.t8, diameter: 112),
+              child: BallView(
+                tier: BallTier.t8,
+                diameter: 112,
+                image: FruitAssets.idle(BallTier.t8),
+              ),
             ),
           ),
           Align(
             alignment: const Alignment(-1.05, 0.45),
             child: _Reveal(
               animation: _step(0.5, 1),
-              child: const BallView(tier: BallTier.t3, diameter: 56),
+              child: BallView(
+                tier: BallTier.t3,
+                diameter: 56,
+                image: FruitAssets.idle(BallTier.t3),
+              ),
             ),
           ),
           SafeArea(
@@ -92,7 +110,7 @@ class _MenuScreenState extends State<MenuScreen>
                         ),
                       ],
                     ),
-                    style: AppFonts.title,
+                    style: AppFonts.title.copyWith(color: theme.hudText),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -100,7 +118,7 @@ class _MenuScreenState extends State<MenuScreen>
                   animation: _step(0.2, 0.7),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
+                      horizontal: 14,
                       vertical: 7,
                     ),
                     decoration: BoxDecoration(
@@ -108,7 +126,14 @@ class _MenuScreenState extends State<MenuScreen>
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: AppColors.stroke, width: 2),
                     ),
-                    child: Text('🏆 рекорд $_bestScore', style: AppFonts.best),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        const AppIcon(AppIcons.trophy, size: 16),
+                        const SizedBox(width: 6),
+                        Text('рекорд $_bestScore', style: AppFonts.best),
+                      ],
+                    ),
                   ),
                 ),
                 const Spacer(),
@@ -133,25 +158,30 @@ class _MenuScreenState extends State<MenuScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       ValueListenableBuilder<SettingsModel>(
-                        valueListenable: audio.settings,
-                        builder: (BuildContext context, SettingsModel settings,
+                        valueListenable: settings.settings,
+                        builder: (BuildContext context, SettingsModel value,
                             Widget? _) {
                           return IconCircleButton(
+                            key: MenuScreen.soundButtonKey,
                             onPressed: () =>
-                                audio.setSoundOn(!settings.soundOn),
-                            child: Text(
-                              settings.soundOn ? '🔊' : '🔇',
-                              style: const TextStyle(fontSize: 20),
+                                settings.setSoundOn(!value.soundOn),
+                            child: AppIcon(
+                              value.soundOn
+                                  ? AppIcons.soundOn
+                                  : AppIcons.soundOff,
                             ),
                           );
                         },
                       ),
                       const SizedBox(width: 16),
                       IconCircleButton(
-                        onPressed: () {
-                          // TODO: экран настроек (Фаза 3).
+                        key: MenuScreen.settingsButtonKey,
+                        onPressed: () async {
+                          await context.pushNamed('settings');
+                          // Рекорд могли сбросить в настройках.
+                          _loadStats();
                         },
-                        child: const Text('⚙️', style: TextStyle(fontSize: 20)),
+                        child: const AppIcon(AppIcons.settings),
                       ),
                     ],
                   ),

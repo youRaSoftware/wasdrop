@@ -3,22 +3,25 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_fonts.dart';
 import 'app_pressable.dart';
+import 'button_label.dart';
 
 /// Вторичная кнопка из оверлеев (кадры 5–6): пилюля `secondarySurface`
 /// с подписью `secondaryText`, либо [outlined] — прозрачная с обводкой
-/// 2 px `stroke` («▶ Продолжить за рекламу»). При нажатии темнеет и
-/// сжимается до 97 %.
+/// 2 px `stroke` («Продолжить за рекламу»). При нажатии темнеет и
+/// сжимается до 97 %. [icon] рисуется слева от подписи.
 class SecondaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
   final double height;
   final bool outlined;
+  final Widget? icon;
 
   const SecondaryButton({
     required this.label,
     required this.onPressed,
     this.height = 52,
     this.outlined = false,
+    this.icon,
     super.key,
   });
 
@@ -31,7 +34,7 @@ class SecondaryButton extends StatelessWidget {
 
     return AppPressable(
       onPressed: onPressed,
-      child: Text(label, style: style),
+      child: ButtonLabel(label: label, style: style, icon: icon),
       builder: (BuildContext context, double pressed, Widget? child) {
         return Transform.scale(
           scale: 1 - 0.03 * pressed,

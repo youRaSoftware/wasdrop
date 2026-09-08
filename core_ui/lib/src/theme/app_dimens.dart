@@ -6,10 +6,9 @@ class AppDimens {
   /// чтобы физическое дно совпадало с видимым.
   static const double worldWidth = 360;
 
-  /// Радиусы шаров тиров 1–11 в мировых единицах (пропорции классической
-  /// suika: t1 ≈ 7% ширины стакана, t11 ≈ 58%). Рост ≈ ×1.24 за тир.
+  /// Радиусы шаров тиров 1–11 в мировых единицах (крупнее классической
+  /// suika: t1 ≈ 8% ширины стакана, t11 ≈ 72%). Рост ≈ ×1.24 за тир.
   static const List<double> ballRadii = <double>[
-    12,
     15,
     19,
     24,
@@ -20,13 +19,14 @@ class AppDimens {
     70,
     86,
     105,
+    130,
   ];
 
   /// Центр подвешенного (ещё не брошенного) шара от верха стакана.
   static const double ballSpawnY = 44;
 
   /// Линия проигрыша от верха стакана. Ниже подвешенного шара самого
-  /// крупного бросаемого тира (t5: 44 + 30 = 74) с запасом.
+  /// крупного бросаемого тира (t5: 44 + 37 = 81) с запасом.
   static const double deadlineTopOffset = 96;
 
   static const double buttonHeight = 56;
@@ -38,5 +38,11 @@ class AppDimens {
   static const double panelRadius = 24;
   static const double panelPadding = 24;
   static const double jarWallWidth = 5;
+
+  /// Радиус нижних углов стакана снаружи; внутренний = минус стенка.
+  /// Внутренний радиус повторяется скосами в физике, чтобы фрукт в углу
+  /// не обрезался скруглением.
+  static const double jarCornerRadius = 26;
+  static const double jarInnerCornerRadius = jarCornerRadius - jarWallWidth;
   static const double minTapTarget = 44;
 }

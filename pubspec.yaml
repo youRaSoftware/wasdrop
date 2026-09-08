@@ -1,7 +1,7 @@
 name: wasdrop
 description: WasDrop - merge drop game
 publish_to: "none"
-version: 0.1.0+1
+version: 1.0.0+2
 
 environment:
   sdk: ">=3.5.0"
@@ -37,13 +37,20 @@ flutter:
 
   assets:
     - core/resources/audio/
-
+    - core/resources/fonts/OFL-Rubik.txt
+    - core/resources/fonts/OFL-Unbounded.txt
   fonts:
-    - family: Archivo
+    - family: Rubik
       fonts:
-        - asset: core/resources/fonts/Archivo-SemiBold.ttf
+        - asset: core/resources/fonts/Rubik-SemiBold.ttf
           weight: 600
-        - asset: core/resources/fonts/Archivo-ExtraBold.ttf
-          weight: 800
-        - asset: core/resources/fonts/Archivo-Black.ttf
+        - asset: core/resources/fonts/Rubik-Bold.ttf
+          weight: 700
+        - asset: core/resources/fonts/Rubik-Black.ttf
           weight: 900
+    - family: Unbounded
+      fonts:
+        - asset: core/resources/fonts/Unbounded-SemiBold.ttf
+          weight: 600
+        - asset: core/resources/fonts/Unbounded-ExtraBold.ttf
+          weight: 800

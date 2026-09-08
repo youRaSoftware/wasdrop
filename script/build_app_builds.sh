@@ -60,12 +60,14 @@ else
     echo "Upload to App Store Connect (TestFlight) after archiving?"
     echo "1. Yes — build + upload"
     echo "2. No — build only"
-    echo -n "Enter your choice [1-2]: "
+    echo "3. Upload only — reuse the existing build/ios/archive/Runner.xcarchive"
+    echo -n "Enter your choice [1-3]: "
     read -r upload_choice
 
     case $upload_choice in
         1) upload="--upload" ;;
         2) upload="" ;;
+        3) upload="--upload-only" ;;
         *) echo "Invalid option. Exiting."; exit 1 ;;
     esac
 

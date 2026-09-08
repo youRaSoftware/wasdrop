@@ -28,7 +28,7 @@ Ball fill (see `BallView`): `RadialGradient(center: Alignment(-0.3, -0.4))`, sto
 
 ### 1.2 Typography — `AppFonts` (`core_ui/lib/src/theme/app_fonts.dart`)
 
-Family **Archivo** (600 / 800 / 900, registered in the root `pubspec.yaml` from `core/resources/fonts/`). Digits always `FontFeature.tabularFigures()`.
+Two families, both registered in the root `pubspec.yaml` from `core/resources/fonts/` (OFL texts `OFL-Rubik.txt` / `OFL-Unbounded.txt` are assets and go into `LicenseRegistry`): **Rubik** (`AppFonts.family`, 600 / 700 / 900) for everything in the UI — score, labels, buttons; **Unbounded** (`AppFonts.display`, 600 / 800) for the logo and overlay/screen titles. Digits always `FontFeature.tabularFigures()`.
 
 | Style | Spec | Where |
 |---|---|---|
@@ -38,9 +38,9 @@ Family **Archivo** (600 / 800 / 900, registered in the root `pubspec.yaml` from 
 | `button` | 17 / w800, white | `PrimaryButton`; secondary/text buttons `copyWith(color:, fontSize:)` |
 | `overlayTitle` | 20 / w900, `letterSpacing: 1`, `textPrimary` | «ПАУЗА», «ИГРА ОКОНЧЕНА» |
 
-`lightTheme` (`app_theme.dart`): Material 3, `fontFamily: Archivo`, `scaffoldBackgroundColor: bgScreen`, seed `accent`, `NoSplash`, fade-up (Android) / Cupertino (iOS) page transitions. Single light theme; `ThemeMode.light` is forced in `lib/app.dart`.
+`lightTheme` (`app_theme.dart`): Material 3, `fontFamily: Rubik`, `scaffoldBackgroundColor: bgScreen`, seed `accent`, `NoSplash`, fade-up (Android) / Cupertino (iOS) page transitions. Single Material theme; `ThemeMode.light` is forced in `lib/app.dart`. Wallpaper themes are a separate layer — see § 1.6.
 
-**Rule:** derive every text style from an `AppFonts` constant with `copyWith`; do not build `TextStyle(fontFamily: …)` from scratch in features. Emoji-only text (`'🔊'`, `tier.emoji`) may use a bare `TextStyle(fontSize:)`.
+**Rule:** derive every text style from an `AppFonts` constant with `copyWith`; do not build `TextStyle(fontFamily: …)` from scratch in features. Text drawn directly on the screen background (score, «РЕКОРД», logo, screen titles, section captions) takes its colour from the wallpaper theme: `AppThemeScope.of(context).hudText` / `hudTextSecondary`; text on `surface` panels keeps the `AppColors` text tokens.
 
 ### 1.3 Dimensions — `AppDimens` (`core_ui/lib/src/theme/app_dimens.dart`)
 
@@ -49,7 +49,7 @@ Plain `static const double`:
 | Constant | Value | Meaning |
 |---|---|---|
 | `worldWidth` | 360 | Physics world width; world height follows the jar widget aspect (`WasDropGame.worldHeight`) |
-| `ballRadii` | 12 … 105 | Radius per tier (world units), index = `tier.index`; suika-like proportions |
+| `ballRadii` | 15 … 130 | Radius per tier (world units), index = `tier.index`; bigger than classic suika (t1 8 %, t11 72 % of the jar width) |
 | `ballSpawnY` | 44 | Centre of the hanging (not yet dropped) ball |
 | `buttonHeight` / `buttonRadius` | 56 / 28 | Primary button (menu uses `height: 64`) |
 | `iconButtonSize` | 52 | `IconCircleButton` |
@@ -62,7 +62,7 @@ Spacing inside layouts is inline (`SizedBox(height: 12)`, `EdgeInsets.fromLTRB(2
 
 ### 1.4 Icons & images
 
-No asset pipeline yet: icons are emoji (`'🔊'`, `'⚙️'`, `'🏆'`) or `Icons.*` (`Icons.pause`). Tier markers are `BallTier.emoji` (🍒🍓🍊🍋🍏🥝🫐🍇🍑🍈🍉) with the digit `tier.number` as fallback (`BallView(showEmoji: false)`). If raster/SVG assets land, put them under `core/resources/` and add an `AppImage`-style wrapper to `core_ui` before using them in features.
+UI icons are SVG (24×24, stroke `textPrimary` 1.8 px, palette fills) in `core_ui/assets/icons/`, rendered with `flutter_svg` through `AppIcon(AppIcons.x, size:)` — `trophy`, `soundOn`, `soundOff`, `settings`, `pause`, `restart`, `menuHome`, `adPlay`. They are multi-coloured and are never tinted; place them on light surfaces (`IconCircleButton`, chips, buttons via the `icon` parameter). Navigation glyphs without an SVG (back arrow, chevrons) use `Icons.*`. No emoji in the UI. Tier markers remain `BallTier.emoji` only as the no-sprite fallback (`BallView(showEmoji: false)` shows the digit). New SVGs: strip `<metadata>` blocks, drop the file into `assets/icons/` and add a value to `AppIcons`.
 
 ### 1.5 Widget inventory — `core_ui/lib/src/widgets/` (barrel `widgets.dart`)
 
@@ -76,11 +76,21 @@ No asset pipeline yet: icons are emoji (`'🔊'`, `'⚙️'`, `'🏆'`) or `Icon
 | `IconCircleButton` | `icon_circle_button.dart` | `child`, `onPressed`, `size = 52` — circle, `surface` fill, 2 px `stroke` border; 90 % on press (HUD pause uses `size: 44`) |
 | `AppToggleRow` | `app_toggle_row.dart` | `label`, `value`, `onChanged` — settings row with an animated 52×30 pill (`accent` on / `stroke` off); the whole row is the tap target |
 | `AppOverlay` | `app_overlay.dart` | `child`, `width = 288` — `scrim` dim + `surface` panel (radius 24, padding 24) that fades / floats / pops in over 280 ms |
-| `BallView` | `ball_view.dart` | `tier`, `diameter`, `showEmoji = true` — static ball for HUD / menu (in-game balls are drawn by the engine) |
+| `BallView` | `ball_view.dart` | `tier`, `diameter`, `showEmoji = true`, `image` — static ball for HUD / menu; with `image` (`FruitAssets.idle(tier)` from features) it shows the fruit sprite, otherwise the gradient + emoji circle (in-game balls are drawn by the engine) |
+| `AppIcon` | `app_icon.dart` | `AppIcon(AppIcons.x, size = 24)` — SVG icon from `core_ui/assets/icons/` (see § 1.4) |
+| `ButtonLabel` | `button_label.dart` | `label`, `style`, `icon` — optional icon + text row used inside the three buttons (their `icon` parameter) |
+| `ThemePicker` | `theme_picker.dart` | `themes`, `selectedId`, `onSelect` — row of 34 px theme previews (gradient + jar dot), `accent` ring on the selected one, lock on `isLocked`; each dot has `Key('theme_<id>')` |
+| `ThemeDecorLayer` | `theme_decor.dart` | `theme` — static decor for the theme's `decor` (stars / clouds / petals), painted once under the screen by `AppScaffold` |
+
+`PrimaryButton`, `SecondaryButton` and `AppTextButton` accept `icon` (any widget, normally an `AppIcon` 20–22 px) drawn left of the label.
+
+### 1.6 Wallpaper themes — `GameTheme` / `GameThemes` / `AppThemeScope`
+
+`core_ui/lib/src/theme/game_theme.dart`: `GameTheme(id, name, bgTop, bgBottom, jarFill, jarWall, deadline, deadlineAlert, hudText, decor, isLocked)` and `GameThemes.all` (cream — the default and identical to the `AppColors` tokens —, sunset, mint, night, rose, sky) with `GameThemes.byId`. The chosen id lives in `SettingsModel.themeId`; `lib/app.dart` turns it into an `AppThemeScope` (InheritedWidget) around the whole app, so widgets read `AppThemeScope.of(context)` — never `appLocator` inside core_ui. What follows the theme: `AppScaffold` background gradient + `ThemeDecorLayer`, jar fill/wall in `GameForm`, deadline / aim line colours in the engine overlay, and text painted directly on the background (`hudText`). What never changes: `surface` panels, cards, buttons, chips and the icons on them. Adding a theme = one more `GameTheme` constant in `GameThemes.all`.
 
 **Feedback hook.** `ButtonFeedback.onPressed` (`core_ui/lib/src/feedback/button_feedback.dart`) is a static callback every `AppPressable` fires on tap; the app wires it to `AudioService.tap` (sound + haptic, both gated by `SettingsModel`) in `lib/main_common.dart`. Never call `HapticFeedback` or play audio from `core_ui` directly — build on `AppPressable` and the feedback comes for free.
 
-Feature-local widgets today: `features/lib/game/widgets/` → `GameHud`, `PauseOverlay` (buttons + `AppToggleRow`s bound to `AudioService.settings`), `GameOverOverlay`. Still inline and promotable when a second consumer appears: the gold `RecordBadge` chip (game-over overlay) and the «next ball» circle (HUD).
+Feature-local widgets today: `features/lib/game/widgets/` → `GameHud`, `PauseOverlay` (buttons + `AppToggleRow`s bound to `SettingsService.settings`), `GameOverOverlay`; `features/lib/settings/widgets/` → `SettingsSection` (caps title + `surface` card with 2 px `stroke`, radius 20), `SettingsValueRow` (label — value, optional leading `BallView`), `SettingsLinkRow` (label + chevron, `AppPressable`), `FruitChain` (11 `BallView`s 28→64 px with `tier.title` captions, horizontal scroll), `ResetStatsOverlay` (`AppOverlay` confirm). Still inline and promotable when a second consumer appears: the gold `RecordBadge` chip (game-over overlay) and the «next ball» circle (HUD).
 
 ---
 
@@ -145,7 +155,7 @@ Export the screen from `features/lib/features.dart` — `navigation/` imports sc
 
 ### 2.7 Game engine boundary
 
-`features/lib/game/engine/wasdrop_game.dart` (`WasDropGame extends Forge2DGame`) owns physics, input (drag = aim, release / tap = drop) and rendering of balls (`BallBody`). It talks to the cubit through explicit calls only: `cubit.onDropped()`, `cubit.onMerge(tier)`, `cubit.gameOver()`, and reads `cubit.state.current` for the hanging ball. Jar decorations (dashed deadline, hanging ball, dashed aim line via `world.castRayClosest`) are drawn by the private `_JarOverlay` world component (priority 10, world units) — never in screen space. Merge effects live in `engine/merge_effects.dart` (`MergeFlash` priority 20, `ScorePopup` priority 21): self-removing world components driven by `update(dt)`; the merged ball itself pops in via `BallBody(popIn: true)`. The Form sets `_game.paused` from `state.status` and calls `_game.reset()` on restart. Keep UI (overlays, HUD) in Flutter widgets, not in Flame components.
+`features/lib/game/engine/wasdrop_game.dart` (`WasDropGame extends Forge2DGame`) owns physics, input (drag = aim, release / tap = drop) and rendering of balls (`BallBody`). Every physics number (Box2D scale, gravity, speed cap, adaptive step count, materials, merge thresholds) lives in `engine/physics_tuning.dart` (`PhysicsTuning`) — never inline a physics constant elsewhere. The game talks to the cubit through explicit calls only: `cubit.onDropped()`, `cubit.onMerge(tier)`, `cubit.gameOver()`, and reads `cubit.state.current` for the hanging ball; settings reach it as a `ValueListenable<SettingsModel>` passed by `GameForm` (`WasDropGame(settings:)`, used for `aimLineOn`) — the engine never touches `appLocator`. Merging fires from `BallBody.beginContact` (same tier → `onMerge`) and is executed by `WasDropGame.merge`, which spawns the next tier with the parents' mass-weighted velocity. Jar decorations (dashed deadline, hanging ball, dashed aim line via `world.castRayClosest`) are drawn by the private `_JarOverlay` world component (priority 10, world units) — never in screen space. Fruit art and shape: `engine/fruit_sprites.dart` (`FruitSprites` loaded once in `onLoad`; the body is measured from the alpha channel and `FruitSprite.shape(radius)` yields the Box2D geometry — a `Circle` for round fruits, a rounded `Polygon` for elongated ones — while `FruitSprite.render` draws the sprite so its body coincides with that shape; `BallBody` and the hanging preview use it, `paintBall` stays as the no-sprite fallback). `AppDimens.ballRadii` stays the nominal size of a tier; use `FruitSprite.extent` / `minExtent` when a real half-extent matters. Merge effects live in `engine/merge_effects.dart` (`MergeFlash` priority 20, `ScorePopup` priority 21): self-removing world components driven by `update(dt)`; the merged ball itself pops in via `BallBody(popIn: true)`. The Form sets `_game.paused` from `state.status` and calls `_game.reset()` on restart. Keep UI (overlays, HUD) in Flutter widgets, not in Flame components.
 
 ---
 
@@ -189,7 +199,7 @@ class GameStatsModel extends Equatable {
 }
 ```
 
-Every model has `.empty()` (the "no data yet" value) and a manual `copyWith`. Enums with behaviour live in `domain/lib/enums/` (`BallTier`: `number`, `mergeScore`, `emoji`, `next`). Export from `domain/lib/domain.dart`.
+Every model has `.empty()` (the "no data yet" value) and a manual `copyWith`; a nullable field that must be resettable gets an explicit `resetX: true` flag in `copyWith` (`GameState.resetBestTier`) because `x: null` means "keep". Enums with behaviour live in `domain/lib/enums/` (`BallTier`: `number`, `mergeScore`, `emoji`, `title` — Russian fruit name, `next`, `fromNumber`). Export from `domain/lib/domain.dart`.
 
 ### 4.3 Repositories — interface in `domain`, Hive impl in `data`
 
@@ -248,15 +258,17 @@ class GameState extends Equatable {
 - Repositories are **constructor-injected** (resolved with `appLocator<X>()` at the `BlocProvider` create site) — this makes cubits testable with fakes.
 - State: one `Equatable` class in a `part of` file, manual `copyWith`, all fields in `props`. A status enum (`GameStatus`) is used for mutually exclusive screen modes; booleans (`isNewRecord`) for independent flags.
 - Async work started from the constructor (`_init()`) must guard `emit` after `close()` — add `if (isClosed) return;` before emitting in async callbacks.
-- Navigation from widgets: `context.goNamed('menu')` (route names `'menu'` / `'game'`, paths in `RouterConstants`). From cubits: `appLocator<AppRouter>().router.goNamed(…)`.
+- Navigation from widgets: `context.goNamed('menu')` (route names `'menu'` / `'game'` / `'settings'`, paths in `RouterConstants`); secondary screens that return to where they came from (settings) are pushed — `await context.pushNamed('settings')`, back = `context.pop`. From cubits: `appLocator<AppRouter>().router.goNamed(…)`.
 
 ### 4.6 Navigation — go_router, no codegen
 
 `navigation/lib/src/app_router/app_router.dart`: `AppRouter` wraps a `GoRouter` (`initialLocation: '/menu'`, global `navigatorKey`, `_fade` custom transition 400 ms). Add a route = add a constant to `RouterConstants` (`core/lib/constants/route_constants.dart`) + a `GoRoute(path:, name:, pageBuilder: _fade(…))` + export the screen from `features.dart`. Overlays (pause, game over) are widgets inside `GameForm`, **not** routes.
 
-### 4.7 Audio & haptics — `AudioService`
+### 4.7 Settings, audio & haptics — `SettingsService` + `AudioService`
 
-`core/lib/services/audio_service.dart`, registered in `appLocator` by `setupAppScope`. Holds `settings` (`ValueNotifier<SettingsModel>`) and persists it via `SettingsRepository`; `setSoundOn` / `setHapticsOn` are what toggles call. Game events go through the cubit (`GameCubit` takes `audio` in its constructor): `drop()`, `merge(tier)`, `gameOver(isRecord:)`; button taps arrive via `ButtonFeedback`. Music: `FlameAudio.bgm` loop started in `init()` when sound is on. Assets: `core/resources/audio/` (placeholders from `script/gen_placeholder_audio.py`; keep file names when replacing). Engine code never touches audio.
+`core/lib/services/settings_service.dart`, registered in `appLocator` by `setupAppScope` before the audio. Holds `settings` (`ValueNotifier<SettingsModel>`: `soundOn`, `musicOn`, `hapticsOn`, `aimLineOn`, `themeId`) and persists it via `SettingsRepository`; `setSoundOn` / `setMusicOn` / `setHapticsOn` / `setAimLineOn` / `setThemeId` are what toggles and the `ThemePicker` call (`ValueListenableBuilder<SettingsModel>` on `settings.settings`). Every new user preference is a field on `SettingsModel` + a Hive key + a setter here — not a new service.
+
+`core/lib/services/audio_service.dart` takes the `SettingsService`, listens to it and keeps the `FlameAudio.bgm` loop in sync (plays while `soundOn && musicOn`). Game events go through the cubit (`GameCubit` takes `audio` in its constructor): `drop()`, `merge(tier)`, `gameOver(isRecord:)`; button taps arrive via `ButtonFeedback`. Assets: `core/resources/audio/` (placeholders from `script/gen_placeholder_audio.py`; keep file names when replacing). Engine code never touches audio.
 
 ### 4.8 Flavors
 

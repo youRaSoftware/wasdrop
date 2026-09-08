@@ -1,5 +1,6 @@
 import 'package:core/core.dart';
 import 'package:core_ui/core_ui.dart';
+import 'package:domain/domain.dart';
 import 'package:flutter/material.dart';
 
 class App extends StatelessWidget {
@@ -9,6 +10,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     final AppConfig config = appLocator<AppConfig>();
     final AppRouter appRouter = appLocator<AppRouter>();
+    final SettingsService settings = appLocator<SettingsService>();
 
     return MaterialApp.router(
       title: config.appName,
@@ -19,14 +21,23 @@ class App extends StatelessWidget {
       routeInformationProvider: appRouter.router.routeInformationProvider,
       routerDelegate: appRouter.router.routerDelegate,
       builder: (BuildContext context, Widget? child) {
-        if (!config.showFlavorBanner || child == null) {
-          return child ?? const SizedBox.shrink();
-        }
-        return Banner(
-          message: config.flavor.name.toUpperCase(),
-          location: BannerLocation.topEnd,
-          color: AppColors.alert,
-          child: child,
+        final Widget content = child ?? const SizedBox.shrink();
+        // Тема-обои для всех экранов — из настроек, без DI в core_ui.
+        return ValueListenableBuilder<SettingsModel>(
+          valueListenable: settings.settings,
+          builder: (BuildContext context, SettingsModel value, Widget? _) {
+            return AppThemeScope(
+              theme: GameThemes.byId(value.themeId),
+              child: config.showFlavorBanner
+                  ? Banner(
+                      message: config.flavor.name.toUpperCase(),
+                      location: BannerLocation.topEnd,
+                      color: AppColors.alert,
+                      child: content,
+                    )
+                  : content,
+            );
+          },
         );
       },
     );

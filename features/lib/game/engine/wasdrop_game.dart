@@ -6,11 +6,15 @@ import 'package:domain/domain.dart';
 import 'package:flame/components.dart' show Anchor, Component, HasGameReference;
 import 'package:flame/events.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 
 import '../cubit/game_cubit.dart';
 import 'ball_body.dart';
+import 'fruit_sprites.dart';
+import 'jar_walls.dart';
 import 'merge_effects.dart';
+import 'physics_tuning.dart';
 
 /// Физическое ядро игры. Мир — [AppDimens.worldWidth] (360) в ширину, высота
 /// берётся из пропорции виджета стакана, так что физическое дно совпадает
@@ -20,13 +24,35 @@ import 'merge_effects.dart';
 /// (драг), отпускание или тап — бросок; следующий появляется через
 /// кулдаун 450 мс.
 ///
-/// Forge2D (Box2D v3) настроен на тела 0.1–10 м, поэтому мировые единицы
-/// объявлены как «36 единиц = 1 метр»: стакан ≈ 10 м в ширину, шары 0.7–5.8 м.
-class WasDropGame extends Forge2DGame with TapCallbacks, DragCallbacks {
+/// Все числа физики (масштаб Box2D, гравитация, материалы, число шагов) —
+/// в [PhysicsTuning]; здесь только правила игры.
+class WasDropGame extends Forge2DGame
+    with TapCallbacks, DragCallbacks
+    implements FruitSpriteProvider {
   final GameCubit cubit;
 
-  WasDropGame({required this.cubit})
-      : super(gravity: Vector2(0, 400), lengthUnitsPerMeter: 36);
+  /// Настройки (линия прицела); движок читает их напрямую, без DI.
+  final ValueListenable<SettingsModel> settings;
+
+  /// Спрайты фруктов по тирам (грузятся один раз в [onLoad]).
+  @override
+  final FruitSprites fruitSprites = FruitSprites();
+
+  WasDropGame({required this.cubit, required this.settings})
+      : super(
+          world: _JarWorld(
+            gravity: Vector2(0, PhysicsTuning.gravity),
+            definition: WorldDef(
+              maxContactPushSpeed: PhysicsTuning.maxContactPushSpeed,
+              restitutionThreshold: PhysicsTuning.restitutionThreshold,
+              hitEventThreshold: PhysicsTuning.hitEventThreshold,
+              contactHertz: PhysicsTuning.contactHertz,
+              contactDampingRatio: PhysicsTuning.contactDampingRatio,
+              maximumLinearSpeed: PhysicsTuning.maxSpeed,
+            ),
+          ),
+          lengthUnitsPerMeter: PhysicsTuning.unitsPerMeter,
+        );
 
   static const double worldWidth = AppDimens.worldWidth;
   static const double deadlineY = AppDimens.deadlineTopOffset;
@@ -49,17 +75,28 @@ class WasDropGame extends Forge2DGame with TapCallbacks, DragCallbacks {
   /// Сколько секунд покоящийся шар держится выше линии проигрыша.
   double overLineTime = 0;
 
+  /// Сколько шагов Box2D сделал последний кадр (для тестов).
+  int get lastPhysicsSteps => (world as _JarWorld).lastSteps;
+
   Body? _walls;
 
+  /// Фон не рисуем: стакан (заливка и стенки темы, часто полупрозрачные)
+  /// красит `GameForm` под холстом.
   @override
-  Color backgroundColor() => AppColors.jar;
+  Color backgroundColor() => const Color(0x00000000);
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    // Больше подшагов — устойчивее стопка шаров и меньше проникновений
-    // при ударах падающего шара по лежащим.
-    world.subStepCount = 8;
+    assert(
+      (Tolerances.speculativeDistance - PhysicsTuning.speculativeDistance)
+              .abs() <
+          1e-6,
+      'PhysicsTuning.speculativeDistance разошлась с Box2D: '
+      '${Tolerances.speculativeDistance}',
+    );
+    world.subStepCount = PhysicsTuning.subSteps;
+    await fruitSprites.load(images);
     camera.viewfinder.anchor = Anchor.topLeft;
     _layoutWorld(size);
     world.add(_JarOverlay());
@@ -92,11 +129,28 @@ class WasDropGame extends Forge2DGame with TapCallbacks, DragCallbacks {
       _rect(w, -t, w + t, h + t), // правая
       _rect(-t, h, w + t, h + t), // дно
     ];
-    final Body walls = world.createBody(BodyDef(type: BodyType.static));
+    // Скосы в нижних углах: визуально углы скруглены
+    // (AppDimens.jarInnerCornerRadius px), а прямой физический угол давал бы
+    // фрукту закатиться под скругление и обрезаться.
+    final double chamfer =
+        AppDimens.jarInnerCornerRadius * worldWidth / canvasSize.x;
+    boxes.addAll(<List<Vector2>>[
+      <Vector2>[Vector2(0, h - chamfer), Vector2(chamfer, h), Vector2(0, h)],
+      <Vector2>[
+        Vector2(w, h - chamfer),
+        Vector2(w, h),
+        Vector2(w - chamfer, h)
+      ],
+    ]);
+    final Body walls = world.createBody(
+      BodyDef(type: BodyType.static, userData: const JarWalls()),
+    );
     for (final List<Vector2> corners in boxes) {
       walls.createShape(
         Polygon(corners),
-        ShapeDef(material: SurfaceMaterial(friction: 0.3)),
+        ShapeDef(
+          material: SurfaceMaterial(friction: PhysicsTuning.wallFriction),
+        ),
       );
     }
     _walls = walls;
@@ -168,21 +222,51 @@ class WasDropGame extends Forge2DGame with TapCallbacks, DragCallbacks {
 
   // --- Правила ---------------------------------------------------------------
 
-  /// Слияние: вызывается контактом двух шаров одного тира
-  /// (публичный, чтобы integration-тест мог создать шары напрямую).
+  /// Слияние двух шаров одного тира: вызывается из [BallBody], когда круги
+  /// реально коснулись (публичный, чтобы integration-тест мог создать шары
+  /// напрямую).
   void merge(BallBody a, BallBody b) {
     if (a.isRemoving || b.isRemoving || a.merging || b.merging) return;
     a.merging = true;
     b.merging = true;
+    // Кадр перед исчезновением — оба с открытым ртом (ТЗ § 3).
+    a.showSquishFace();
+    b.showSquishFace();
     final BallTier? next = a.tier.next;
     final Vector2 mid = (a.body.position + b.body.position) / 2;
+    // Импульс родителей — снять до удаления тел. Новый шар получает
+    // взвешенную по массе скорость (≈ 80 % импульса: его масса ≈ 1.6
+    // массы родителя), с потолком, чтобы слившийся на лету арбуз
+    // не влетал в кучу и не давал ложный проигрыш.
+    final double massA = a.body.mass;
+    final double massB = b.body.mass;
+    final Vector2 velocity =
+        (a.body.linearVelocity * massA + b.body.linearVelocity * massB) /
+            (massA + massB);
+    if (velocity.length > PhysicsTuning.mergeMaxSpeed) {
+      velocity.length = PhysicsTuning.mergeMaxSpeed;
+    }
     cubit.onMerge(a.tier);
     a.removeFromParent();
     b.removeFromParent();
     if (next != null) {
+      // Новый шар крупнее слившихся: если они лежали на дне или у стенки,
+      // его круг в точке контакта уже пересекает пол/стенку, и Box2D
+      // выталкивает его наружу заметные 100–200 мс («проваливается»).
+      // Держим круг внутри стакана; соседей он расталкивает сам. Если
+      // зажали — гасим составляющую скорости «в стену».
+      final double r = AppDimens.ballRadii[next.index];
+      // У вытянутых фруктов габарит больше номинального радиуса.
+      final double e = fruitSprites[next]?.extent(r) ?? r;
+      final double x = mid.x.clamp(e, worldWidth - e);
+      final double y = math.min(mid.y, worldHeight - e);
+      if (x > mid.x) velocity.x = math.max(velocity.x, 0);
+      if (x < mid.x) velocity.x = math.min(velocity.x, 0);
+      if (y < mid.y) velocity.y = math.min(velocity.y, 0);
       world.add(BallBody(
         tier: next,
-        initialPosition: mid,
+        initialPosition: Vector2(x, y),
+        initialVelocity: velocity,
         onMerge: merge,
         popIn: true,
       ));
@@ -202,7 +286,6 @@ class WasDropGame extends Forge2DGame with TapCallbacks, DragCallbacks {
         start: Vector2(mid.x, mid.y - effectRadius - 6),
       ),
     ]);
-    // TODO: звук/хаптика по настройкам
   }
 
   @override
@@ -239,18 +322,54 @@ class WasDropGame extends Forge2DGame with TapCallbacks, DragCallbacks {
   }
 }
 
+/// Физический мир стакана: несколько шагов Box2D на кадр.
+///
+/// Box2D заводит контакт заранее только на спекулятивной дистанции
+/// ([PhysicsTuning.speculativeDistance]), а непрерывную коллизию включает
+/// лишь телам, которые за шаг проходят больше половины радиуса. Значит,
+/// падающий шар не должен проходить за шаг больше этой дистанции — иначе
+/// контакт с дном возникает уже внутри дна (вишня проваливалась на 16 %
+/// диаметра и «всплывала»). Число шагов считается от длины кадра: при
+/// 60 fps их 7, при лаге до 30 fps — 14, на 120 Гц — 4. Контактные события
+/// раздаются после каждого шага, иначе Box2D их теряет.
+class _JarWorld extends Forge2DWorld {
+  _JarWorld({required super.gravity, required super.definition});
+
+  /// Сколько шагов сделал последний кадр.
+  int lastSteps = 0;
+
+  @override
+  void update(double dt) {
+    final double frameDt = math.min(dt, PhysicsTuning.maxFrameDt);
+    final int steps =
+        (frameDt * PhysicsTuning.maxSpeed / PhysicsTuning.speculativeDistance)
+            .ceil()
+            .clamp(1, PhysicsTuning.maxStepsPerFrame);
+    lastSteps = steps;
+    final double stepDt = frameDt / steps;
+    for (int i = 0; i < steps; i++) {
+      physicsWorld.step(stepDt, subStepCount: subStepCount);
+      contactEventsDispatcher.dispatch(
+        physicsWorld.contactEvents,
+        physicsWorld.sensorEvents,
+      );
+    }
+  }
+}
+
 /// Декорации стакана поверх шаров (мировые координаты): пунктирная линия
 /// проигрыша, подвешенный текущий шар и пунктир прицела до первого
-/// препятствия (рейкаст вниз).
+/// препятствия (рейкаст вниз; отключается в настройках).
 class _JarOverlay extends Component with HasGameReference<WasDropGame> {
   _JarOverlay() : super(priority: 10);
 
   @override
   void render(Canvas canvas) {
     final WasDropGame g = game;
+    final GameTheme theme = GameThemes.byId(g.settings.value.themeId);
 
     final Paint deadlinePaint = Paint()
-      ..color = g.overLineTime > 0 ? AppColors.alert : AppColors.deadline
+      ..color = g.overLineTime > 0 ? theme.deadlineAlert : theme.deadline
       ..strokeWidth = 1.5
       ..strokeCap = StrokeCap.round;
     _dashedLine(
@@ -268,26 +387,34 @@ class _JarOverlay extends Component with HasGameReference<WasDropGame> {
     final double r = AppDimens.ballRadii[tier.index];
     final double x = g.aimX;
     final Vector2 origin = Vector2(x, WasDropGame.spawnY + r);
-    final RayHit? hit = g.world.castRayClosest(
-      origin,
-      Vector2(0, g.worldHeight - origin.y),
-    );
-    final double endY = hit?.point.y ?? g.worldHeight;
 
-    final Paint aimPaint = Paint()
-      ..color = AppColors.textTertiary
-      ..strokeWidth = 1.5
-      ..strokeCap = StrokeCap.round;
-    _dashedLine(
-      canvas,
-      Offset(x, origin.y + 6),
-      Offset(x, endY - 2),
-      dash: 6,
-      gap: 6,
-      paint: aimPaint,
-    );
+    if (g.settings.value.aimLineOn) {
+      final RayHit? hit = g.world.castRayClosest(
+        origin,
+        Vector2(0, g.worldHeight - origin.y),
+      );
+      final double endY = hit?.point.y ?? g.worldHeight;
 
-    BallBody.paintBall(canvas, Offset(x, WasDropGame.spawnY), r, tier);
+      final Paint aimPaint = Paint()
+        ..color = theme.hudTextTertiary
+        ..strokeWidth = 1.5
+        ..strokeCap = StrokeCap.round;
+      _dashedLine(
+        canvas,
+        Offset(x, origin.y + 6),
+        Offset(x, endY - 2),
+        dash: 6,
+        gap: 6,
+        paint: aimPaint,
+      );
+    }
+
+    final FruitSprite? sprite = g.fruitSprites[tier];
+    if (sprite != null) {
+      sprite.render(canvas, center: Vector2(x, WasDropGame.spawnY), radius: r);
+    } else {
+      BallBody.paintBall(canvas, Offset(x, WasDropGame.spawnY), r, tier);
+    }
   }
 
   void _dashedLine(

@@ -7,6 +7,7 @@ import 'package:navigation/navigation.dart';
 
 import '../config/app_config.dart';
 import '../services/audio_service.dart';
+import '../services/settings_service.dart';
 
 final GetIt appLocator = GetIt.instance;
 
@@ -15,7 +16,12 @@ Future<void> setupAppScope(Flavor flavor) async {
   await dataDI.init();
   setupNavigationDependencies();
 
-  final AudioService audio = AudioService(appLocator<SettingsRepository>());
+  final SettingsService settings =
+      SettingsService(appLocator<SettingsRepository>());
+  appLocator.registerSingleton<SettingsService>(settings);
+  await settings.init();
+
+  final AudioService audio = AudioService(settings);
   appLocator.registerSingleton<AudioService>(audio);
   await audio.init();
 }

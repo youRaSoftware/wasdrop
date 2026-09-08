@@ -10,6 +10,12 @@ class GameState extends Equatable {
   final BallTier next;
   final bool isNewRecord;
 
+  /// Слияний за текущую партию.
+  final int merges;
+
+  /// Самый крупный фрукт, полученный за партию (null — ещё не было).
+  final BallTier? bestTier;
+
   const GameState({
     required this.score,
     required this.bestScore,
@@ -17,8 +23,12 @@ class GameState extends Equatable {
     required this.current,
     required this.next,
     this.isNewRecord = false,
+    this.merges = 0,
+    this.bestTier,
   });
 
+  /// [bestTier] сбрасывается в null, только если передать `bestTier: null`
+  /// явно через [resetBestTier].
   GameState copyWith({
     int? score,
     int? bestScore,
@@ -26,6 +36,9 @@ class GameState extends Equatable {
     BallTier? current,
     BallTier? next,
     bool? isNewRecord,
+    int? merges,
+    BallTier? bestTier,
+    bool resetBestTier = false,
   }) {
     return GameState(
       score: score ?? this.score,
@@ -34,10 +47,20 @@ class GameState extends Equatable {
       current: current ?? this.current,
       next: next ?? this.next,
       isNewRecord: isNewRecord ?? this.isNewRecord,
+      merges: merges ?? this.merges,
+      bestTier: resetBestTier ? null : (bestTier ?? this.bestTier),
     );
   }
 
   @override
-  List<Object?> get props =>
-      <Object?>[score, bestScore, status, current, next, isNewRecord];
+  List<Object?> get props => <Object?>[
+        score,
+        bestScore,
+        status,
+        current,
+        next,
+        isNewRecord,
+        merges,
+        bestTier,
+      ];
 }

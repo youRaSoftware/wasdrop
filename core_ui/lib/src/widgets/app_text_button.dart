@@ -4,16 +4,20 @@ import '../theme/app_colors.dart';
 import '../theme/app_dimens.dart';
 import '../theme/app_fonts.dart';
 import 'app_pressable.dart';
+import 'button_label.dart';
 
-/// Текстовая кнопка оверлеев («В меню»): подпись `textSecondary` 15/800,
+/// Текстовая кнопка оверлеев («В меню»): подпись `textSecondary` 15/700,
 /// тап-цель не меньше 44 px. При нажатии тускнеет и чуть сжимается.
+/// [icon] рисуется слева от подписи.
 class AppTextButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
+  final Widget? icon;
 
   const AppTextButton({
     required this.label,
     required this.onPressed,
+    this.icon,
     super.key,
   });
 
@@ -21,12 +25,13 @@ class AppTextButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppPressable(
       onPressed: onPressed,
-      child: Text(
-        label,
+      child: ButtonLabel(
+        label: label,
         style: AppFonts.button.copyWith(
           color: AppColors.textSecondary,
           fontSize: 15,
         ),
+        icon: icon,
       ),
       builder: (BuildContext context, double pressed, Widget? child) {
         return Transform.scale(

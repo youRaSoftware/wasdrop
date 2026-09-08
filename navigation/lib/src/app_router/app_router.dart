@@ -36,6 +36,12 @@ class AppRouter {
         pageBuilder: (BuildContext context, GoRouterState state) =>
             _fade(context, state, const GameScreen()),
       ),
+      GoRoute(
+        path: '/settings',
+        name: 'settings',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _fade(context, state, const SettingsScreen()),
+      ),
     ],
   );
 }

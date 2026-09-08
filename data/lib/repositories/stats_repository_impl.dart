@@ -12,6 +12,8 @@ class StatsRepositoryImpl implements StatsRepository {
     return GameStatsModel(
       bestScore: _provider.bestScore,
       gamesPlayed: _provider.gamesPlayed,
+      totalMerges: _provider.totalMerges,
+      bestTier: BallTier.fromNumber(_provider.bestTierNumber),
     );
   }
 
@@ -20,6 +22,8 @@ class StatsRepositoryImpl implements StatsRepository {
     return _provider.save(
       bestScore: stats.bestScore,
       gamesPlayed: stats.gamesPlayed,
+      totalMerges: stats.totalMerges,
+      bestTierNumber: stats.bestTier?.number ?? 0,
     );
   }
 }

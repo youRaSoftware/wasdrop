@@ -5,14 +5,15 @@ import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import 'settings_service.dart';
+
 /// Звук и хаптика приложения.
 ///
-/// Держит текущие настройки в [settings] (тумблеры «Звук» / «Вибрация»
-/// в меню и паузе подписываются на него), сохраняет их через
-/// [SettingsRepository], крутит фоновую музыку и играет SFX из
-/// `core/resources/audio/` (пока плейсхолдеры, см. README там). Кнопки
-/// дизайн-системы дёргают [tap] через `ButtonFeedback` (назначается
-/// в `lib/main_common.dart`).
+/// Читает тумблеры из [SettingsService] (звуки / музыка / вибрация) и
+/// подписан на их изменения: музыка-луп (`FlameAudio.bgm`) играет, пока
+/// включены и «Звуки», и «Музыка». SFX из `core/resources/audio/`
+/// (пока плейсхолдеры, см. README там). Кнопки дизайн-системы дёргают
+/// [tap] через `ButtonFeedback` (назначается в `lib/main_common.dart`).
 class AudioService {
   static const String assetPrefix = 'core/resources/audio/';
   static const double musicVolume = 0.35;
@@ -26,24 +27,24 @@ class AudioService {
   static String _merge(BallTier tier) =>
       'sfx_merge_${tier.number.toString().padLeft(2, '0')}.wav';
 
-  final SettingsRepository _repository;
-
-  /// Текущие настройки звука и вибрации (для `ValueListenableBuilder`).
-  final ValueNotifier<SettingsModel> settings =
-      ValueNotifier<SettingsModel>(const SettingsModel.empty());
+  final SettingsService _settings;
 
   bool _ready = false;
+  SettingsModel _last = const SettingsModel.empty();
 
-  AudioService(this._repository);
+  AudioService(this._settings);
 
-  bool get soundOn => settings.value.soundOn;
+  bool get soundOn => _settings.value.soundOn;
 
-  bool get hapticsOn => settings.value.hapticsOn;
+  bool get hapticsOn => _settings.value.hapticsOn;
 
-  /// Загружает настройки, прогревает кэш SFX и запускает музыку, если звук
-  /// включён. Ошибки аудио не роняют приложение — игра работает без звука.
+  bool get musicPlays => _settings.value.musicPlays;
+
+  /// Прогревает кэш SFX, подписывается на настройки и запускает музыку,
+  /// если она включена. Ошибки аудио не роняют приложение — игра работает
+  /// без звука.
   Future<void> init() async {
-    settings.value = await _repository.getSettings();
+    _last = _settings.value;
     try {
       FlameAudio.updatePrefix(assetPrefix);
       await FlameAudio.bgm.initialize();
@@ -61,29 +62,31 @@ class AudioService {
     } catch (error) {
       debugPrint('AudioService: init failed, running silent: $error');
     }
-    await startMusic();
+    _settings.settings.addListener(_onSettingsChanged);
+    await _syncMusic();
   }
 
-  Future<void> setSoundOn(bool value) async {
-    if (value == soundOn) return;
-    settings.value = settings.value.copyWith(soundOn: value);
-    await _repository.saveSettings(settings.value);
-    if (value) {
+  void _onSettingsChanged() {
+    final SettingsModel next = _settings.value;
+    // Включили вибрацию — сразу дать её почувствовать.
+    if (next.hapticsOn && !_last.hapticsOn) {
+      unawaited(HapticFeedback.lightImpact());
+    }
+    _last = next;
+    unawaited(_syncMusic());
+  }
+
+  Future<void> _syncMusic() async {
+    if (!_ready) return;
+    if (musicPlays) {
       await startMusic();
     } else {
       await stopMusic();
     }
   }
 
-  Future<void> setHapticsOn(bool value) async {
-    if (value == hapticsOn) return;
-    settings.value = settings.value.copyWith(hapticsOn: value);
-    await _repository.saveSettings(settings.value);
-    if (value) unawaited(HapticFeedback.lightImpact());
-  }
-
   Future<void> startMusic() async {
-    if (!_ready || !soundOn || FlameAudio.bgm.isPlaying) return;
+    if (!_ready || !musicPlays || FlameAudio.bgm.isPlaying) return;
     try {
       await FlameAudio.bgm.play(_music, volume: musicVolume);
     } catch (error) {
@@ -99,6 +102,7 @@ class AudioService {
   /// Останавливает музыку и освобождает плеер (тесты; в приложении сервис
   /// живёт до конца процесса).
   Future<void> dispose() async {
+    _settings.settings.removeListener(_onSettingsChanged);
     if (!_ready) return;
     _ready = false;
     await FlameAudio.bgm.dispose();

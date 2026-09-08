@@ -20,8 +20,13 @@ dependencies:
 
   flame: ^1.38.0
   flame_forge2d: ^0.20.0
+  package_info_plus: ^10.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+
+flutter:
+  assets:
+    - assets/images/fruits/

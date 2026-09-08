@@ -32,7 +32,7 @@ class GameOverOverlay extends StatelessWidget {
             child: Text(
               'ИГРА ОКОНЧЕНА',
               style: AppFonts.overlayTitle.copyWith(
-                fontSize: 18,
+                fontSize: 17,
                 color: AppColors.textSecondary,
                 letterSpacing: 1.4,
               ),
@@ -56,12 +56,19 @@ class GameOverOverlay extends StatelessWidget {
                     colors: <Color>[AppColors.goldTop, AppColors.gold],
                   ),
                 ),
-                child: Text(
-                  '🏆 НОВЫЙ РЕКОРД',
-                  style: AppFonts.button.copyWith(
-                    fontSize: 13,
-                    color: AppColors.goldText,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const AppIcon(AppIcons.trophy, size: 18),
+                    const SizedBox(width: 6),
+                    Text(
+                      'НОВЫЙ РЕКОРД',
+                      style: AppFonts.button.copyWith(
+                        fontSize: 13,
+                        color: AppColors.goldText,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -75,13 +82,22 @@ class GameOverOverlay extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 16),
-          PrimaryButton(label: 'Заново', onPressed: onRestart),
+          PrimaryButton(
+            label: 'Заново',
+            icon: const AppIcon(AppIcons.restart, size: 22),
+            onPressed: onRestart,
+          ),
           const SizedBox(height: 4),
-          AppTextButton(label: 'В меню', onPressed: onMenu),
+          AppTextButton(
+            label: 'В меню',
+            icon: const AppIcon(AppIcons.menuHome, size: 20),
+            onPressed: onMenu,
+          ),
           const Divider(color: AppColors.stroke),
           const SizedBox(height: 4),
           SecondaryButton(
-            label: '▶ Продолжить за рекламу',
+            label: 'Продолжить за рекламу',
+            icon: const AppIcon(AppIcons.adPlay, size: 20),
             height: 48,
             outlined: true,
             onPressed: onContinueAd,

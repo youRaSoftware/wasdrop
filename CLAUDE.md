@@ -51,7 +51,7 @@ script/run.sh prod --release
 
 - Dart: `Flavor` + `AppConfig` в `core/lib/config/app_config.dart`; `lib/main.dart` читает `--dart-define=environment` (fallback — нативный `appFlavor`), `setupAppScope(flavor)` кладёт `AppConfig` в `appLocator`. Ветвиться по окружению только через `appLocator<AppConfig>()`, не через `kDebugMode`.
 - Android: `productFlavors` в `android/app/build.gradle.kts` (+ `buildFeatures.resValues` для `app_name`), подпись release из `android/key.properties` (шаблон `key.properties.example`).
-- iOS: конфигурации `Debug|Release|Profile-dev|prod`, схемы `dev` / `prod`, `APP_DISPLAY_NAME` → `CFBundleDisplayName`. CocoaPods не используется (все плагины — Swift Packages); если появится плагин без SwiftPM и Flutter сгенерирует Podfile — добавить в него маппинг `'Debug-dev' => :debug` и т.д. и инклюды `Pods-Runner.debug-dev.xcconfig` в `ios/Flutter/*.xcconfig`.
+- iOS: минимальная версия 15.0 (требование App Store с 2027), `ITSAppUsesNonExemptEncryption = false` в Info.plist; конфигурации `Debug|Release|Profile-dev|prod`, схемы `dev` / `prod`, `APP_DISPLAY_NAME` → `CFBundleDisplayName`. Подпись: команда Pavel Hrytsenka, `DEVELOPMENT_TEAM = 4YLBF6N3R4` во всех конфигурациях (тот же `IOS_TEAM_ID` в `script/build.sh`); не менять на другие команды из связки ключей. CocoaPods не используется (все плагины — Swift Packages); если появится плагин без SwiftPM и Flutter сгенерирует Podfile — добавить в него маппинг `'Debug-dev' => :debug` и т.д. и инклюды `Pods-Runner.debug-dev.xcconfig` в `ios/Flutter/*.xcconfig`.
 - Android Studio: конфигурации запуска `.run/Dev.run.xml`, `.run/Prod.run.xml`.
 
 ## Скрипты (`script/`)
@@ -75,12 +75,12 @@ flutter test integration_test -d <deviceId> --flavor dev --dart-define=environme
 Два обязательных правила для таких тестов: (1) `binding.framePolicy = LiveTestWidgetsFlutterBindingFramePolicy.fullyLive`, иначе движок тикает только на `pump()` и `pump(3 s)` даёт физике один шаг с dt = 3 с (шары пролетают друг сквозь друга); (2) никакого `pumpAndSettle` — Flame рисует кадры непрерывно, и он никогда не вернётся, только `pump(Duration)`.
 
 ## Структура пакетов
-- **core/** — `AppConfig`/`Flavor`, DI (`app_di.dart`), константы роутов и Hive-боксов; реэкспортирует bloc/get_it/go_router/navigation
+- **core/** — `AppConfig`/`Flavor`, DI (`app_di.dart`), сервисы `SettingsService`/`AudioService`, константы роутов и Hive-боксов; реэкспортирует bloc/get_it/go_router/navigation
 - **core_ui/** — `AppColors`, `AppFonts`, `AppDimens`, `lightTheme`, виджеты `AppScaffold`, `PrimaryButton`, `IconCircleButton`, `BallView`
-- **domain/** — `BallTier`, `GameStatsModel`, `SettingsModel`, интерфейсы репозиториев
+- **domain/** — `BallTier` (эмодзи, `title`, `next`, `fromNumber`), `GameStatsModel` (рекорд, игры, слияния, лучший тир), `SettingsModel` (звуки, музыка, вибрация, линия прицела, тема-обои `themeId`), интерфейсы репозиториев
 - **data/** — Hive-провайдеры (`providers/local/`), реализации репозиториев, `DataDI.init()`
-- **features/** — `menu/`, `game/` (cubit, screen, widgets, `engine/` — Flame/Forge2D)
-- **navigation/** — `AppRouter` (go_router, `/menu`, `/game`, fade-переход)
+- **features/** — `menu/`, `game/` (cubit, screen, widgets, `engine/` — Flame/Forge2D, `physics_tuning.dart`), `settings/` (cubit, screen, widgets)
+- **navigation/** — `AppRouter` (go_router, `/menu`, `/game`, `/settings`, fade-переход)
 
 Паттерны и стиль — `.claude/shared/wasdrop_ui_reference.md`.
 
@@ -92,28 +92,41 @@ flutter test integration_test -d <deviceId> --flavor dev --dart-define=environme
 
 ## Дизайн (вариант 1a, фруктовый)
 - Палитра тиров 1–11: E5484D F76B15 EFB008 8FBF1F 3BA55C 12A594 00A2C7 0090FF 6E56CF AB4ABA E93D82 (`core_ui/lib/src/theme/app_colors.dart`)
-- Маркер тира: эмодзи-фрукты 🍒🍓🍊🍋🍏🥝🫐🍇🍑🍈🍉 (`BallTier.emoji`), запасной канал — цифра
-- Радиусы шаров (мировые единицы, мир 360 wide): 12 15 19 24 30 37 46 56 70 86 105 (увеличены относительно мокапа до пропорций классической suika, 2026-09-06); высота мира — от пропорции виджета стакана
-- Фон F7F2E7, поверхности FFFDF6, стакан ECE5D6, текст 33291A, акцент F76B15, тревога E5484D
-- Шрифт Archivo (600/800/900, OFL, файлы в `core/resources/fonts/`), счёт tabular-nums, primary-кнопка: градиент FF8A34→F76B15, тень 0 6 0 D95806
+- Маркер тира: эмодзи-фрукты 🍒🍓🍊🍋🍏🥝🫐🍇🍑🍈🍉 (`BallTier.emoji`) — только как запасная отрисовка без спрайта; в UI эмодзи больше не используются (иконки — SVG, см. ниже)
+- Радиусы шаров (мировые единицы, мир 360 wide): 15 19 24 30 37 46 56 70 86 105 130 (крупнее мокапа и классической suika: вишня 8 % ширины, арбуз 72 %; 2026-09-07); высота мира — от пропорции виджета стакана
+- Тема cream (по умолчанию): фон F7F2E7, поверхности FFFDF6, стакан ECE5D6, текст 33291A, акцент F76B15, тревога E5484D; остальные темы — см. «Темы-обои» ниже
+- Шрифты (ТЗ `.claude/my_docs/TZ_ASSETS.md`): **Rubik** 600/700/900 — весь UI, счёт (tabular-nums), кнопки; **Unbounded** 600/800 — лого и заголовки оверлеев (`AppFonts.display`). Оба OFL, TTF в `core/resources/fonts/`, лицензии `OFL-Rubik.txt` / `OFL-Unbounded.txt` регистрируются в `LicenseRegistry` (`lib/main_common.dart`). Primary-кнопка: градиент FF8A34→F76B15, тень 0 6 0 D95806
+- Иконки UI — SVG 24×24 в `core_ui/assets/icons/` (штрих 33291A 1.8 px, заливки из палитры; метаданные c2pa из исходников вырезаны), виджет `AppIcon(AppIcons.trophy | soundOn | soundOff | settings | pause | restart | menuHome | adPlay)` на `flutter_svg`. Многоцветные, не перекрашиваются — ставить на светлые подложки. Кнопки `PrimaryButton`/`SecondaryButton`/`AppTextButton` принимают `icon`. Стрелка «назад» и шевроны — Material.
+- Темы-обои: `GameTheme`/`GameThemes` (`core_ui/lib/src/theme/game_theme.dart`; cream по умолчанию, sunset, mint, night, rose, sky; поля bgTop/bgBottom, jarFill (часто полупрозрачный), jarWall, deadline/deadlineAlert, hudText, decor, isLocked — задел под подписку). Выбор — `SettingsModel.themeId` (Hive `themeId`), `SettingsService.setThemeId`. Доставка в UI — `AppThemeScope` (InheritedWidget, ставится в `lib/app.dart` из настроек; `AppThemeScope.of(context)`): `AppScaffold` рисует градиент и статичный декор (`ThemeDecorLayer`: звёзды/облака/лепестки), HUD/меню/настройки красят текст `hudText`, `GameForm` — стакан, `_JarOverlay` — линию и прицел; движок фон не рисует (`backgroundColor` прозрачный). Пикер `ThemePicker` — в паузе и в настройках («Игра → Обои»), ключи кружков `theme_<id>`. Панели/кнопки/карточки во всех темах светлые `surface`.
 - Мокапы: `WasDrop Mockups.dc.html` в дизайн-проекте; полное ТЗ — `.claude/my_docs/WASDROP.md`
 
 ## Движок
 - flame 1.38 + flame_forge2d 0.20 (forge2d 0.15 = привязка к Box2D v3, API `BodyDef`/`ShapeDef`/`Circle`/`Segment`, контакты через `ContactCallbacks` в `userData`). Flame с 1.38 на 32-битном `vector_math` — не понижать версии по отдельности.
-- Мир в «логических» единицах (ширина 360), для Box2D объявлено `lengthUnitsPerMeter: 36` (стакан ≈ 10 м в ширину, высота от пропорции виджета). Гравитация 400 ед/с².
+- **Все числа физики — в `features/lib/game/engine/physics_tuning.dart`** (`PhysicsTuning`), крутить «на ощупь» только там. Мир в «логических» единицах (ширина 360), для Box2D объявлено `unitsPerMeter = 120` (стакан ≈ 3 м; от масштаба зависят только допуски: спекулятивная дистанция контакта 0.02 м = 2.4 ед., люфт покоя 0.6 ед.; Box2D фиксирует масштаб при первом мире — источник один). Гравитация 1000 ед/с², потолок скорости 800 ед/с (бросок сверху донизу ≈ 1–1.3 с; 1500 казалось слишком быстро, 400 — «ватно»).
+- Число шагов Box2D на кадр адаптивное (`_JarWorld`): `ceil(dt · maxSpeed / speculativeDistance)`, при 60 fps = 6, максимум 24; кадр длиннее 1/30 с замедляется, а не догоняется. Причина: Box2D заводит контакт только на спекулятивной дистанции, а CCD включает лишь телам, проходящим за шаг больше половины радиуса — если шар проходит за шаг больше 2.4 ед., контакт с дном возникает уже внутри дна (вишня проваливалась на 16 % диаметра и всплывала). `WorldDef` создаётся вручную: forge2d передаёт скорости (`maxContactPushSpeed`, `restitutionThreshold`, `hitEventThreshold`, `BodyDef.sleepThreshold`) в Box2D без пересчёта в единицы мира, поэтому «метровые» дефолты умножены на `unitsPerMeter`; `contactHertz = 120`.
+- Материал фрукта: friction 0.5, restitution 0.12, rollingResistance 0.02, angularDamping 0.6. Box2D умножает лимит сопротивления качению на радиус *большего* из двух тел (`contact.c`: `max(rrA, rrB) * maxRadius`), поэтому при 0.1 вишня на плече арбуза была «приклеена»; торможение качения по дну даёт угловое демпфирование.
+- Слияние — по контакту Box2D (`beginContact` с шаром того же тира; он возникает уже при зазоре ≤ 2.4 ед., под выступом спрайта это незаметно). Более строгий порог «по реальному касанию» пробовали и откатили: пары, улёгшиеся вплотную с зазором 1–2 ед., не сливались вовсе. Новый шар наследует взвешенную по массе скорость родителей (потолок 600 ед/с), его круг зажат внутри стакана (`merge()`), а составляющая скорости «в стену» гасится: иначе более крупный шар на дне/у стенки сразу пересекал пол и Box2D выталкивал его 100–200 мс — выглядело как «проваливание».
 - `WasDropGame.onRemove` уничтожает физический мир (Box2D ограничивает число миров).
-- Стенки стакана — толстые (40 ед.) статические коробки за краем видимой области, `subStepCount = 8`; высота мира пересчитывается в `onGameResize`.
+- Стенки стакана — толстые (40 ед.) статические коробки за краем видимой области; высота мира пересчитывается в `onGameResize`.
 
 ## Звук, хаптика, кнопки
-- `AudioService` (`core/lib/services/audio_service.dart`, в `appLocator`): настройки звука/вибрации (`settings` — `ValueNotifier<SettingsModel>`, сохраняются через `SettingsRepository`), музыка-луп через `FlameAudio.bgm`, SFX через `FlameAudio.play`. События: `tap()`, `drop()`, `merge(tier)`, `gameOver(isRecord:)`. Ошибки аудио не роняют игру.
+- `SettingsService` (`core/lib/services/settings_service.dart`, в `appLocator`): все настройки (`settings` — `ValueNotifier<SettingsModel>`: `soundOn`, `musicOn`, `hapticsOn`, `aimLineOn`, `themeId`), сохраняются через `SettingsRepository`; тумблеры в меню/паузе/настройках зовут `setSoundOn`, `setThemeId` и т.д. Движок получает нотифаер через `WasDropGame(settings:)` и читает `aimLineOn` (линия прицела).
+- `AudioService` (`core/lib/services/audio_service.dart`, в `appLocator`, принимает `SettingsService`): подписан на настройки, музыка-луп через `FlameAudio.bgm` играет при `soundOn && musicOn`, SFX через `FlameAudio.play`. События: `tap()`, `drop()`, `merge(tier)`, `gameOver(isRecord:)`. Ошибки аудио не роняют игру.
+- Экран настроек `/settings` (`features/lib/settings/`, открывается из ⚙️ в меню через `pushNamed`): секции «Звук» (Звуки / Музыка / Вибрация), «Игра» (Линия прицела, Обои — `ThemePicker`), «Статистика» (рекорд, игр, слияний, самый большой фрукт; сброс с подтверждением), «Фрукты» (цепочка 11 спрайтов, `BallTier.title`), «О приложении» (версия через `package_info_plus`, «Лицензии» → `showLicensePage`; OFL шрифтов Rubik и Unbounded регистрируются в `lib/main_common.dart` из `core/resources/fonts/OFL-*.txt`). Статистика партии (`merges`, `bestTier`) копится в `GameState` и записывается в `StatsRepository` при проигрыше, рестарте и закрытии кубита.
 - Ассеты в `core/resources/audio/` — **плейсхолдеры**, синтезированы `script/gen_placeholder_audio.py` (SFX wav + `music_loop.m4a`, iOS не играет OGG). Заменять, сохраняя имена файлов.
 - Кнопки дизайн-системы построены на `AppPressable` (степень нажатия 0…1 в builder) и дёргают `ButtonFeedback.trigger()`; хук назначается в `lib/main_common.dart` на `AudioService.tap`. В core_ui нет прямых вызовов `HapticFeedback`.
 - Оверлеи — `AppOverlay` (затемнение `scrim` + панель с анимацией появления); тумблеры — `AppToggleRow`; вторичные кнопки — `SecondaryButton` (filled/outlined), текстовые — `AppTextButton`.
 
+## Спрайты фруктов (ТЗ — `.claude/my_docs/TZ_SPRITES.md`)
+- Файлы `features/assets/images/fruits/t{N}_idle.png` / `t{N}_squish.png` (512×512, прозрачный фон), объявлены в `features/pubspec.yaml`; ключ ассета `packages/features/assets/images/fruits/...`. Есть все 11 фруктов; без спрайта (например, у нового тира) — fallback градиент + эмодзи (`BallBody.paintBall`). HUD «следующий шар» и шары в меню показывают те же спрайты через `BallView(image: FruitAssets.idle(tier))`.
+- **Физическая форма берётся из спрайта** (`FruitSprite.shape`, измеряется по альфа-каналу при загрузке, порог 200, чтобы не считать телом ореол после удаления фона; в каждой строке — самый длинный непрозрачный отрезок). Сначала подгоняется круг: контур — края строк шире 60 % от самой широкой (без стебля/листика), круг прижат к нижней точке силуэта, X центра — середина самой широкой строки, радиус — методом наименьших квадратов. Если контур отклоняется от круга ≤ 5 % — тело круг (восемь фруктов, 0.7–3.8 %). Иначе (виноград, лимон, клубника: 8–12 %) — **скруглённый многоугольник Box2D** (`Polygon(points, radius:)`, ≤ 8 вершин): тело — строки от первой шире 20 % до низа, в 8 направлениях берутся опорные точки силуэта, сдвигаются внутрь на радиус скругления ρ (0.4–0.8 наименьшего полугабарита, выбирается по наименьшему расхождению опорных функций силуэта и формы в 72 направлениях; остаток 2–3 %). Номинальный радиус тира (`AppDimens.ballRadii`) для многоугольника = средняя опорная функция; `FruitSprite.extent/minExtent` — наибольший/наименьший полугабарит (спавн при слиянии, тесты «не ниже пола»). Такие фрукты катятся с покачиванием и ложатся на бок. Прежняя оценка круга «среднее полуширины и полувысоты» занижала высоту круглого тела (строка 60 % ширины у круга на 0.2 R ниже макушки) и давала круг на 3–5 % уже спрайта — соседи «заходили друг на друга». Стебель/листик выступают за форму — это норма. Требование «95 % кадра» из ТЗ соблюдать вручную не нужно, но под фруктом в PNG не должно быть теней.
+- Стакан в `GameForm`: холст лежит внутри обводки (`Padding` на `jarWallWidth`), физическое дно = верх стенки; нижние углы скруглены `jarInnerCornerRadius`, а в физике им соответствуют 45° скосы, чтобы фрукт в углу не обрезался.
+- Реакция на удар в `BallBody`: скорость до удара берётся из прошлого `update`, порог `squishSpeed = 60`, сплющивание 1.12×0.88 → 1 за 250 мс (easeOutBack, в мировых осях), рот открыт 300 мс, debounce 400 мс. Дно и стенки помечены `userData: JarWalls()`, иначе Forge2D не дал бы `beginContact`.
+
 ## Геймплей (TODO — ядро в `features/lib/game/engine/wasdrop_game.dart`)
-- Слияние: два одинаковых тира при контакте → тир+1, счёт += 2^tier; эффекты в `engine/merge_effects.dart` (`MergeFlash`, `ScorePopup`) + `BallBody(popIn: true)`
+- Слияние: два одинаковых тира при касании → тир+1 с унаследованным импульсом, счёт += 2^tier; эффекты в `engine/merge_effects.dart` (`MergeFlash`, `ScorePopup`) + `BallBody(popIn: true)`
 - Управление: текущий шар висит вверху (y = 44) и едет за пальцем, отпускание/тап — бросок, кулдаун 450 мс; пунктир прицела — рейкаст вниз до первого препятствия
 - Проигрыш: покоящийся шар выше линии (y < 96) дольше 1.5 c
-- Очередь: текущий + следующий шар, тиры 1–5 случайно (веса 5:4:3:2:1)
+- Очередь: текущий + следующий шар, тиры 1–5 случайно (веса 5:4:3:2:1; `GameCubit.firstDropTier`)
 - Продолжение за рекламу — заглушка (`continueAfterAd` в GameCubit); в dev — тестовые блоки (`AppConfig.useTestAds`)
-- ⚙️ в меню — заглушка, экран настроек не сделан (Фаза 3)
+- ⚙️ в меню — экран настроек `/settings` (см. «Звук, хаптика, кнопки»)

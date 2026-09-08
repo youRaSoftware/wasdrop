@@ -3,21 +3,48 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 
-/// Статичный шар для HUD/меню (в игре шары рисует движок).
+/// Статичный шар для HUD/меню (в игре шары рисует движок). С [image]
+/// показывает спрайт фрукта (кадр 512×512, тело ≈ 70 % кадра, поэтому кадр
+/// рисуется крупнее [diameter]); без него — градиентный круг с эмодзи.
 class BallView extends StatelessWidget {
+  /// Во сколько раз кадр спрайта больше тела фрукта.
+  static const double spriteFrameScale = 1.4;
+
   final BallTier tier;
   final double diameter;
   final bool showEmoji;
+  final ImageProvider? image;
 
   const BallView({
     required this.tier,
     required this.diameter,
     this.showEmoji = true,
+    this.image,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
+    final ImageProvider? image = this.image;
+    if (image != null) {
+      final double frame = diameter * spriteFrameScale;
+      return SizedBox(
+        width: diameter,
+        height: diameter,
+        child: OverflowBox(
+          maxWidth: frame,
+          maxHeight: frame,
+          child: Image(
+            image: image,
+            width: frame,
+            height: frame,
+            fit: BoxFit.contain,
+            filterQuality: FilterQuality.medium,
+          ),
+        ),
+      );
+    }
+
     final Color color = AppColors.tiers[tier.index];
 
     return Container(

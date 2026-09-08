@@ -12,8 +12,13 @@ dependencies:
     sdk: flutter
   domain:
     path: ../domain
+  flutter_svg: ^2.3.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+
+flutter:
+  assets:
+    - assets/icons/

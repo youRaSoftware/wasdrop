@@ -4,19 +4,22 @@ import '../theme/app_colors.dart';
 import '../theme/app_dimens.dart';
 import '../theme/app_fonts.dart';
 import 'app_pressable.dart';
+import 'button_label.dart';
 
 /// Primary-кнопка из мокапа: градиент `accentTop → accent` и «толстая»
 /// нижняя тень. При нажатии кнопка проседает на глубину тени (тень
-/// схлопывается) и чуть сжимается.
+/// схлопывается) и чуть сжимается. [icon] рисуется слева от подписи.
 class PrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
   final double height;
+  final Widget? icon;
 
   const PrimaryButton({
     required this.label,
     required this.onPressed,
     this.height = AppDimens.buttonHeight,
+    this.icon,
     super.key,
   });
 
@@ -26,7 +29,7 @@ class PrimaryButton extends StatelessWidget {
 
     return AppPressable(
       onPressed: onPressed,
-      child: Text(label, style: AppFonts.button),
+      child: ButtonLabel(label: label, style: AppFonts.button, icon: icon),
       builder: (BuildContext context, double pressed, Widget? child) {
         final double depth = AppDimens.buttonShadowDepth;
         return Transform.translate(

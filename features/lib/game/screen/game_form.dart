@@ -22,13 +22,17 @@ class _GameFormState extends State<GameForm> {
   @override
   void initState() {
     super.initState();
-    _game = WasDropGame(cubit: context.read<GameCubit>());
+    _game = WasDropGame(
+      cubit: context.read<GameCubit>(),
+      settings: appLocator<SettingsService>().settings,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final GameCubit cubit = context.read<GameCubit>();
     final GameState state = context.watch<GameCubit>().state;
+    final GameTheme theme = AppThemeScope.of(context);
 
     _game.paused = state.status != GameStatus.playing;
 
@@ -43,28 +47,41 @@ class _GameFormState extends State<GameForm> {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(25, 8, 25, 12),
                     child: DecoratedBox(
+                      // Заливка и стенки — из темы; движок фон не рисует,
+                      // так что полупрозрачный стакан просвечивает.
                       decoration: BoxDecoration(
-                        color: AppColors.jar,
-                        border: const Border(
+                        color: theme.jarFill,
+                        border: Border(
                           left: BorderSide(
-                              color: AppColors.jarWall,
+                              color: theme.jarWall,
                               width: AppDimens.jarWallWidth),
                           right: BorderSide(
-                              color: AppColors.jarWall,
+                              color: theme.jarWall,
                               width: AppDimens.jarWallWidth),
                           bottom: BorderSide(
-                              color: AppColors.jarWall,
+                              color: theme.jarWall,
                               width: AppDimens.jarWallWidth),
                         ),
                         borderRadius: const BorderRadius.vertical(
-                          bottom: Radius.circular(26),
+                          bottom: Radius.circular(AppDimens.jarCornerRadius),
                         ),
                       ),
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.vertical(
-                          bottom: Radius.circular(20),
+                      // Холст лежит внутри обводки: физическое дно = верх
+                      // стенки, иначе нижние 5 px фруктов прячутся под ней.
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: AppDimens.jarWallWidth,
+                          right: AppDimens.jarWallWidth,
+                          bottom: AppDimens.jarWallWidth,
                         ),
-                        child: GameWidget<WasDropGame>(game: _game),
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                            bottom: Radius.circular(
+                              AppDimens.jarInnerCornerRadius,
+                            ),
+                          ),
+                          child: GameWidget<WasDropGame>(game: _game),
+                        ),
                       ),
                     ),
                   ),

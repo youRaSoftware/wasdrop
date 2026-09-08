@@ -1,5 +1,15 @@
 enum BallTier {
-  t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11;
+  t1,
+  t2,
+  t3,
+  t4,
+  t5,
+  t6,
+  t7,
+  t8,
+  t9,
+  t10,
+  t11;
 
   int get number => index + 1;
 
@@ -7,11 +17,42 @@ enum BallTier {
   int get mergeScore => 1 << number;
 
   static const List<String> _emoji = <String>[
-    '🍒', '🍓', '🍊', '🍋', '🍏', '🥝', '🫐', '🍇', '🍑', '🍈', '🍉',
+    '🍒',
+    '🍓',
+    '🍊',
+    '🍋',
+    '🍏',
+    '🥝',
+    '🫐',
+    '🍇',
+    '🍑',
+    '🍈',
+    '🍉',
+  ];
+
+  static const List<String> _titles = <String>[
+    'вишня',
+    'клубника',
+    'мандарин',
+    'лимон',
+    'яблоко',
+    'киви',
+    'черника',
+    'виноград',
+    'персик',
+    'дыня',
+    'арбуз',
   ];
 
   String get emoji => _emoji[index];
 
+  /// Название фрукта (`name` занято у enum).
+  String get title => _titles[index];
+
   BallTier? get next =>
       this == BallTier.t11 ? null : BallTier.values[index + 1];
+
+  /// Тир по номеру 1…11; null для 0 и значений вне диапазона.
+  static BallTier? fromNumber(int number) =>
+      number >= 1 && number <= values.length ? values[number - 1] : null;
 }

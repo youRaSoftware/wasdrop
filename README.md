@@ -6,7 +6,7 @@ Merge-drop игра (suika-подобная). Мультипакетный пр�
 1. `script/prebuild_script.sh` — `flutter pub get` во всех пакетах
 2. `script/run.sh dev` — запуск dev-флейвора (или конфигурация **Dev** в Android Studio)
 
-Шрифт Archivo (600 / 800 / 900, OFL) лежит в `core/resources/fonts/`.
+Шрифты Rubik (600 / 700 / 900) и Unbounded (600 / 800), оба OFL, лежат в `core/resources/fonts/`.
 
 ## Flavors
 `dev` (`com.wasdrop.dev`, «WasDrop Dev», плашка DEV) и `prod` (`com.wasdrop`, «WasDrop»). Передаются и нативно, и через dart-define:
