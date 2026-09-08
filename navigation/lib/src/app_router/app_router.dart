@@ -22,8 +22,14 @@ class AppRouter {
 
   final GoRouter _router = GoRouter(
     navigatorKey: _navigatorKey,
-    initialLocation: '/menu',
+    initialLocation: '/splash',
     routes: <RouteBase>[
+      GoRoute(
+        path: '/splash',
+        name: 'splash',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _fade(context, state, const SplashScreen()),
+      ),
       GoRoute(
         path: '/menu',
         name: 'menu',

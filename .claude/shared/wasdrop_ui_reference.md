@@ -118,7 +118,7 @@ class GameScreen extends StatelessWidget {
 }
 ```
 
-`MenuScreen` is the exception (a `StatefulWidget` calling the repository directly, with an `AnimationController` for the staggered entrance and a `ValueListenableBuilder` on `AudioService.settings` for the 🔊/🔇 button) — treat it as debt, not a pattern; new screens get a cubit.
+Two exceptions: `MenuScreen` (a `StatefulWidget` calling the repository directly, with an `AnimationController` for the staggered entrance and a `ValueListenableBuilder` on `SettingsService.settings` for the sound button) — treat it as debt, not a pattern — and `SplashScreen` (a `StatefulWidget` with only a `Timer` and a `SplashGame`; it has no state worth a cubit). New screens get a cubit.
 
 ### 2.2 One public widget per file
 
@@ -148,14 +148,16 @@ features/lib/{feature}/
 │   ├── {feature}_screen.dart       # BlocProvider shell
 │   └── {feature}_form.dart         # layout
 ├── widgets/                        # optional, flat
-└── engine/                         # game only: Flame / Forge2D code
+└── engine/                         # game and splash: Flame / Forge2D code
 ```
+
+Features today: `splash/` (screen + `engine/splash_game.dart`), `menu/`, `game/`, `settings/`.
 
 Export the screen from `features/lib/features.dart` — `navigation/` imports screens only through this barrel.
 
 ### 2.7 Game engine boundary
 
-`features/lib/game/engine/wasdrop_game.dart` (`WasDropGame extends Forge2DGame`) owns physics, input (drag = aim, release / tap = drop) and rendering of balls (`BallBody`). Every physics number (Box2D scale, gravity, speed cap, adaptive step count, materials, merge thresholds) lives in `engine/physics_tuning.dart` (`PhysicsTuning`) — never inline a physics constant elsewhere. The game talks to the cubit through explicit calls only: `cubit.onDropped()`, `cubit.onMerge(tier)`, `cubit.gameOver()`, and reads `cubit.state.current` for the hanging ball; settings reach it as a `ValueListenable<SettingsModel>` passed by `GameForm` (`WasDropGame(settings:)`, used for `aimLineOn`) — the engine never touches `appLocator`. Merging fires from `BallBody.beginContact` (same tier → `onMerge`) and is executed by `WasDropGame.merge`, which spawns the next tier with the parents' mass-weighted velocity. Jar decorations (dashed deadline, hanging ball, dashed aim line via `world.castRayClosest`) are drawn by the private `_JarOverlay` world component (priority 10, world units) — never in screen space. Fruit art and shape: `engine/fruit_sprites.dart` (`FruitSprites` loaded once in `onLoad`; the body is measured from the alpha channel and `FruitSprite.shape(radius)` yields the Box2D geometry — a `Circle` for round fruits, a rounded `Polygon` for elongated ones — while `FruitSprite.render` draws the sprite so its body coincides with that shape; `BallBody` and the hanging preview use it, `paintBall` stays as the no-sprite fallback). `AppDimens.ballRadii` stays the nominal size of a tier; use `FruitSprite.extent` / `minExtent` when a real half-extent matters. Merge effects live in `engine/merge_effects.dart` (`MergeFlash` priority 20, `ScorePopup` priority 21): self-removing world components driven by `update(dt)`; the merged ball itself pops in via `BallBody(popIn: true)`. The Form sets `_game.paused` from `state.status` and calls `_game.reset()` on restart. Keep UI (overlays, HUD) in Flutter widgets, not in Flame components.
+`features/lib/game/engine/wasdrop_game.dart` (`WasDropGame extends Forge2DGame`) owns physics, input (drag = aim, release / tap = drop) and rendering of balls (`BallBody`). Every physics number (Box2D scale, gravity, speed cap, adaptive step count, materials, merge thresholds) lives in `engine/physics_tuning.dart` (`PhysicsTuning`) — never inline a physics constant elsewhere. The stepping world (`JarPhysicsWorld.standard()`, `engine/jar_physics_world.dart`) and the wall builder (`buildJarWalls`, `engine/jar_walls.dart`) are shared with `features/lib/splash/engine/splash_game.dart`, which reuses `BallBody` and `FruitSprites` to rain fruits on the splash screen; a new physics scene should be built the same way instead of copying `WasDropGame`. The game talks to the cubit through explicit calls only: `cubit.onDropped()`, `cubit.onMerge(tier)`, `cubit.gameOver()`, and reads `cubit.state.current` for the hanging ball; settings reach it as a `ValueListenable<SettingsModel>` passed by `GameForm` (`WasDropGame(settings:)`, used for `aimLineOn`) — the engine never touches `appLocator`. Merging fires from `BallBody.beginContact` (same tier → `onMerge`) and is executed by `WasDropGame.merge`, which spawns the next tier with the parents' mass-weighted velocity. Jar decorations (dashed deadline, hanging ball, dashed aim line via `world.castRayClosest`) are drawn by the private `_JarOverlay` world component (priority 10, world units) — never in screen space. Fruit art and shape: `engine/fruit_sprites.dart` (`FruitSprites` loaded once in `onLoad`; the body is measured from the alpha channel and `FruitSprite.shape(radius)` yields the Box2D geometry — a `Circle` for round fruits, a rounded `Polygon` for elongated ones — while `FruitSprite.render` draws the sprite so its body coincides with that shape; `BallBody` and the hanging preview use it, `paintBall` stays as the no-sprite fallback). `AppDimens.ballRadii` stays the nominal size of a tier; use `FruitSprite.extent` / `minExtent` when a real half-extent matters. Merge effects live in `engine/merge_effects.dart` (`MergeFlash` priority 20, `ScorePopup` priority 21): self-removing world components driven by `update(dt)`; the merged ball itself pops in via `BallBody(popIn: true)`. The Form sets `_game.paused` from `state.status` and calls `_game.reset()` on restart. Keep UI (overlays, HUD) in Flutter widgets, not in Flame components.
 
 ---
 
@@ -262,7 +264,7 @@ class GameState extends Equatable {
 
 ### 4.6 Navigation — go_router, no codegen
 
-`navigation/lib/src/app_router/app_router.dart`: `AppRouter` wraps a `GoRouter` (`initialLocation: '/menu'`, global `navigatorKey`, `_fade` custom transition 400 ms). Add a route = add a constant to `RouterConstants` (`core/lib/constants/route_constants.dart`) + a `GoRoute(path:, name:, pageBuilder: _fade(…))` + export the screen from `features.dart`. Overlays (pause, game over) are widgets inside `GameForm`, **not** routes.
+`navigation/lib/src/app_router/app_router.dart`: `AppRouter` wraps a `GoRouter` (`initialLocation: '/splash'`, then `/menu`, `/game`, `/settings`; global `navigatorKey`, `_fade` custom transition 400 ms). Add a route = add a constant to `RouterConstants` (`core/lib/constants/route_constants.dart`) + a `GoRoute(path:, name:, pageBuilder: _fade(…))` + export the screen from `features.dart`. Overlays (pause, game over) are widgets inside `GameForm`, **not** routes.
 
 ### 4.7 Settings, audio & haptics — `SettingsService` + `AudioService`
 

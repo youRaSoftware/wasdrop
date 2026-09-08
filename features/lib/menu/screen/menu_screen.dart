@@ -118,20 +118,29 @@ class _MenuScreenState extends State<MenuScreen>
                   animation: _step(0.2, 0.7),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 7,
+                      horizontal: 18,
+                      vertical: 10,
                     ),
                     decoration: BoxDecoration(
                       color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(22),
                       border: Border.all(color: AppColors.stroke, width: 2),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        const AppIcon(AppIcons.trophy, size: 16),
-                        const SizedBox(width: 6),
-                        Text('рекорд $_bestScore', style: AppFonts.best),
+                        const AppIcon(AppIcons.trophy, size: 24),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Рекорд $_bestScore',
+                          style: AppFonts.button.copyWith(
+                            fontSize: 17,
+                            color: AppColors.secondaryText,
+                            fontFeatures: const <FontFeature>[
+                              FontFeature.tabularFigures(),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),

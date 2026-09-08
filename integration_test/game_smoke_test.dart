@@ -19,6 +19,8 @@ import 'package:features/game/engine/merge_effects.dart';
 import 'package:features/game/engine/wasdrop_game.dart';
 import 'package:features/game/widgets/game_hud.dart';
 import 'package:features/menu/screen/menu_screen.dart';
+import 'package:features/splash/engine/splash_game.dart';
+import 'package:features/splash/screen/splash_screen.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +43,16 @@ void main() {
     addTearDown(appLocator<AudioService>().dispose);
     // No pumpAndSettle anywhere: the Flame game loop schedules frames
     // continuously, so pumpAndSettle would never return.
-    await tester.pump(const Duration(seconds: 2));
+    await tester.pump(const Duration(milliseconds: 1500));
+
+    // Splash: fruits are raining down on the shared engine; tap skips it.
+    final Finder splashFinder = find.byType(GameWidget<SplashGame>);
+    expect(splashFinder, findsOneWidget);
+    final SplashGame splash =
+        tester.widget<GameWidget<SplashGame>>(splashFinder).game!;
+    expect(splash.spawned, greaterThan(3));
+    await tester.tap(find.byKey(SplashScreen.skipKey));
+    await tester.pump(const Duration(seconds: 1));
 
     // Menu.
     expect(find.text('ИГРАТЬ'), findsOneWidget);

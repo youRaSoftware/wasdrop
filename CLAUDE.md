@@ -79,8 +79,8 @@ flutter test integration_test -d <deviceId> --flavor dev --dart-define=environme
 - **core_ui/** — `AppColors`, `AppFonts`, `AppDimens`, `lightTheme`, виджеты `AppScaffold`, `PrimaryButton`, `IconCircleButton`, `BallView`
 - **domain/** — `BallTier` (эмодзи, `title`, `next`, `fromNumber`), `GameStatsModel` (рекорд, игры, слияния, лучший тир), `SettingsModel` (звуки, музыка, вибрация, линия прицела, тема-обои `themeId`), интерфейсы репозиториев
 - **data/** — Hive-провайдеры (`providers/local/`), реализации репозиториев, `DataDI.init()`
-- **features/** — `menu/`, `game/` (cubit, screen, widgets, `engine/` — Flame/Forge2D, `physics_tuning.dart`), `settings/` (cubit, screen, widgets)
-- **navigation/** — `AppRouter` (go_router, `/menu`, `/game`, `/settings`, fade-переход)
+- **features/** — `splash/` (экран + `engine/splash_game.dart`), `menu/`, `game/` (cubit, screen, widgets, `engine/` — Flame/Forge2D: `physics_tuning.dart`, общий мир `jar_physics_world.dart`, стенки `jar_walls.dart`), `settings/` (cubit, screen, widgets)
+- **navigation/** — `AppRouter` (go_router, стартовый `/splash`, затем `/menu`, `/game`, `/settings`, fade-переход)
 
 Паттерны и стиль — `.claude/shared/wasdrop_ui_reference.md`.
 
@@ -106,7 +106,9 @@ flutter test integration_test -d <deviceId> --flavor dev --dart-define=environme
 - Число шагов Box2D на кадр адаптивное (`_JarWorld`): `ceil(dt · maxSpeed / speculativeDistance)`, при 60 fps = 6, максимум 24; кадр длиннее 1/30 с замедляется, а не догоняется. Причина: Box2D заводит контакт только на спекулятивной дистанции, а CCD включает лишь телам, проходящим за шаг больше половины радиуса — если шар проходит за шаг больше 2.4 ед., контакт с дном возникает уже внутри дна (вишня проваливалась на 16 % диаметра и всплывала). `WorldDef` создаётся вручную: forge2d передаёт скорости (`maxContactPushSpeed`, `restitutionThreshold`, `hitEventThreshold`, `BodyDef.sleepThreshold`) в Box2D без пересчёта в единицы мира, поэтому «метровые» дефолты умножены на `unitsPerMeter`; `contactHertz = 120`.
 - Материал фрукта: friction 0.5, restitution 0.12, rollingResistance 0.02, angularDamping 0.6. Box2D умножает лимит сопротивления качению на радиус *большего* из двух тел (`contact.c`: `max(rrA, rrB) * maxRadius`), поэтому при 0.1 вишня на плече арбуза была «приклеена»; торможение качения по дну даёт угловое демпфирование.
 - Слияние — по контакту Box2D (`beginContact` с шаром того же тира; он возникает уже при зазоре ≤ 2.4 ед., под выступом спрайта это незаметно). Более строгий порог «по реальному касанию» пробовали и откатили: пары, улёгшиеся вплотную с зазором 1–2 ед., не сливались вовсе. Новый шар наследует взвешенную по массе скорость родителей (потолок 600 ед/с), его круг зажат внутри стакана (`merge()`), а составляющая скорости «в стену» гасится: иначе более крупный шар на дне/у стенки сразу пересекал пол и Box2D выталкивал его 100–200 мс — выглядело как «проваливание».
-- `WasDropGame.onRemove` уничтожает физический мир (Box2D ограничивает число миров).
+- `WasDropGame.onRemove` уничтожает физический мир (Box2D ограничивает число миров). Мир (`JarPhysicsWorld.standard()`, адаптивные шаги) и стенки (`buildJarWalls`) общие для игры и сплеша.
+- Сплеш (`features/lib/splash/`): `SplashGame` на том же движке и `BallBody` — 16 фруктов (t1–t9, мелкие чаще) сыплются сверху каждые 90 мс и складываются в кучу у нижнего края экрана (стенки — края экрана, слияний нет), поверх проявляется лого; через 2.6 с или по тапу — `goNamed('menu')`. Стартовый роут `/splash`. Нативный LaunchScreen (до старта Flutter) пока стандартный.
+- Рекорд «живой»: `GameCubit.onMerge` поднимает `bestScore` в состоянии, как только счёт его превысил, и сразу сохраняет в `StatsRepository` (`_persistBest`); «НОВЫЙ РЕКОРД» сравнивает счёт с рекордом на начало партии (`_startBest`). Раньше рекорд писался только при закрытии кубита, а он закрывается после fade-перехода — меню успевало прочитать старое значение.
 - Стенки стакана — толстые (40 ед.) статические коробки за краем видимой области; высота мира пересчитывается в `onGameResize`.
 
 ## Звук, хаптика, кнопки

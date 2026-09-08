@@ -20,6 +20,10 @@ class GameCubit extends Cubit<GameState> {
   /// Статистика текущей партии уже записана в репозиторий.
   bool _runSaved = false;
 
+  /// Рекорд до начала партии — с ним сравнивается счёт для «НОВЫЙ РЕКОРД»
+  /// (сам `bestScore` в состоянии растёт вместе со счётом по ходу партии).
+  int _startBest = 0;
+
   GameCubit({required this.statsRepository, required this.audio})
       : super(const GameState(
           score: 0,
@@ -33,6 +37,7 @@ class GameCubit extends Cubit<GameState> {
 
   Future<void> _init() async {
     final GameStatsModel stats = await statsRepository.getStats();
+    _startBest = stats.bestScore;
     _safeEmit(state.copyWith(
       bestScore: stats.bestScore,
       current: _rollTier(),
@@ -61,11 +66,24 @@ class GameCubit extends Cubit<GameState> {
     audio.merge(tier);
     // Джекпот t11+t11 шара не даёт — самым крупным остаётся t11.
     final BallTier produced = tier.next ?? tier;
+    final int score = state.score + tier.mergeScore;
+    // Рекорд обновляется и сохраняется сразу: HUD и меню показывают его
+    // без ожидания конца партии (и он не теряется, если приложение убьют).
+    final bool newBest = score > state.bestScore;
     _safeEmit(state.copyWith(
-      score: state.score + tier.mergeScore,
+      score: score,
+      bestScore: newBest ? score : null,
       merges: state.merges + 1,
       bestTier: _maxTier(state.bestTier, produced),
     ));
+    if (newBest) unawaited(_persistBest(score));
+  }
+
+  Future<void> _persistBest(int score) async {
+    final GameStatsModel stats = await statsRepository.getStats();
+    if (score > stats.bestScore) {
+      await statsRepository.saveStats(stats.copyWith(bestScore: score));
+    }
   }
 
   /// Движок сообщает, что текущий шар брошен.
@@ -79,9 +97,10 @@ class GameCubit extends Cubit<GameState> {
   void resume() => _safeEmit(state.copyWith(status: GameStatus.playing));
 
   Future<void> gameOver() async {
-    final bool isRecord = state.score > state.bestScore;
+    final bool isRecord = state.score > _startBest;
     audio.gameOver(isRecord: isRecord);
     final GameStatsModel stats = await _saveRun(state, countGame: true);
+    _startBest = stats.bestScore;
     _safeEmit(state.copyWith(
       status: GameStatus.gameOver,
       isNewRecord: isRecord,
@@ -95,6 +114,7 @@ class GameCubit extends Cubit<GameState> {
       unawaited(_saveRun(state, countGame: state.score > 0));
     }
     _runSaved = false;
+    _startBest = state.bestScore;
     _safeEmit(state.copyWith(
       score: 0,
       status: GameStatus.playing,

@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import '../cubit/game_cubit.dart';
 import 'ball_body.dart';
 import 'fruit_sprites.dart';
+import 'jar_physics_world.dart';
 import 'jar_walls.dart';
 import 'merge_effects.dart';
 import 'physics_tuning.dart';
@@ -40,17 +41,7 @@ class WasDropGame extends Forge2DGame
 
   WasDropGame({required this.cubit, required this.settings})
       : super(
-          world: _JarWorld(
-            gravity: Vector2(0, PhysicsTuning.gravity),
-            definition: WorldDef(
-              maxContactPushSpeed: PhysicsTuning.maxContactPushSpeed,
-              restitutionThreshold: PhysicsTuning.restitutionThreshold,
-              hitEventThreshold: PhysicsTuning.hitEventThreshold,
-              contactHertz: PhysicsTuning.contactHertz,
-              contactDampingRatio: PhysicsTuning.contactDampingRatio,
-              maximumLinearSpeed: PhysicsTuning.maxSpeed,
-            ),
-          ),
+          world: JarPhysicsWorld.standard(),
           lengthUnitsPerMeter: PhysicsTuning.unitsPerMeter,
         );
 
@@ -58,9 +49,6 @@ class WasDropGame extends Forge2DGame
   static const double deadlineY = AppDimens.deadlineTopOffset;
   static const double spawnY = AppDimens.ballSpawnY;
   static const Duration dropCooldown = Duration(milliseconds: 450);
-
-  /// Толщина невидимых стенок стакана (мировые единицы).
-  static const double _wallThickness = 40;
 
   /// Высота мира в мировых единицах — пересчитывается от размера виджета.
   double worldHeight = worldWidth * 440 / 310;
@@ -76,7 +64,7 @@ class WasDropGame extends Forge2DGame
   double overLineTime = 0;
 
   /// Сколько шагов Box2D сделал последний кадр (для тестов).
-  int get lastPhysicsSteps => (world as _JarWorld).lastSteps;
+  int get lastPhysicsSteps => (world as JarPhysicsWorld).lastSteps;
 
   Body? _walls;
 
@@ -116,53 +104,14 @@ class WasDropGame extends Forge2DGame
 
     final Body? oldWalls = _walls;
     if (oldWalls != null) world.destroyBody(oldWalls);
-
-    // Стенки — толстые коробки за пределами видимой области, а не тонкие
-    // отрезки: шар, вдавленный ударом сверху в тонкий Segment, проходил
-    // сквозь него (центр пересекал линию — и его выталкивало вниз).
-    // У коробки центр остаётся внутри, и солвер возвращает шар в стакан.
-    final double w = worldWidth;
-    final double h = worldHeight;
-    const double t = _wallThickness;
-    final List<List<Vector2>> boxes = <List<Vector2>>[
-      _rect(-t, -t, 0, h + t), // левая
-      _rect(w, -t, w + t, h + t), // правая
-      _rect(-t, h, w + t, h + t), // дно
-    ];
-    // Скосы в нижних углах: визуально углы скруглены
-    // (AppDimens.jarInnerCornerRadius px), а прямой физический угол давал бы
-    // фрукту закатиться под скругление и обрезаться.
-    final double chamfer =
-        AppDimens.jarInnerCornerRadius * worldWidth / canvasSize.x;
-    boxes.addAll(<List<Vector2>>[
-      <Vector2>[Vector2(0, h - chamfer), Vector2(chamfer, h), Vector2(0, h)],
-      <Vector2>[
-        Vector2(w, h - chamfer),
-        Vector2(w, h),
-        Vector2(w - chamfer, h)
-      ],
-    ]);
-    final Body walls = world.createBody(
-      BodyDef(type: BodyType.static, userData: const JarWalls()),
+    // Скосы под визуальное скругление углов (AppDimens.jarInnerCornerRadius
+    // px → мировые единицы).
+    _walls = buildJarWalls(
+      world,
+      width: worldWidth,
+      height: worldHeight,
+      chamfer: AppDimens.jarInnerCornerRadius * worldWidth / canvasSize.x,
     );
-    for (final List<Vector2> corners in boxes) {
-      walls.createShape(
-        Polygon(corners),
-        ShapeDef(
-          material: SurfaceMaterial(friction: PhysicsTuning.wallFriction),
-        ),
-      );
-    }
-    _walls = walls;
-  }
-
-  static List<Vector2> _rect(double x1, double y1, double x2, double y2) {
-    return <Vector2>[
-      Vector2(x1, y1),
-      Vector2(x2, y1),
-      Vector2(x2, y2),
-      Vector2(x1, y2),
-    ];
   }
 
   // --- Ввод -----------------------------------------------------------------
@@ -319,41 +268,6 @@ class WasDropGame extends Forge2DGame
     super.onRemove();
     // Box2D держит ограниченное число миров и не освобождает их сам.
     world.physicsWorld.destroy();
-  }
-}
-
-/// Физический мир стакана: несколько шагов Box2D на кадр.
-///
-/// Box2D заводит контакт заранее только на спекулятивной дистанции
-/// ([PhysicsTuning.speculativeDistance]), а непрерывную коллизию включает
-/// лишь телам, которые за шаг проходят больше половины радиуса. Значит,
-/// падающий шар не должен проходить за шаг больше этой дистанции — иначе
-/// контакт с дном возникает уже внутри дна (вишня проваливалась на 16 %
-/// диаметра и «всплывала»). Число шагов считается от длины кадра: при
-/// 60 fps их 7, при лаге до 30 fps — 14, на 120 Гц — 4. Контактные события
-/// раздаются после каждого шага, иначе Box2D их теряет.
-class _JarWorld extends Forge2DWorld {
-  _JarWorld({required super.gravity, required super.definition});
-
-  /// Сколько шагов сделал последний кадр.
-  int lastSteps = 0;
-
-  @override
-  void update(double dt) {
-    final double frameDt = math.min(dt, PhysicsTuning.maxFrameDt);
-    final int steps =
-        (frameDt * PhysicsTuning.maxSpeed / PhysicsTuning.speculativeDistance)
-            .ceil()
-            .clamp(1, PhysicsTuning.maxStepsPerFrame);
-    lastSteps = steps;
-    final double stepDt = frameDt / steps;
-    for (int i = 0; i < steps; i++) {
-      physicsWorld.step(stepDt, subStepCount: subStepCount);
-      contactEventsDispatcher.dispatch(
-        physicsWorld.contactEvents,
-        physicsWorld.sensorEvents,
-      );
-    }
   }
 }
 
