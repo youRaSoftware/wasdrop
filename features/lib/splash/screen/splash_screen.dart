@@ -11,7 +11,7 @@ import '../engine/splash_game.dart';
 /// в кучу ([SplashGame]), поверх проявляется лого; через [duration] или по
 /// тапу — меню. Без кубита: у экрана нет состояния, только таймер.
 class SplashScreen extends StatefulWidget {
-  static const Duration duration = Duration(milliseconds: 2600);
+  static const Duration duration = Duration(milliseconds: 3600);
   static const Key skipKey = Key('splash_skip');
 
   const SplashScreen({super.key});

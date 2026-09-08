@@ -31,6 +31,8 @@ On release, rename `[Unreleased]` to `[X.Y.Z] — YYYY-MM-DD` and start a fresh 
 - Новое: шесть тем-обоев (Крем, Персиковый закат, Мятный сад, Ночной сад, Пудрово-розовая, Небо и облака) — фон, стакан и линия проигрыша перекрашиваются, у ночной звёзды, у неба облака, у розовой лепестки; выбор в паузе и в настройках, запоминается
 - Изменено: новые шрифты — Rubik для интерфейса и Unbounded для лого и заголовков; вместо эмодзи нарисованные иконки (кубок, звук, настройки, пауза, повтор, домой, реклама)
 - Новое: заставка при запуске — фрукты сыплются с неба и складываются в кучу, лого проявляется поверх; тап пропускает
+- Изменено: новая иконка приложения — яблоко с мандарином, вишней и виноградом на кремовом фоне (iOS, Android, сторы)
+- Исправлено: у клубники, киви, черники, винограда, персика и дыни были перепутаны спокойное лицо и «ойк» (в покое они сидели с открытым ртом); у арбуза и дыни убраны белые остатки фона внутри завитка хвостика
 - Исправлено: рекорд в меню показывал 0 после партии — теперь он обновляется и сохраняется сразу, как только счёт его превысил (и в HUD тоже); плашка рекорда в меню стала крупнее
 - Новое: экран настроек (⚙️ в меню): тумблеры «Звуки», «Музыка», «Вибрация», «Линия прицела»; статистика — рекорд, сыгранные игры, слияния, самый большой фрукт — со сбросом; цепочка всех 11 фруктов с названиями; версия и лицензии
 
@@ -56,5 +58,7 @@ On release, rename `[Unreleased]` to `[X.Y.Z] — YYYY-MM-DD` and start a fresh 
 - New: six wallpaper themes (Cream, Peach Sunset, Mint Garden, Night Garden, Powder Rose, Sky and Clouds) — background, jar and game-over line recolour, with stars, clouds or petals; pick one in pause or in settings, the choice is remembered
 - Changed: new typefaces — Rubik for the interface and Unbounded for the logo and titles; drawn icons (trophy, sound, settings, pause, restart, home, ad) replace emoji
 - New: launch splash — fruits rain down and pile up while the logo fades in; tap to skip
+- Changed: new app icon — an apple with a tangerine, cherry and grape on a cream background (iOS, Android, stores)
+- Fixed: strawberry, kiwi, blueberry, grape, peach and melon had their calm and "oof" faces swapped (they sat with open mouths); white background leftovers inside the watermelon and melon stem curls removed
 - Fixed: the menu showed a best score of 0 after a game — the record now updates and is saved the moment the score beats it (in the HUD too); the record chip in the menu is bigger
 - New: settings screen (⚙️ in the menu): Sounds, Music, Vibration and Aim line toggles; statistics — best score, games played, merges, biggest fruit — with a reset; the chain of all 11 fruits with names; version and licenses

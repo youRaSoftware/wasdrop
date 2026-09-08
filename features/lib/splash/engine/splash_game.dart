@@ -17,10 +17,10 @@ import '../../game/engine/physics_tuning.dart';
 /// но без слияний и стакана: стенки — края экрана. Фон прозрачный,
 /// градиент темы рисует `AppScaffold`.
 class SplashGame extends Forge2DGame implements FruitSpriteProvider {
-  static const int fruitCount = 16;
+  static const int fruitCount = 20;
 
   /// Пауза между появлениями фруктов, с.
-  static const double spawnInterval = 0.09;
+  static const double spawnInterval = 0.11;
 
   /// Самый крупный тир в куче (t9 — персик).
   static const int maxTierIndex = 8;
