@@ -1,4 +1,4 @@
-# WasDrop
+# Fruity Drop (проект wasdrop)
 
 Merge-drop игра (suika-подобная). Мультипакетный проект (core / core_ui / domain / data / features / navigation), Cubit + get_it + go_router + Hive. Физика — flame_forge2d. Сети нет.
 
@@ -9,7 +9,7 @@ Merge-drop игра (suika-подобная). Мультипакетный пр�
 Шрифты Rubik (600 / 700 / 900) и Unbounded (600 / 800), оба OFL, лежат в `core/resources/fonts/`.
 
 ## Flavors
-`dev` (`com.wasdrop.dev`, «WasDrop Dev», плашка DEV) и `prod` (`com.wasdrop`, «WasDrop»). Передаются и нативно, и через dart-define:
+`dev` (`com.wasdrop.dev`, «Fruity Dev», плашка DEV) и `prod` (`com.wasdrop`, «Fruity Drop»). Передаются и нативно, и через dart-define:
 
 ```bash
 flutter run --flavor dev --dart-define=environment=dev

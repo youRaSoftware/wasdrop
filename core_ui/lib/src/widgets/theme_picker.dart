@@ -15,10 +15,14 @@ class ThemePicker extends StatelessWidget {
   final String selectedId;
   final ValueChanged<String> onSelect;
 
+  /// Локализованное имя темы для доступности (core_ui переводов не знает).
+  final String Function(GameTheme theme) labelOf;
+
   const ThemePicker({
     required this.themes,
     required this.selectedId,
     required this.onSelect,
+    required this.labelOf,
     super.key,
   });
 
@@ -32,6 +36,7 @@ class ThemePicker extends StatelessWidget {
           _ThemeDot(
             key: Key('theme_${themes[i].id}'),
             theme: themes[i],
+            label: labelOf(themes[i]),
             selected: themes[i].id == selectedId,
             onSelect: onSelect,
           ),
@@ -43,11 +48,13 @@ class ThemePicker extends StatelessWidget {
 
 class _ThemeDot extends StatelessWidget {
   final GameTheme theme;
+  final String label;
   final bool selected;
   final ValueChanged<String> onSelect;
 
   const _ThemeDot({
     required this.theme,
+    required this.label,
     required this.selected,
     required this.onSelect,
     super.key,
@@ -58,7 +65,7 @@ class _ThemeDot extends StatelessWidget {
     const double size = ThemePicker.dotSize;
 
     return Semantics(
-      label: theme.name,
+      label: label,
       selected: selected,
       button: true,
       child: AppPressable(

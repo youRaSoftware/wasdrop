@@ -90,7 +90,7 @@ UI icons are SVG (24×24, stroke `textPrimary` 1.8 px, palette fills) in `core_u
 
 **Feedback hook.** `ButtonFeedback.onPressed` (`core_ui/lib/src/feedback/button_feedback.dart`) is a static callback every `AppPressable` fires on tap; the app wires it to `AudioService.tap` (sound + haptic, both gated by `SettingsModel`) in `lib/main_common.dart`. Never call `HapticFeedback` or play audio from `core_ui` directly — build on `AppPressable` and the feedback comes for free.
 
-Feature-local widgets today: `features/lib/game/widgets/` → `GameHud`, `PauseOverlay` (buttons + `AppToggleRow`s bound to `SettingsService.settings`), `GameOverOverlay`; `features/lib/settings/widgets/` → `SettingsSection` (caps title + `surface` card with 2 px `stroke`, radius 20), `SettingsValueRow` (label — value, optional leading `BallView`), `SettingsLinkRow` (label + chevron, `AppPressable`), `FruitChain` (11 `BallView`s 28→64 px with `tier.title` captions, horizontal scroll), `ResetStatsOverlay` (`AppOverlay` confirm). Still inline and promotable when a second consumer appears: the gold `RecordBadge` chip (game-over overlay) and the «next ball» circle (HUD).
+Feature-local widgets today: `features/lib/game/widgets/` → `GameHud`, `PauseOverlay` (buttons + `AppToggleRow`s bound to `SettingsService.settings`), `GameOverOverlay`; `features/lib/settings/widgets/` → `SettingsSection` (caps title + `surface` card with 2 px `stroke`, radius 20), `SettingsValueRow` (label — value, optional leading `BallView`), `SettingsLinkRow` (label + chevron, `AppPressable`), `FruitChain` (11 `BallView`s 28→64 px with `tier.title` captions, horizontal scroll), `ResetStatsOverlay` (`AppOverlay` confirm), `LanguageOverlay` (`AppOverlay` list: system + `AppLocalizationEnum` languages, rows keyed `language_<code>`), `SettingsLinkRow` takes an optional `value` shown before the chevron. Still inline and promotable when a second consumer appears: the gold `RecordBadge` chip (game-over overlay) and the «next ball» circle (HUD).
 
 ---
 
@@ -163,11 +163,16 @@ Export the screen from `features/lib/features.dart` — `navigation/` imports sc
 
 ## § 3 — Text & Localization
 
-There is **no localization layer** — all UI copy is Russian string literals in widgets (`'ИГРАТЬ'`, `'ПАУЗА'`, `'РЕКОРД $n'`, `'В меню'`). Rules until `easy_localization` (or similar) is introduced:
+UI copy is localized with **`easy_localization`** (same setup as rvach). Six languages: en (primary / fallback), ru, de, fr, hu, ja.
 
-- Keep copy in the widget that renders it; cubits/engine never produce user-visible text.
-- Uppercase labels are written uppercase in the literal (no `toUpperCase()`), matching the mockups.
-- Numbers are formatted by plain interpolation (`'$score'`); scores are ints.
+- Translations: `core/resources/translations/<lang>-<REGION>.json` (`en-US.json`, `ru-RU.json`, `de-DE.json`, `fr-FR.json`, `hu-HU.json`, `ja-JP.json`), declared as assets in `core/pubspec.yaml`; identical nested key structure in every file (`menu`, `hud`, `pause`, `gameOver`, `settings`, `fruits`, `themes`).
+- Keys: generated `LocaleKeys` in `core/lib/localization/locale_keys.g.dart` (`menu.play` → `LocaleKeys.menu_play`). Regenerate after editing JSON: `script/prebuild_script.sh` or `cd core && dart run easy_localization:generate -f keys -o locale_keys.g.dart -O lib/localization -S resources/translations`. The file is committed.
+- Usage in widgets: **`context.tr(LocaleKeys.menu_play)`** — the context form registers a dependency on `Localizations`, so the widget rebuilds when the language changes (the context-less `LocaleKeys.x.tr()` leaves `const` screens such as the menu stale until they are recreated). Placeholders: `context.tr(LocaleKeys.hud_best, namedArgs: <String, String>{'score': '$n'})` (the only placeholder today is `{score}`). Outside widgets (tests) use `LocaleKeys.x.tr()`. `package:core/core.dart` re-exports easy_localization and `LocaleKeys`.
+- **No string literals in widgets.** Adding copy = add the key to **all six** JSON files (English first), regenerate keys, use `LocaleKeys`. Fruit names: `FruitLabel.of(context, tier)` (core); theme names: `themeLabel(context, theme)` (`features/lib/settings/widgets/theme_label.dart`) — `BallTier` and `GameTheme` carry no display names.
+- Uppercase labels are uppercase **in the translation** (PLAY / JOUER / SPIELEN / JÁTÉK; Japanese has no case) — never `toUpperCase()` in code. Numbers are plain `'$score'`.
+- Language names (`AppLocalizationEnum.languageDisplayName`) are written in their own language and are not translated. Untranslatable: the logo «WasDrop», the DEV banner, `+N` score popups.
+- Wiring: `lib/main_common.dart` wraps `App` in `EasyLocalization(startLocale: from settings, saveLocale: false)`; `lib/app.dart` passes `context.localizationDelegates / supportedLocales / locale` to `MaterialApp.router` (this also localizes the built-in license page). The chosen language is `SettingsModel.localeCode` (null = system, Hive key `locale`); the picker (`LanguageOverlay` on the settings screen) calls `SettingsService.setLocale` **and** `context.setLocale` / `context.resetLocale`. iOS lists the languages in `CFBundleLocalizations`.
+- Fonts: Rubik / Unbounded cover Latin with diacritics and Cyrillic; Japanese glyphs fall back to the system font.
 - Code comments may be Russian or English — keep each file consistent; identifiers are English.
 
 ---
@@ -224,7 +229,7 @@ class StatsHiveProvider {
 class StatsRepositoryImpl implements StatsRepository { … }
 ```
 
-Box names: `StorageConstants` (`core/lib/constants/storage_constants.dart`) — note `data` cannot import `core` (core depends on data), so `DataDI.init()` repeats the literals; keep both in sync.
+Box names: `StorageConstants` (`core/lib/constants/storage_constants.dart`) — note `data` cannot import `core` (core depends on data), so `DataDI.init()` repeats the literals; keep both in sync. Three boxes today: `statsBox`, `settingsBox`, `gameBox` (the saved game: `GameHiveProvider` / `GameRepositoryImpl` store one `Map` of primitives with nested lists — structured data without Hive adapters).
 
 ### 4.4 DI — `DataDI.init()` + `setupAppScope(flavor)`
 
@@ -264,11 +269,11 @@ class GameState extends Equatable {
 
 ### 4.6 Navigation — go_router, no codegen
 
-`navigation/lib/src/app_router/app_router.dart`: `AppRouter` wraps a `GoRouter` (`initialLocation: '/splash'`, then `/menu`, `/game`, `/settings`; global `navigatorKey`, `_fade` custom transition 400 ms). Add a route = add a constant to `RouterConstants` (`core/lib/constants/route_constants.dart`) + a `GoRoute(path:, name:, pageBuilder: _fade(…))` + export the screen from `features.dart`. Overlays (pause, game over) are widgets inside `GameForm`, **not** routes.
+`navigation/lib/src/app_router/app_router.dart`: `AppRouter` wraps a `GoRouter` (`initialLocation: '/splash'`, then `/menu`, `/game`, `/settings`; global `navigatorKey`, `_fade` custom transition 400 ms). Add a route = add a constant to `RouterConstants` (`core/lib/constants/route_constants.dart`) + a `GoRoute(path:, name:, pageBuilder: _fade(…))` + export the screen from `features.dart`. Overlays (pause, game over) are widgets inside `GameForm`, **not** routes. Objects travel through `extra`: the menu passes the saved `GameSnapshot` as `goNamed('game', extra: snapshot)` and the route builds `GameScreen(resumeFrom: state.extra as GameSnapshot?)` (`navigation` depends on `domain` for the cast).
 
 ### 4.7 Settings, audio & haptics — `SettingsService` + `AudioService`
 
-`core/lib/services/settings_service.dart`, registered in `appLocator` by `setupAppScope` before the audio. Holds `settings` (`ValueNotifier<SettingsModel>`: `soundOn`, `musicOn`, `hapticsOn`, `aimLineOn`, `themeId`) and persists it via `SettingsRepository`; `setSoundOn` / `setMusicOn` / `setHapticsOn` / `setAimLineOn` / `setThemeId` are what toggles and the `ThemePicker` call (`ValueListenableBuilder<SettingsModel>` on `settings.settings`). Every new user preference is a field on `SettingsModel` + a Hive key + a setter here — not a new service.
+`core/lib/services/settings_service.dart`, registered in `appLocator` by `setupAppScope` before the audio. Holds `settings` (`ValueNotifier<SettingsModel>`: `soundOn`, `musicOn`, `hapticsOn`, `aimLineOn`, `themeId`, `localeCode`) and persists it via `SettingsRepository`; `setSoundOn` / `setMusicOn` / `setHapticsOn` / `setAimLineOn` / `setThemeId` / `setLocale` are what toggles, the `ThemePicker` and the `LanguageOverlay` call (`ValueListenableBuilder<SettingsModel>` on `settings.settings`). Every new user preference is a field on `SettingsModel` + a Hive key + a setter here — not a new service.
 
 `core/lib/services/audio_service.dart` takes the `SettingsService`, listens to it and keeps the `FlameAudio.bgm` loop in sync (plays while `soundOn && musicOn`). Game events go through the cubit (`GameCubit` takes `audio` in its constructor): `drop()`, `merge(tier)`, `gameOver(isRecord:)`; button taps arrive via `ButtonFeedback`. Assets: `core/resources/audio/` (placeholders from `script/gen_placeholder_audio.py`; keep file names when replacing). Engine code never touches audio.
 

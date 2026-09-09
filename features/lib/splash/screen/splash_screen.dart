@@ -75,7 +75,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   child: Text.rich(
                     TextSpan(
                       children: <InlineSpan>[
-                        const TextSpan(text: 'Was'),
+                        const TextSpan(text: 'Fruity '),
                         TextSpan(
                           text: 'Drop',
                           style:

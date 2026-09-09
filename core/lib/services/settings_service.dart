@@ -35,6 +35,14 @@ class SettingsService {
   Future<void> setThemeId(String id) =>
       _update(settings.value.copyWith(themeId: id));
 
+  /// Язык интерфейса; null — системный. Сам переключатель EasyLocalization
+  /// дёргает виджет (`context.setLocale` / `context.resetLocale`).
+  Future<void> setLocale(String? code) => _update(
+        code == null
+            ? settings.value.copyWith(resetLocale: true)
+            : settings.value.copyWith(localeCode: code),
+      );
+
   Future<void> _update(SettingsModel next) async {
     if (next == settings.value) return;
     settings.value = next;

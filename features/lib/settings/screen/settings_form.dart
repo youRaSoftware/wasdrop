@@ -6,15 +6,20 @@ import 'package:flutter/material.dart';
 import '../../game/engine/fruit_assets.dart';
 import '../cubit/settings_cubit.dart';
 import '../widgets/fruit_chain.dart';
+import '../widgets/language_overlay.dart';
 import '../widgets/reset_stats_overlay.dart';
 import '../widgets/settings_link_row.dart';
 import '../widgets/settings_section.dart';
 import '../widgets/settings_value_row.dart';
+import '../widgets/theme_label.dart';
 
-/// Экран настроек: секции «Звук», «Игра», «Статистика», «Фрукты»,
-/// «О приложении». Тумблеры привязаны к [SettingsService.settings],
-/// статистика и версия — в [SettingsCubit].
+/// Экран настроек: секции «Звук», «Игра» (линия прицела, обои, язык),
+/// «Статистика», «Фрукты», «О приложении». Тумблеры привязаны к
+/// [SettingsService.settings], статистика, версия и оверлеи —
+/// в [SettingsCubit].
 class SettingsForm extends StatelessWidget {
+  static const Key languageRowKey = Key('settings_language');
+
   const SettingsForm({super.key});
 
   @override
@@ -47,10 +52,12 @@ class SettingsForm extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 14),
-                      Text(
-                        'НАСТРОЙКИ',
-                        style: AppFonts.overlayTitle
-                            .copyWith(color: theme.hudText),
+                      Expanded(
+                        child: Text(
+                          context.tr(LocaleKeys.settings_title),
+                          style: AppFonts.overlayTitle
+                              .copyWith(color: theme.hudText),
+                        ),
                       ),
                     ],
                   ),
@@ -66,20 +73,23 @@ class SettingsForm extends StatelessWidget {
                           return Column(
                             children: <Widget>[
                               SettingsSection(
-                                title: 'ЗВУК',
+                                title: context.tr(LocaleKeys.settings_sound),
                                 children: <Widget>[
                                   AppToggleRow(
-                                    label: 'Звуки',
+                                    label:
+                                        context.tr(LocaleKeys.settings_sounds),
                                     value: value.soundOn,
                                     onChanged: settings.setSoundOn,
                                   ),
                                   AppToggleRow(
-                                    label: 'Музыка',
+                                    label:
+                                        context.tr(LocaleKeys.settings_music),
                                     value: value.musicOn,
                                     onChanged: settings.setMusicOn,
                                   ),
                                   AppToggleRow(
-                                    label: 'Вибрация',
+                                    label: context
+                                        .tr(LocaleKeys.settings_vibration),
                                     value: value.hapticsOn,
                                     onChanged: settings.setHapticsOn,
                                   ),
@@ -87,10 +97,11 @@ class SettingsForm extends StatelessWidget {
                               ),
                               const SizedBox(height: 20),
                               SettingsSection(
-                                title: 'ИГРА',
+                                title: context.tr(LocaleKeys.settings_game),
                                 children: <Widget>[
                                   AppToggleRow(
-                                    label: 'Линия прицела',
+                                    label:
+                                        context.tr(LocaleKeys.settings_aimLine),
                                     value: value.aimLineOn,
                                     onChanged: settings.setAimLineOn,
                                   ),
@@ -104,7 +115,8 @@ class SettingsForm extends StatelessWidget {
                                           CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
-                                          'Обои',
+                                          context.tr(
+                                              LocaleKeys.settings_wallpapers),
                                           style: AppFonts.button.copyWith(
                                             fontSize: 15,
                                             color: AppColors.textPrimary,
@@ -115,9 +127,22 @@ class SettingsForm extends StatelessWidget {
                                           themes: GameThemes.all,
                                           selectedId: value.themeId,
                                           onSelect: settings.setThemeId,
+                                          labelOf: (GameTheme t) =>
+                                              themeLabel(context, t),
                                         ),
                                       ],
                                     ),
+                                  ),
+                                  SettingsLinkRow(
+                                    key: languageRowKey,
+                                    label: context
+                                        .tr(LocaleKeys.settings_language),
+                                    value: AppLocalizationEnum.byCode(
+                                          value.localeCode,
+                                        )?.languageDisplayName ??
+                                        context.tr(
+                                            LocaleKeys.settings_languageSystem),
+                                    onPressed: cubit.askLanguage,
                                   ),
                                 ],
                               ),
@@ -127,23 +152,25 @@ class SettingsForm extends StatelessWidget {
                       ),
                       const SizedBox(height: 20),
                       SettingsSection(
-                        title: 'СТАТИСТИКА',
+                        title: context.tr(LocaleKeys.settings_stats),
                         children: <Widget>[
                           SettingsValueRow(
-                            label: 'Рекорд',
+                            label: context.tr(LocaleKeys.settings_best),
                             value: '${stats.bestScore}',
                           ),
                           SettingsValueRow(
-                            label: 'Игр сыграно',
+                            label: context.tr(LocaleKeys.settings_gamesPlayed),
                             value: '${stats.gamesPlayed}',
                           ),
                           SettingsValueRow(
-                            label: 'Слияний',
+                            label: context.tr(LocaleKeys.settings_merges),
                             value: '${stats.totalMerges}',
                           ),
                           SettingsValueRow(
-                            label: 'Самый большой фрукт',
-                            value: bestTier?.title ?? '—',
+                            label: context.tr(LocaleKeys.settings_biggestFruit),
+                            value: bestTier == null
+                                ? '—'
+                                : FruitLabel.of(context, bestTier),
                             leading: bestTier == null
                                 ? null
                                 : BallView(
@@ -154,7 +181,7 @@ class SettingsForm extends StatelessWidget {
                           ),
                           const SizedBox(height: 10),
                           SecondaryButton(
-                            label: 'Сбросить статистику',
+                            label: context.tr(LocaleKeys.settings_reset),
                             height: 46,
                             onPressed: cubit.askReset,
                           ),
@@ -162,20 +189,20 @@ class SettingsForm extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 20),
-                      const SettingsSection(
-                        title: 'ФРУКТЫ',
-                        children: <Widget>[FruitChain()],
+                      SettingsSection(
+                        title: context.tr(LocaleKeys.settings_fruits),
+                        children: const <Widget>[FruitChain()],
                       ),
                       const SizedBox(height: 20),
                       SettingsSection(
-                        title: 'О ПРИЛОЖЕНИИ',
+                        title: context.tr(LocaleKeys.settings_about),
                         children: <Widget>[
                           SettingsValueRow(
-                            label: 'Версия',
+                            label: context.tr(LocaleKeys.settings_version),
                             value: state.version.isEmpty ? '—' : state.version,
                           ),
                           SettingsLinkRow(
-                            label: 'Лицензии',
+                            label: context.tr(LocaleKeys.settings_licenses),
                             onPressed: () => showLicensePage(
                               context: context,
                               applicationName: config.appName,
@@ -194,6 +221,27 @@ class SettingsForm extends StatelessWidget {
             ResetStatsOverlay(
               onConfirm: cubit.confirmReset,
               onCancel: cubit.cancelReset,
+            ),
+          if (state.choosingLanguage)
+            ValueListenableBuilder<SettingsModel>(
+              valueListenable: settings.settings,
+              builder: (BuildContext context, SettingsModel value, Widget? _) {
+                return LanguageOverlay(
+                  selectedCode: value.localeCode,
+                  onSelect: (String? code) {
+                    settings.setLocale(code);
+                    final AppLocalizationEnum? lang =
+                        AppLocalizationEnum.byCode(code);
+                    if (lang == null) {
+                      context.resetLocale();
+                    } else {
+                      context.setLocale(lang.locale);
+                    }
+                    cubit.closeLanguage();
+                  },
+                  onCancel: cubit.closeLanguage,
+                );
+              },
             ),
         ],
       ),

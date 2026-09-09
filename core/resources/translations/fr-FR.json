@@ -1,0 +1,76 @@
+{
+  "menu": {
+    "play": "JOUER",
+    "best": "Record {score}",
+    "continue": "CONTINUER",
+    "newGame": "Nouvelle partie"
+  },
+  "hud": {
+    "best": "RECORD {score}"
+  },
+  "pause": {
+    "title": "PAUSE",
+    "resume": "Reprendre",
+    "restart": "Rejouer",
+    "menu": "Menu",
+    "sound": "Son",
+    "vibration": "Vibration",
+    "wallpapers": "FONDS D'ÉCRAN"
+  },
+  "gameOver": {
+    "title": "PARTIE TERMINÉE",
+    "newRecord": "NOUVEAU RECORD",
+    "best": "record — {score}",
+    "restart": "Rejouer",
+    "menu": "Menu",
+    "continueAd": "Continuer avec une pub"
+  },
+  "settings": {
+    "title": "RÉGLAGES",
+    "sound": "SON",
+    "sounds": "Sons",
+    "music": "Musique",
+    "vibration": "Vibration",
+    "game": "JEU",
+    "aimLine": "Ligne de visée",
+    "wallpapers": "Fonds d'écran",
+    "language": "Langue",
+    "languageTitle": "LANGUE",
+    "languageSystem": "Système",
+    "stats": "STATISTIQUES",
+    "best": "Record",
+    "gamesPlayed": "Parties jouées",
+    "merges": "Fusions",
+    "biggestFruit": "Plus gros fruit",
+    "reset": "Réinitialiser les statistiques",
+    "fruits": "FRUITS",
+    "about": "À PROPOS",
+    "version": "Version",
+    "licenses": "Licences",
+    "resetTitle": "RÉINITIALISER LES STATISTIQUES ?",
+    "resetBody": "Le record, les parties jouées et les fusions seront remis à zéro.",
+    "resetConfirm": "Réinitialiser",
+    "cancel": "Annuler"
+  },
+  "fruits": {
+    "cherry": "cerise",
+    "strawberry": "fraise",
+    "tangerine": "mandarine",
+    "lemon": "citron",
+    "apple": "pomme",
+    "kiwi": "kiwi",
+    "blueberry": "myrtille",
+    "grape": "raisin",
+    "peach": "pêche",
+    "melon": "melon",
+    "watermelon": "pastèque"
+  },
+  "themes": {
+    "cream": "Crème",
+    "sunset": "Coucher de soleil pêche",
+    "mint": "Jardin de menthe",
+    "night": "Jardin de nuit",
+    "rose": "Rose poudré",
+    "sky": "Ciel et nuages"
+  }
+}

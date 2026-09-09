@@ -1,3 +1,4 @@
+import 'package:core/core.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:domain/domain.dart';
 import 'package:flutter/material.dart';
@@ -53,7 +54,7 @@ class FruitChain extends StatelessWidget {
                   image: FruitAssets.idle(tier),
                 ),
                 const SizedBox(height: 6),
-                Text(tier.title, style: caption),
+                Text(FruitLabel.of(context, tier), style: caption),
               ],
             ),
           ],

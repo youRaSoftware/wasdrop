@@ -19,12 +19,16 @@ class SettingsModel extends Equatable {
   /// Выбранная тема-обои.
   final String themeId;
 
+  /// Код языка интерфейса (`en`, `ru`, …); null — системный язык.
+  final String? localeCode;
+
   const SettingsModel({
     required this.soundOn,
     required this.musicOn,
     required this.hapticsOn,
     required this.aimLineOn,
     this.themeId = defaultThemeId,
+    this.localeCode,
   });
 
   const SettingsModel.empty()
@@ -33,12 +37,16 @@ class SettingsModel extends Equatable {
   /// Музыка должна играть.
   bool get musicPlays => soundOn && musicOn;
 
+  /// [localeCode] сбрасывается в null (системный язык) только через
+  /// `resetLocale: true` — `localeCode: null` означает «оставить».
   SettingsModel copyWith({
     bool? soundOn,
     bool? musicOn,
     bool? hapticsOn,
     bool? aimLineOn,
     String? themeId,
+    String? localeCode,
+    bool resetLocale = false,
   }) {
     return SettingsModel(
       soundOn: soundOn ?? this.soundOn,
@@ -46,10 +54,11 @@ class SettingsModel extends Equatable {
       hapticsOn: hapticsOn ?? this.hapticsOn,
       aimLineOn: aimLineOn ?? this.aimLineOn,
       themeId: themeId ?? this.themeId,
+      localeCode: resetLocale ? null : (localeCode ?? this.localeCode),
     );
   }
 
   @override
   List<Object?> get props =>
-      <Object?>[soundOn, musicOn, hapticsOn, aimLineOn, themeId];
+      <Object?>[soundOn, musicOn, hapticsOn, aimLineOn, themeId, localeCode];
 }

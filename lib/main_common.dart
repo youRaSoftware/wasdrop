@@ -15,6 +15,7 @@ Future<void> mainCommon(Flavor flavor) async {
     <DeviceOrientation>[DeviceOrientation.portraitUp],
   );
   await setupAppScope(flavor);
+  await EasyLocalization.ensureInitialized();
 
   // Звук + хаптика на нажатия кнопок дизайн-системы.
   ButtonFeedback.onPressed = appLocator<AudioService>().tap;
@@ -28,5 +29,17 @@ Future<void> mainCommon(Flavor flavor) async {
     }
   });
 
-  runApp(const App());
+  // Язык: выбранный в настройках или системный (null). Источник правды —
+  // наш Hive (`SettingsModel.localeCode`), поэтому saveLocale выключен.
+  final String? localeCode = appLocator<SettingsService>().value.localeCode;
+  runApp(
+    EasyLocalization(
+      supportedLocales: AppLocalizationEnum.supportedLocales,
+      fallbackLocale: AppLocalizationEnum.fallbackLocale,
+      path: AppLocalizationEnum.langFolderPath,
+      startLocale: AppLocalizationEnum.byCode(localeCode)?.locale,
+      saveLocale: false,
+      child: const App(),
+    ),
+  );
 }

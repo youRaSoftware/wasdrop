@@ -1,3 +1,4 @@
+import 'package:core/core.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:flutter/material.dart';
 
@@ -21,13 +22,13 @@ class ResetStatsOverlay extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           Text(
-            'СБРОСИТЬ СТАТИСТИКУ?',
+            context.tr(LocaleKeys.settings_resetTitle),
             textAlign: TextAlign.center,
             style: AppFonts.overlayTitle.copyWith(fontSize: 18),
           ),
           const SizedBox(height: 10),
           Text(
-            'Рекорд, сыгранные игры и слияния обнулятся.',
+            context.tr(LocaleKeys.settings_resetBody),
             textAlign: TextAlign.center,
             style: AppFonts.button.copyWith(
               fontSize: 14,
@@ -35,9 +36,15 @@ class ResetStatsOverlay extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          PrimaryButton(label: 'Сбросить', onPressed: onConfirm),
+          PrimaryButton(
+            label: context.tr(LocaleKeys.settings_resetConfirm),
+            onPressed: onConfirm,
+          ),
           const SizedBox(height: 4),
-          AppTextButton(label: 'Отмена', onPressed: onCancel),
+          AppTextButton(
+            label: context.tr(LocaleKeys.settings_cancel),
+            onPressed: onCancel,
+          ),
         ],
       ),
     );

@@ -8,6 +8,7 @@ part 'game_state.dart';
 
 class GameCubit extends Cubit<GameState> {
   final StatsRepository statsRepository;
+  final GameRepository gameRepository;
   final AudioService audio;
   final Random _random = Random();
 
@@ -24,24 +25,42 @@ class GameCubit extends Cubit<GameState> {
   /// (сам `bestScore` в состоянии растёт вместе со счётом по ходу партии).
   int _startBest = 0;
 
-  GameCubit({required this.statsRepository, required this.audio})
-      : super(const GameState(
-          score: 0,
-          bestScore: 0,
-          status: GameStatus.playing,
-          current: firstDropTier,
-          next: firstDropTier,
-        )) {
-    _init();
+  /// [resumeFrom] — сохранённая партия: счёт и очередь берутся из неё, игра
+  /// открывается в паузе, шары восстанавливает движок.
+  GameCubit({
+    required this.statsRepository,
+    required this.gameRepository,
+    required this.audio,
+    GameSnapshot? resumeFrom,
+  }) : super(
+          resumeFrom == null
+              ? const GameState(
+                  score: 0,
+                  bestScore: 0,
+                  status: GameStatus.playing,
+                  current: firstDropTier,
+                  next: firstDropTier,
+                )
+              : GameState(
+                  score: resumeFrom.score,
+                  bestScore: resumeFrom.score,
+                  status: GameStatus.paused,
+                  current: resumeFrom.current,
+                  next: resumeFrom.next,
+                  merges: resumeFrom.merges,
+                  bestTier: resumeFrom.bestTier,
+                ),
+        ) {
+    _init(resume: resumeFrom != null);
   }
 
-  Future<void> _init() async {
+  Future<void> _init({required bool resume}) async {
     final GameStatsModel stats = await statsRepository.getStats();
     _startBest = stats.bestScore;
     _safeEmit(state.copyWith(
-      bestScore: stats.bestScore,
-      current: _rollTier(),
-      next: _rollTier(),
+      bestScore: max(stats.bestScore, state.score),
+      current: resume ? null : _rollTier(),
+      next: resume ? null : _rollTier(),
     ));
   }
 
@@ -96,9 +115,28 @@ class GameCubit extends Cubit<GameState> {
 
   void resume() => _safeEmit(state.copyWith(status: GameStatus.playing));
 
+  /// Сохраняет партию (счёт, очередь, шары [balls]) для «Продолжить» в
+  /// меню. Законченная или пустая партия снимок стирает.
+  Future<void> saveSnapshot(List<BallSnapshot> balls) {
+    if (state.status == GameStatus.gameOver ||
+        (balls.isEmpty && state.score == 0)) {
+      return gameRepository.clear();
+    }
+    return gameRepository.save(GameSnapshot(
+      score: state.score,
+      current: state.current,
+      next: state.next,
+      merges: state.merges,
+      bestTier: state.bestTier,
+      balls: balls,
+      savedAt: DateTime.now(),
+    ));
+  }
+
   Future<void> gameOver() async {
     final bool isRecord = state.score > _startBest;
     audio.gameOver(isRecord: isRecord);
+    unawaited(gameRepository.clear());
     final GameStatsModel stats = await _saveRun(state, countGame: true);
     _startBest = stats.bestScore;
     _safeEmit(state.copyWith(
@@ -113,6 +151,7 @@ class GameCubit extends Cubit<GameState> {
     if (!_runSaved) {
       unawaited(_saveRun(state, countGame: state.score > 0));
     }
+    unawaited(gameRepository.clear());
     _runSaved = false;
     _startBest = state.bestScore;
     _safeEmit(state.copyWith(

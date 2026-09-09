@@ -11,8 +11,11 @@ class DataDI {
   Future<void> init() async {
     await Hive.initFlutter();
 
+    // Имена боксов дублируют `StorageConstants` в core (data не может
+    // импортировать core) — держать в синхроне.
     final Box<dynamic> statsBox = await Hive.openBox<dynamic>('statsBox');
     final Box<dynamic> settingsBox = await Hive.openBox<dynamic>('settingsBox');
+    final Box<dynamic> gameBox = await Hive.openBox<dynamic>('gameBox');
 
     final GetIt locator = GetIt.instance;
 
@@ -22,12 +25,18 @@ class DataDI {
     locator.registerLazySingleton<SettingsHiveProvider>(
       () => SettingsHiveProvider(settingsBox),
     );
+    locator.registerLazySingleton<GameHiveProvider>(
+      () => GameHiveProvider(gameBox),
+    );
 
     locator.registerLazySingleton<StatsRepository>(
       () => StatsRepositoryImpl(locator<StatsHiveProvider>()),
     );
     locator.registerLazySingleton<SettingsRepository>(
       () => SettingsRepositoryImpl(locator<SettingsHiveProvider>()),
+    );
+    locator.registerLazySingleton<GameRepository>(
+      () => GameRepositoryImpl(locator<GameHiveProvider>()),
     );
   }
 }

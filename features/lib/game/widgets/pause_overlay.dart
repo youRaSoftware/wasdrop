@@ -3,6 +3,8 @@ import 'package:core_ui/core_ui.dart';
 import 'package:domain/domain.dart';
 import 'package:flutter/material.dart';
 
+import '../../settings/widgets/theme_label.dart';
+
 /// Оверлей паузы (мокап, кадр 5): Продолжить / Заново / В меню, тумблеры
 /// «Звук» и «Вибрация» и пикер тем-обоев — всё привязано к
 /// [SettingsService.settings].
@@ -28,18 +30,26 @@ class PauseOverlay extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          const Center(child: Text('ПАУЗА', style: AppFonts.overlayTitle)),
+          Center(
+            child: Text(
+              context.tr(LocaleKeys.pause_title),
+              style: AppFonts.overlayTitle,
+            ),
+          ),
           const SizedBox(height: 16),
-          PrimaryButton(label: 'Продолжить', onPressed: onResume),
+          PrimaryButton(
+            label: context.tr(LocaleKeys.pause_resume),
+            onPressed: onResume,
+          ),
           const SizedBox(height: 12),
           SecondaryButton(
-            label: 'Заново',
+            label: context.tr(LocaleKeys.pause_restart),
             icon: const AppIcon(AppIcons.restart, size: 20),
             onPressed: onRestart,
           ),
           const SizedBox(height: 4),
           AppTextButton(
-            label: 'В меню',
+            label: context.tr(LocaleKeys.pause_menu),
             icon: const AppIcon(AppIcons.menuHome, size: 20),
             onPressed: onMenu,
           ),
@@ -52,23 +62,25 @@ class PauseOverlay extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   AppToggleRow(
-                    label: 'Звук',
+                    label: context.tr(LocaleKeys.pause_sound),
                     value: value.soundOn,
                     onChanged: settings.setSoundOn,
                   ),
                   AppToggleRow(
-                    label: 'Вибрация',
+                    label: context.tr(LocaleKeys.pause_vibration),
                     value: value.hapticsOn,
                     onChanged: settings.setHapticsOn,
                   ),
                   const Divider(color: AppColors.stroke),
                   const SizedBox(height: 6),
-                  const Text('ОБОИ', style: AppFonts.best),
+                  Text(context.tr(LocaleKeys.pause_wallpapers),
+                      style: AppFonts.best),
                   const SizedBox(height: 10),
                   ThemePicker(
                     themes: GameThemes.all,
                     selectedId: value.themeId,
                     onSelect: settings.setThemeId,
+                    labelOf: (GameTheme t) => themeLabel(context, t),
                   ),
                   const SizedBox(height: 2),
                 ],

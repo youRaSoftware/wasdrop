@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:core/core.dart';
 import 'package:core_ui/core_ui.dart';
+import 'package:domain/domain.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
@@ -9,28 +12,59 @@ import '../widgets/game_hud.dart';
 import '../widgets/game_over_overlay.dart';
 import '../widgets/pause_overlay.dart';
 
+/// Игровая форма: HUD, стакан с движком, оверлеи паузы и проигрыша.
+/// Сохраняет партию (`GameCubit.saveSnapshot`) при уходе приложения в фон,
+/// раз в [autosaveInterval] и перед выходом в меню.
 class GameForm extends StatefulWidget {
-  const GameForm({super.key});
+  static const Duration autosaveInterval = Duration(seconds: 2);
+
+  final GameSnapshot? resumeFrom;
+
+  const GameForm({this.resumeFrom, super.key});
 
   @override
   State<GameForm> createState() => _GameFormState();
 }
 
-class _GameFormState extends State<GameForm> {
-  late final WasDropGame _game;
+class _GameFormState extends State<GameForm> with WidgetsBindingObserver {
+  late final GameCubit _cubit = context.read<GameCubit>();
+  late final WasDropGame _game = WasDropGame(
+    cubit: _cubit,
+    settings: appLocator<SettingsService>().settings,
+    resumeFrom: widget.resumeFrom,
+  );
+  Timer? _autosave;
 
   @override
   void initState() {
     super.initState();
-    _game = WasDropGame(
-      cubit: context.read<GameCubit>(),
-      settings: appLocator<SettingsService>().settings,
-    );
+    WidgetsBinding.instance.addObserver(this);
+    _autosave = Timer.periodic(GameForm.autosaveInterval, (_) => _save());
+  }
+
+  @override
+  void dispose() {
+    _autosave?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      _save();
+    }
+  }
+
+  void _save() {
+    if (!_game.isLoaded || _cubit.isClosed) return;
+    unawaited(_cubit.saveSnapshot(_game.captureBalls()));
   }
 
   @override
   Widget build(BuildContext context) {
-    final GameCubit cubit = context.read<GameCubit>();
     final GameState state = context.watch<GameCubit>().state;
     final GameTheme theme = AppThemeScope.of(context);
 
@@ -90,12 +124,15 @@ class _GameFormState extends State<GameForm> {
             ),
             if (state.status == GameStatus.paused)
               PauseOverlay(
-                onResume: cubit.resume,
+                onResume: _cubit.resume,
                 onRestart: () {
-                  cubit.restart();
+                  _cubit.restart();
                   _game.reset();
                 },
-                onMenu: () => context.goNamed('menu'),
+                onMenu: () {
+                  _save();
+                  context.goNamed('menu');
+                },
               ),
             if (state.status == GameStatus.gameOver)
               GameOverOverlay(
@@ -103,11 +140,11 @@ class _GameFormState extends State<GameForm> {
                 bestScore: state.bestScore,
                 isNewRecord: state.isNewRecord,
                 onRestart: () {
-                  cubit.restart();
+                  _cubit.restart();
                   _game.reset();
                 },
                 onMenu: () => context.goNamed('menu'),
-                onContinueAd: cubit.continueAfterAd,
+                onContinueAd: _cubit.continueAfterAd,
               ),
           ],
         ),

@@ -1,0 +1,76 @@
+{
+  "menu": {
+    "play": "プレイ",
+    "best": "ベスト {score}",
+    "continue": "つづける",
+    "newGame": "新しいゲーム"
+  },
+  "hud": {
+    "best": "ベスト {score}"
+  },
+  "pause": {
+    "title": "ポーズ",
+    "resume": "つづける",
+    "restart": "やり直す",
+    "menu": "メニュー",
+    "sound": "サウンド",
+    "vibration": "バイブレーション",
+    "wallpapers": "壁紙"
+  },
+  "gameOver": {
+    "title": "ゲームオーバー",
+    "newRecord": "新記録！",
+    "best": "ベスト — {score}",
+    "restart": "やり直す",
+    "menu": "メニュー",
+    "continueAd": "広告を見てつづける"
+  },
+  "settings": {
+    "title": "設定",
+    "sound": "サウンド",
+    "sounds": "効果音",
+    "music": "音楽",
+    "vibration": "バイブレーション",
+    "game": "ゲーム",
+    "aimLine": "落下ガイド",
+    "wallpapers": "壁紙",
+    "language": "言語",
+    "languageTitle": "言語",
+    "languageSystem": "システム",
+    "stats": "統計",
+    "best": "ベストスコア",
+    "gamesPlayed": "プレイ回数",
+    "merges": "合体回数",
+    "biggestFruit": "最大のフルーツ",
+    "reset": "統計をリセット",
+    "fruits": "フルーツ",
+    "about": "アプリについて",
+    "version": "バージョン",
+    "licenses": "ライセンス",
+    "resetTitle": "統計をリセットしますか？",
+    "resetBody": "ベストスコア、プレイ回数、合体回数がゼロになります。",
+    "resetConfirm": "リセット",
+    "cancel": "キャンセル"
+  },
+  "fruits": {
+    "cherry": "さくらんぼ",
+    "strawberry": "いちご",
+    "tangerine": "みかん",
+    "lemon": "レモン",
+    "apple": "りんご",
+    "kiwi": "キウイ",
+    "blueberry": "ブルーベリー",
+    "grape": "ぶどう",
+    "peach": "もも",
+    "melon": "メロン",
+    "watermelon": "スイカ"
+  },
+  "themes": {
+    "cream": "クリーム",
+    "sunset": "ピーチサンセット",
+    "mint": "ミントガーデン",
+    "night": "ナイトガーデン",
+    "rose": "パウダーローズ",
+    "sky": "空と雲"
+  }
+}

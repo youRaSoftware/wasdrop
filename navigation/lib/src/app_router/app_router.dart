@@ -1,3 +1,4 @@
+import 'package:domain/domain.dart';
 import 'package:features/features.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -39,8 +40,11 @@ class AppRouter {
       GoRoute(
         path: '/game',
         name: 'game',
-        pageBuilder: (BuildContext context, GoRouterState state) =>
-            _fade(context, state, const GameScreen()),
+        pageBuilder: (BuildContext context, GoRouterState state) => _fade(
+          context,
+          state,
+          GameScreen(resumeFrom: state.extra as GameSnapshot?),
+        ),
       ),
       GoRoute(
         path: '/settings',

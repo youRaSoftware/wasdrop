@@ -30,24 +30,9 @@ enum BallTier {
     '🍉',
   ];
 
-  static const List<String> _titles = <String>[
-    'вишня',
-    'клубника',
-    'мандарин',
-    'лимон',
-    'яблоко',
-    'киви',
-    'черника',
-    'виноград',
-    'персик',
-    'дыня',
-    'арбуз',
-  ];
-
+  /// Эмодзи — только запасная отрисовка без спрайта. Название фрукта —
+  /// локализованное, `FruitLabel.of(tier)` в core.
   String get emoji => _emoji[index];
-
-  /// Название фрукта (`name` занято у enum).
-  String get title => _titles[index];
 
   BallTier? get next =>
       this == BallTier.t11 ? null : BallTier.values[index + 1];

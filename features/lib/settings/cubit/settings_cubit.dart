@@ -37,6 +37,10 @@ class SettingsCubit extends Cubit<SettingsState> {
 
   void cancelReset() => _safeEmit(state.copyWith(confirmingReset: false));
 
+  void askLanguage() => _safeEmit(state.copyWith(choosingLanguage: true));
+
+  void closeLanguage() => _safeEmit(state.copyWith(choosingLanguage: false));
+
   Future<void> confirmReset() async {
     await statsRepository.saveStats(const GameStatsModel.empty());
     _safeEmit(state.copyWith(

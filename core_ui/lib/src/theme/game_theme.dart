@@ -7,10 +7,10 @@ enum ThemeDecor { none, stars, clouds, petals }
 
 /// Тема-обои (ТЗ `my_docs/TZ_ASSETS.md`): фон экрана, стакан, линия
 /// проигрыша и цвет текста поверх фона. Панели, кнопки и карточки остаются
-/// светлыми `surface` во всех темах.
+/// светлыми `surface` во всех темах. Название темы — локализованное, по
+/// ключу `themes.<id>` (см. `themeLabel` в features).
 class GameTheme {
   final String id;
-  final String name;
   final Color bgTop;
   final Color bgBottom;
 
@@ -31,7 +31,6 @@ class GameTheme {
 
   const GameTheme({
     required this.id,
-    required this.name,
     required this.bgTop,
     required this.bgBottom,
     required this.jarFill,
@@ -62,7 +61,6 @@ abstract final class GameThemes {
 
   static const GameTheme cream = GameTheme(
     id: defaultId,
-    name: 'Крем',
     bgTop: AppColors.bgScreen,
     bgBottom: AppColors.bgScreen,
     jarFill: AppColors.jar,
@@ -73,7 +71,6 @@ abstract final class GameThemes {
 
   static const GameTheme sunset = GameTheme(
     id: 'sunset',
-    name: 'Персиковый закат',
     bgTop: Color(0xFFFFE3C2),
     bgBottom: Color(0xFFF7B2A0),
     jarFill: Color(0xB8FFF4E6),
@@ -84,7 +81,6 @@ abstract final class GameThemes {
 
   static const GameTheme mint = GameTheme(
     id: 'mint',
-    name: 'Мятный сад',
     bgTop: Color(0xFFDFF3E4),
     bgBottom: Color(0xFFBFE6CB),
     jarFill: Color(0x9EFFFFFF),
@@ -95,7 +91,6 @@ abstract final class GameThemes {
 
   static const GameTheme night = GameTheme(
     id: 'night',
-    name: 'Ночной сад',
     bgTop: Color(0xFF1E2433),
     bgBottom: Color(0xFF141926),
     jarFill: Color(0xFF232B3D),
@@ -109,7 +104,6 @@ abstract final class GameThemes {
 
   static const GameTheme rose = GameTheme(
     id: 'rose',
-    name: 'Пудрово-розовая',
     bgTop: Color(0xFFFBE4EC),
     bgBottom: Color(0xFFF6CFDD),
     jarFill: Color(0xB3FFF5F9),
@@ -121,7 +115,6 @@ abstract final class GameThemes {
 
   static const GameTheme sky = GameTheme(
     id: 'sky',
-    name: 'Небо и облака',
     bgTop: Color(0xFFCBE8F7),
     bgBottom: Color(0xFFA9D6EF),
     jarFill: Color(0x99FFFFFF),

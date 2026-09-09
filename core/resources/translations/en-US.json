@@ -1,0 +1,76 @@
+{
+  "menu": {
+    "play": "PLAY",
+    "best": "Best {score}",
+    "continue": "CONTINUE",
+    "newGame": "New game"
+  },
+  "hud": {
+    "best": "BEST {score}"
+  },
+  "pause": {
+    "title": "PAUSE",
+    "resume": "Resume",
+    "restart": "Restart",
+    "menu": "Menu",
+    "sound": "Sound",
+    "vibration": "Vibration",
+    "wallpapers": "WALLPAPERS"
+  },
+  "gameOver": {
+    "title": "GAME OVER",
+    "newRecord": "NEW RECORD",
+    "best": "best — {score}",
+    "restart": "Restart",
+    "menu": "Menu",
+    "continueAd": "Continue with an ad"
+  },
+  "settings": {
+    "title": "SETTINGS",
+    "sound": "SOUND",
+    "sounds": "Sounds",
+    "music": "Music",
+    "vibration": "Vibration",
+    "game": "GAME",
+    "aimLine": "Aim line",
+    "wallpapers": "Wallpapers",
+    "language": "Language",
+    "languageTitle": "LANGUAGE",
+    "languageSystem": "System",
+    "stats": "STATISTICS",
+    "best": "Best score",
+    "gamesPlayed": "Games played",
+    "merges": "Merges",
+    "biggestFruit": "Biggest fruit",
+    "reset": "Reset statistics",
+    "fruits": "FRUITS",
+    "about": "ABOUT",
+    "version": "Version",
+    "licenses": "Licenses",
+    "resetTitle": "RESET STATISTICS?",
+    "resetBody": "Best score, games played and merges will be set to zero.",
+    "resetConfirm": "Reset",
+    "cancel": "Cancel"
+  },
+  "fruits": {
+    "cherry": "cherry",
+    "strawberry": "strawberry",
+    "tangerine": "tangerine",
+    "lemon": "lemon",
+    "apple": "apple",
+    "kiwi": "kiwi",
+    "blueberry": "blueberry",
+    "grape": "grape",
+    "peach": "peach",
+    "melon": "melon",
+    "watermelon": "watermelon"
+  },
+  "themes": {
+    "cream": "Cream",
+    "sunset": "Peach sunset",
+    "mint": "Mint garden",
+    "night": "Night garden",
+    "rose": "Powder rose",
+    "sky": "Sky and clouds"
+  }
+}

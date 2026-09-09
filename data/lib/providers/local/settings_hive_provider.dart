@@ -11,12 +11,16 @@ class SettingsHiveProvider {
   bool get aimLineOn => (_box.get('aimLineOn') as bool?) ?? true;
   String? get themeId => _box.get('themeId') as String?;
 
+  /// Код языка; null — системный.
+  String? get localeCode => _box.get('locale') as String?;
+
   Future<void> save({
     required bool soundOn,
     required bool musicOn,
     required bool hapticsOn,
     required bool aimLineOn,
     required String themeId,
+    required String? localeCode,
   }) async {
     await _box.putAll(<String, Object>{
       'soundOn': soundOn,
@@ -25,5 +29,10 @@ class SettingsHiveProvider {
       'aimLineOn': aimLineOn,
       'themeId': themeId,
     });
+    if (localeCode == null) {
+      await _box.delete('locale');
+    } else {
+      await _box.put('locale', localeCode);
+    }
   }
 }

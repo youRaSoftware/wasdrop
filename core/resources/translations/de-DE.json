@@ -1,0 +1,76 @@
+{
+  "menu": {
+    "play": "SPIELEN",
+    "best": "Rekord {score}",
+    "continue": "WEITERSPIELEN",
+    "newGame": "Neues Spiel"
+  },
+  "hud": {
+    "best": "REKORD {score}"
+  },
+  "pause": {
+    "title": "PAUSE",
+    "resume": "Weiter",
+    "restart": "Neustart",
+    "menu": "Menü",
+    "sound": "Ton",
+    "vibration": "Vibration",
+    "wallpapers": "HINTERGRÜNDE"
+  },
+  "gameOver": {
+    "title": "SPIEL VORBEI",
+    "newRecord": "NEUER REKORD",
+    "best": "Rekord — {score}",
+    "restart": "Neustart",
+    "menu": "Menü",
+    "continueAd": "Weiter mit Werbung"
+  },
+  "settings": {
+    "title": "EINSTELLUNGEN",
+    "sound": "TON",
+    "sounds": "Töne",
+    "music": "Musik",
+    "vibration": "Vibration",
+    "game": "SPIEL",
+    "aimLine": "Ziellinie",
+    "wallpapers": "Hintergründe",
+    "language": "Sprache",
+    "languageTitle": "SPRACHE",
+    "languageSystem": "System",
+    "stats": "STATISTIK",
+    "best": "Rekord",
+    "gamesPlayed": "Gespielte Spiele",
+    "merges": "Verschmelzungen",
+    "biggestFruit": "Größte Frucht",
+    "reset": "Statistik zurücksetzen",
+    "fruits": "FRÜCHTE",
+    "about": "ÜBER DIE APP",
+    "version": "Version",
+    "licenses": "Lizenzen",
+    "resetTitle": "STATISTIK ZURÜCKSETZEN?",
+    "resetBody": "Rekord, gespielte Spiele und Verschmelzungen werden auf null gesetzt.",
+    "resetConfirm": "Zurücksetzen",
+    "cancel": "Abbrechen"
+  },
+  "fruits": {
+    "cherry": "Kirsche",
+    "strawberry": "Erdbeere",
+    "tangerine": "Mandarine",
+    "lemon": "Zitrone",
+    "apple": "Apfel",
+    "kiwi": "Kiwi",
+    "blueberry": "Blaubeere",
+    "grape": "Traube",
+    "peach": "Pfirsich",
+    "melon": "Melone",
+    "watermelon": "Wassermelone"
+  },
+  "themes": {
+    "cream": "Creme",
+    "sunset": "Pfirsich-Sonnenuntergang",
+    "mint": "Minzgarten",
+    "night": "Nachtgarten",
+    "rose": "Puderrosa",
+    "sky": "Himmel und Wolken"
+  }
+}

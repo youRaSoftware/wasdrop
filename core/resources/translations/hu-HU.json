@@ -1,0 +1,76 @@
+{
+  "menu": {
+    "play": "JÁTÉK",
+    "best": "Rekord: {score}",
+    "continue": "FOLYTATÁS",
+    "newGame": "Új játék"
+  },
+  "hud": {
+    "best": "REKORD {score}"
+  },
+  "pause": {
+    "title": "SZÜNET",
+    "resume": "Folytatás",
+    "restart": "Újra",
+    "menu": "Menü",
+    "sound": "Hang",
+    "vibration": "Rezgés",
+    "wallpapers": "HÁTTEREK"
+  },
+  "gameOver": {
+    "title": "JÁTÉK VÉGE",
+    "newRecord": "ÚJ REKORD",
+    "best": "rekord — {score}",
+    "restart": "Újra",
+    "menu": "Menü",
+    "continueAd": "Folytatás hirdetéssel"
+  },
+  "settings": {
+    "title": "BEÁLLÍTÁSOK",
+    "sound": "HANG",
+    "sounds": "Hangok",
+    "music": "Zene",
+    "vibration": "Rezgés",
+    "game": "JÁTÉK",
+    "aimLine": "Célzóvonal",
+    "wallpapers": "Hátterek",
+    "language": "Nyelv",
+    "languageTitle": "NYELV",
+    "languageSystem": "Rendszer",
+    "stats": "STATISZTIKA",
+    "best": "Rekord",
+    "gamesPlayed": "Lejátszott játékok",
+    "merges": "Egyesítések",
+    "biggestFruit": "Legnagyobb gyümölcs",
+    "reset": "Statisztika törlése",
+    "fruits": "GYÜMÖLCSÖK",
+    "about": "AZ ALKALMAZÁSRÓL",
+    "version": "Verzió",
+    "licenses": "Licencek",
+    "resetTitle": "TÖRLÖD A STATISZTIKÁT?",
+    "resetBody": "A rekord, a lejátszott játékok és az egyesítések nullázódnak.",
+    "resetConfirm": "Törlés",
+    "cancel": "Mégse"
+  },
+  "fruits": {
+    "cherry": "cseresznye",
+    "strawberry": "eper",
+    "tangerine": "mandarin",
+    "lemon": "citrom",
+    "apple": "alma",
+    "kiwi": "kivi",
+    "blueberry": "áfonya",
+    "grape": "szőlő",
+    "peach": "barack",
+    "melon": "sárgadinnye",
+    "watermelon": "görögdinnye"
+  },
+  "themes": {
+    "cream": "Krém",
+    "sunset": "Barackos naplemente",
+    "mint": "Mentakert",
+    "night": "Éjszakai kert",
+    "rose": "Púderrózsaszín",
+    "sky": "Ég és felhők"
+  }
+}

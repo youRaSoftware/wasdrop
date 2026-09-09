@@ -17,6 +17,11 @@ class App extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: lightTheme,
       themeMode: ThemeMode.light,
+      // Язык — из EasyLocalization над App (см. lib/main_common.dart);
+      // делегаты включают Material-локализацию встроенных экранов.
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
       routeInformationParser: appRouter.router.routeInformationParser,
       routeInformationProvider: appRouter.router.routeInformationProvider,
       routerDelegate: appRouter.router.routerDelegate,

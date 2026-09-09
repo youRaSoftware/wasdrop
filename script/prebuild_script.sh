@@ -23,6 +23,12 @@ for pkg in "${PACKAGES[@]}"; do
     (cd "$pkg" && flutter pub get)
 done
 
+# Ключи переводов (LocaleKeys) из core/resources/translations/*.json.
+if grep -q "easy_localization" core/pubspec.yaml; then
+    echo "🌐 locale keys → core/lib/localization/locale_keys.g.dart"
+    (cd core && dart run easy_localization:generate -f keys -o locale_keys.g.dart -O lib/localization -S resources/translations)
+fi
+
 for pkg in "${PACKAGES[@]}"; do
     if grep -q "build_runner" "$pkg/pubspec.yaml"; then
         echo "⚙️  build_runner → $pkg"

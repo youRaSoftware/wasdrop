@@ -35,11 +35,14 @@ class WasDropGame extends Forge2DGame
   /// Настройки (линия прицела); движок читает их напрямую, без DI.
   final ValueListenable<SettingsModel> settings;
 
+  /// Сохранённая партия — шары восстанавливаются в [onLoad].
+  final GameSnapshot? resumeFrom;
+
   /// Спрайты фруктов по тирам (грузятся один раз в [onLoad]).
   @override
   final FruitSprites fruitSprites = FruitSprites();
 
-  WasDropGame({required this.cubit, required this.settings})
+  WasDropGame({required this.cubit, required this.settings, this.resumeFrom})
       : super(
           world: JarPhysicsWorld.standard(),
           lengthUnitsPerMeter: PhysicsTuning.unitsPerMeter,
@@ -87,7 +90,45 @@ class WasDropGame extends Forge2DGame
     await fruitSprites.load(images);
     camera.viewfinder.anchor = Anchor.topLeft;
     _layoutWorld(size);
+    final GameSnapshot? snapshot = resumeFrom;
+    if (snapshot != null) _restore(snapshot);
     world.add(_JarOverlay());
+  }
+
+  /// Расставляет шары сохранённой партии: X как был, Y — от дна (высота
+  /// мира зависит от экрана), угол и скорость — как в момент сохранения.
+  void _restore(GameSnapshot snapshot) {
+    for (final BallSnapshot b in snapshot.balls) {
+      final double r = AppDimens.ballRadii[b.tier.index];
+      world.add(BallBody(
+        tier: b.tier,
+        initialPosition: Vector2(
+          b.x.clamp(r, worldWidth - r),
+          math.max(r, worldHeight - b.bottomOffset),
+        ),
+        initialAngle: b.angle,
+        initialVelocity: Vector2(b.vx, b.vy),
+        onMerge: merge,
+      ));
+    }
+  }
+
+  /// Снимок шаров для сохранения партии (смонтированные, не сливающиеся).
+  List<BallSnapshot> captureBalls() {
+    return world.children
+        .whereType<BallBody>()
+        .where((BallBody b) => b.isMounted && !b.merging)
+        .map(
+          (BallBody b) => BallSnapshot(
+            tier: b.tier,
+            x: b.body.position.x,
+            bottomOffset: worldHeight - b.body.position.y,
+            angle: b.body.angle,
+            vx: b.body.linearVelocity.x,
+            vy: b.body.linearVelocity.y,
+          ),
+        )
+        .toList();
   }
 
   @override

@@ -33,6 +33,9 @@ class BallBody extends BodyComponent with ContactCallbacks {
   /// Начальная скорость (шар из слияния наследует импульс родителей).
   final Vector2 initialVelocity;
 
+  /// Начальный угол, рад (восстановление сохранённой партии).
+  final double initialAngle;
+
   final void Function(BallBody a, BallBody b) onMerge;
 
   /// Анимировать появление (шар родился из слияния).
@@ -55,6 +58,7 @@ class BallBody extends BodyComponent with ContactCallbacks {
     required this.initialPosition,
     required this.onMerge,
     Vector2? initialVelocity,
+    this.initialAngle = 0,
     this.popIn = false,
   })  : initialVelocity = initialVelocity ?? Vector2.zero(),
         super(renderBody: false);
@@ -81,6 +85,7 @@ class BallBody extends BodyComponent with ContactCallbacks {
     bodyDef = BodyDef(
       type: BodyType.dynamic,
       position: initialPosition,
+      rotation: Rot.fromAngle(initialAngle),
       linearVelocity: initialVelocity.clone(),
       userData: this,
       angularDamping: PhysicsTuning.angularDamping,

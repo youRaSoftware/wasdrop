@@ -31,7 +31,10 @@ class GameHud extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  'РЕКОРД ${state.bestScore}',
+                  context.tr(
+                    LocaleKeys.hud_best,
+                    namedArgs: <String, String>{'score': '${state.bestScore}'},
+                  ),
                   style: AppFonts.best.copyWith(color: theme.hudTextSecondary),
                 ),
               ],

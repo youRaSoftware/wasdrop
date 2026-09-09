@@ -31,9 +31,9 @@ class AppConfig {
   factory AppConfig.fromFlavor(Flavor flavor) {
     switch (flavor) {
       case Flavor.dev:
-        return const AppConfig(flavor: Flavor.dev, appName: 'WasDrop Dev');
+        return const AppConfig(flavor: Flavor.dev, appName: 'Fruity Dev');
       case Flavor.prod:
-        return const AppConfig(flavor: Flavor.prod, appName: 'WasDrop');
+        return const AppConfig(flavor: Flavor.prod, appName: 'Fruity Drop');
     }
   }
 

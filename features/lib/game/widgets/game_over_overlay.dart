@@ -1,3 +1,4 @@
+import 'package:core/core.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:flutter/material.dart';
 
@@ -30,7 +31,8 @@ class GameOverOverlay extends StatelessWidget {
         children: <Widget>[
           Center(
             child: Text(
-              'ИГРА ОКОНЧЕНА',
+              context.tr(LocaleKeys.gameOver_title),
+              textAlign: TextAlign.center,
               style: AppFonts.overlayTitle.copyWith(
                 fontSize: 17,
                 color: AppColors.textSecondary,
@@ -62,7 +64,7 @@ class GameOverOverlay extends StatelessWidget {
                     const AppIcon(AppIcons.trophy, size: 18),
                     const SizedBox(width: 6),
                     Text(
-                      'НОВЫЙ РЕКОРД',
+                      context.tr(LocaleKeys.gameOver_newRecord),
                       style: AppFonts.button.copyWith(
                         fontSize: 13,
                         color: AppColors.goldText,
@@ -76,27 +78,30 @@ class GameOverOverlay extends StatelessWidget {
             const SizedBox(height: 8),
             Center(
               child: Text(
-                'рекорд — $bestScore',
+                context.tr(
+                  LocaleKeys.gameOver_best,
+                  namedArgs: <String, String>{'score': '$bestScore'},
+                ),
                 style: AppFonts.best.copyWith(color: AppColors.textTertiary),
               ),
             ),
           ],
           const SizedBox(height: 16),
           PrimaryButton(
-            label: 'Заново',
+            label: context.tr(LocaleKeys.gameOver_restart),
             icon: const AppIcon(AppIcons.restart, size: 22),
             onPressed: onRestart,
           ),
           const SizedBox(height: 4),
           AppTextButton(
-            label: 'В меню',
+            label: context.tr(LocaleKeys.gameOver_menu),
             icon: const AppIcon(AppIcons.menuHome, size: 20),
             onPressed: onMenu,
           ),
           const Divider(color: AppColors.stroke),
           const SizedBox(height: 4),
           SecondaryButton(
-            label: 'Продолжить за рекламу',
+            label: context.tr(LocaleKeys.gameOver_continueAd),
             icon: const AppIcon(AppIcons.adPlay, size: 20),
             height: 48,
             outlined: true,

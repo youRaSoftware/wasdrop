@@ -19,6 +19,7 @@ import 'package:features/game/engine/merge_effects.dart';
 import 'package:features/game/engine/wasdrop_game.dart';
 import 'package:features/game/widgets/game_hud.dart';
 import 'package:features/menu/screen/menu_screen.dart';
+import 'package:features/settings/screen/settings_form.dart';
 import 'package:features/splash/engine/splash_game.dart';
 import 'package:features/splash/screen/splash_screen.dart';
 import 'package:flame/extensions.dart';
@@ -55,7 +56,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     // Menu.
-    expect(find.text('ИГРАТЬ'), findsOneWidget);
+    expect(find.text(LocaleKeys.menu_play.tr()), findsOneWidget);
 
     // Settings: open from ⚙️, toggle «Музыка» twice (persisted both ways),
     // the fruit chain shows all 11 tiers, back returns to the menu.
@@ -64,9 +65,8 @@ void main() {
     final String themeBefore = settings.value.themeId;
     await tester.tap(find.byKey(MenuScreen.settingsButtonKey));
     await tester.pump(const Duration(seconds: 1));
-    expect(find.text('НАСТРОЙКИ'), findsOneWidget);
-    expect(find.text('Линия прицела'), findsOneWidget);
-    expect(find.byType(BallView), findsAtLeast(BallTier.values.length));
+    expect(find.text(LocaleKeys.settings_title.tr()), findsOneWidget);
+    expect(find.text(LocaleKeys.settings_aimLine.tr()), findsOneWidget);
     // Theme picker: choosing «night» persists and reaches the theme scope.
     expect(find.byType(ThemePicker), findsOneWidget);
     await tester.tap(find.byKey(const Key('theme_night')));
@@ -77,27 +77,55 @@ void main() {
       'night',
     );
     expect(
-      AppThemeScope.of(tester.element(find.text('НАСТРОЙКИ'))).id,
+      AppThemeScope.of(
+              tester.element(find.text(LocaleKeys.settings_title.tr())))
+          .id,
       'night',
     );
+    // Language: pick 日本語 in the language overlay → UI switches and the
+    // choice persists; «System» restores the device language (null).
+    expect(settings.value.localeCode, isNull);
+    await tester.tap(find.byKey(SettingsForm.languageRowKey));
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.byKey(const Key('language_ja')));
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(settings.value.localeCode, 'ja');
+    expect(
+      (await appLocator<SettingsRepository>().getSettings()).localeCode,
+      'ja',
+    );
+    expect(find.text('設定'), findsOneWidget);
+    await tester.tap(find.byKey(SettingsForm.languageRowKey));
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.byKey(const Key('language_system')));
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(settings.value.localeCode, isNull);
+    expect(find.text(LocaleKeys.settings_title.tr()), findsOneWidget);
     await tester.tap(find.byKey(Key('theme_$themeBefore')));
     await tester.pump(const Duration(milliseconds: 400));
     expect(settings.value.themeId, themeBefore);
-    await tester.tap(find.text('Музыка'));
+    await tester.tap(find.text(LocaleKeys.settings_music.tr()));
     await tester.pump(const Duration(milliseconds: 300));
     expect(settings.value.musicOn, !musicBefore);
     expect(
       (await appLocator<SettingsRepository>().getSettings()).musicOn,
       !musicBefore,
     );
-    await tester.tap(find.text('Музыка'));
+    await tester.tap(find.text(LocaleKeys.settings_music.tr()));
     await tester.pump(const Duration(milliseconds: 300));
     expect(settings.value.musicOn, musicBefore);
+    // The fruit chain (11 sprites) lives below the fold: the ListView builds
+    // it lazily, so scroll down before looking, then scroll back.
+    await tester.drag(find.byType(ListView), const Offset(0, -700));
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.byType(BallView), findsAtLeast(BallTier.values.length));
+    await tester.drag(find.byType(ListView), const Offset(0, 700));
+    await tester.pump(const Duration(milliseconds: 600));
     await tester.tap(find.byIcon(Icons.arrow_back_rounded));
     await tester.pump(const Duration(seconds: 1));
-    expect(find.text('ИГРАТЬ'), findsOneWidget);
+    expect(find.text(LocaleKeys.menu_play.tr()), findsOneWidget);
 
-    await tester.tap(find.text('ИГРАТЬ'));
+    await tester.tap(find.byKey(MenuScreen.playButtonKey));
     await tester.pump(const Duration(seconds: 2));
 
     // Game screen with a loaded Forge2D world.
@@ -314,11 +342,49 @@ void main() {
     // Pause overlay carries the theme picker; resume continues the game.
     await tester.tap(find.byKey(GameHud.pauseButtonKey));
     await tester.pump(const Duration(milliseconds: 500));
-    expect(find.text('ПАУЗА'), findsOneWidget);
+    expect(find.text(LocaleKeys.pause_title.tr()), findsOneWidget);
     expect(find.byType(ThemePicker), findsOneWidget);
-    await tester.tap(find.text('Продолжить'));
+    await tester.tap(find.text(LocaleKeys.pause_resume.tr()));
     await tester.pump(const Duration(milliseconds: 400));
     expect(game.cubit.state.status, GameStatus.playing);
-    debugPrint('SMOKE OK: score=${game.cubit.state.score} ${describe()}');
+    debugPrint('SMOKE drops OK: score=${game.cubit.state.score} ${describe()}');
+
+    // --- Save & resume: the snapshot survives a trip to the menu; the
+    // resumed game opens paused with the same score and balls; a restart
+    // clears it.
+    final GameRepository gameRepo = appLocator<GameRepository>();
+    await game.cubit.saveSnapshot(game.captureBalls());
+    final GameSnapshot? saved = await gameRepo.load();
+    expect(saved, isNotNull);
+    expect(saved!.balls.length, balls().length);
+    expect(saved.score, game.cubit.state.score);
+    await tester.tap(find.byKey(GameHud.pauseButtonKey));
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(find.text(LocaleKeys.pause_menu.tr()));
+    await tester.pump(const Duration(milliseconds: 1500));
+    expect(find.text(LocaleKeys.menu_continue.tr()), findsOneWidget);
+    expect(find.byKey(MenuScreen.newGameButtonKey), findsOneWidget);
+    await tester.tap(find.byKey(MenuScreen.playButtonKey));
+    await tester.pump(const Duration(seconds: 2));
+    final WasDropGame resumed = tester
+        .widget<GameWidget<WasDropGame>>(find.byType(GameWidget<WasDropGame>))
+        .game!;
+    await tester.pump(const Duration(seconds: 1));
+    expect(resumed.cubit.state.status, GameStatus.paused);
+    expect(resumed.cubit.state.score, saved.score);
+    expect(
+      resumed.world.children.whereType<BallBody>().length,
+      saved.balls.length,
+    );
+    debugPrint(
+        'SMOKE resumed: score=${saved.score} balls=${saved.balls.length}');
+    await tester.tap(find.text(LocaleKeys.pause_resume.tr()));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(resumed.cubit.state.status, GameStatus.playing);
+    resumed.cubit.restart();
+    resumed.reset();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(await gameRepo.load(), isNull);
+    debugPrint('SMOKE OK: resume flow finished');
   });
 }

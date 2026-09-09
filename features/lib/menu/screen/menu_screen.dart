@@ -8,6 +8,8 @@ import '../../game/engine/fruit_assets.dart';
 /// Меню (мокап, кадр 1): лого, плашка рекорда, ИГРАТЬ, звук / настройки и
 /// декоративные шары по краям. Элементы появляются каскадом.
 class MenuScreen extends StatefulWidget {
+  static const Key playButtonKey = Key('menu_play');
+  static const Key newGameButtonKey = Key('menu_new_game');
   static const Key settingsButtonKey = Key('menu_settings');
   static const Key soundButtonKey = Key('menu_sound');
 
@@ -26,6 +28,9 @@ class _MenuScreenState extends State<MenuScreen>
 
   int _bestScore = 0;
 
+  /// Сохранённая партия — если есть, ИГРАТЬ становится «Продолжить».
+  GameSnapshot? _savedGame;
+
   @override
   void initState() {
     super.initState();
@@ -40,7 +45,18 @@ class _MenuScreenState extends State<MenuScreen>
 
   Future<void> _loadStats() async {
     final GameStatsModel stats = await appLocator<StatsRepository>().getStats();
-    if (mounted) setState(() => _bestScore = stats.bestScore);
+    final GameSnapshot? saved = await appLocator<GameRepository>().load();
+    if (!mounted) return;
+    setState(() {
+      _bestScore = stats.bestScore;
+      _savedGame = saved;
+    });
+  }
+
+  Future<void> _startNewGame() async {
+    await appLocator<GameRepository>().clear();
+    if (!mounted) return;
+    context.goNamed('game');
   }
 
   Animation<double> _step(double from, double to) {
@@ -102,7 +118,7 @@ class _MenuScreenState extends State<MenuScreen>
                   child: Text.rich(
                     TextSpan(
                       children: <InlineSpan>[
-                        const TextSpan(text: 'Was'),
+                        const TextSpan(text: 'Fruity '),
                         TextSpan(
                           text: 'Drop',
                           style:
@@ -132,7 +148,10 @@ class _MenuScreenState extends State<MenuScreen>
                         const AppIcon(AppIcons.trophy, size: 24),
                         const SizedBox(width: 8),
                         Text(
-                          'Рекорд $_bestScore',
+                          context.tr(
+                            LocaleKeys.menu_best,
+                            namedArgs: <String, String>{'score': '$_bestScore'},
+                          ),
                           style: AppFonts.button.copyWith(
                             fontSize: 17,
                             color: AppColors.secondaryText,
@@ -150,13 +169,33 @@ class _MenuScreenState extends State<MenuScreen>
                   animation: _step(0.35, 0.9),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 60),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: PrimaryButton(
-                        label: 'ИГРАТЬ',
-                        height: 64,
-                        onPressed: () => context.goNamed('game'),
-                      ),
+                    child: Column(
+                      children: <Widget>[
+                        SizedBox(
+                          width: double.infinity,
+                          child: PrimaryButton(
+                            key: MenuScreen.playButtonKey,
+                            label: context.tr(
+                              _savedGame == null
+                                  ? LocaleKeys.menu_play
+                                  : LocaleKeys.menu_continue,
+                            ),
+                            height: 64,
+                            onPressed: () => context.goNamed(
+                              'game',
+                              extra: _savedGame,
+                            ),
+                          ),
+                        ),
+                        if (_savedGame != null) ...<Widget>[
+                          const SizedBox(height: 6),
+                          AppTextButton(
+                            key: MenuScreen.newGameButtonKey,
+                            label: context.tr(LocaleKeys.menu_newGame),
+                            onPressed: _startNewGame,
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ),
