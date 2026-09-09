@@ -32,6 +32,7 @@ On release, rename `[Unreleased]` to `[X.Y.Z] — YYYY-MM-DD` and start a fresh 
 - Изменено: новые шрифты — Rubik для интерфейса и Unbounded для лого и заголовков; вместо эмодзи нарисованные иконки (кубок, звук, настройки, пауза, повтор, домой, реклама)
 - Новое: заставка при запуске — фрукты сыплются с неба и складываются в кучу, лого проявляется поверх; тап пропускает
 - Изменено: новая иконка приложения — арбуз с клубникой, мандарином и персиком на мятном фоне (iOS, Android, сторы)
+- Новое: нативный экран запуска — вместо белого экрана до старта игры показывается иконка на кремовом фоне (iOS и Android)
 - Новое: партия сохраняется — если закрыть приложение посреди игры, в меню появится «Продолжить» (и «Новая игра»); восстановленная партия открывается в паузе
 - Изменено: игра называется Fruity Drop (в сторах — Fruity Drop: Merge Puzzle), под иконкой «Fruity Drop»
 - Новое: интерфейс на шести языках — русский, английский, немецкий, французский, венгерский, японский; по умолчанию язык устройства, выбор в настройках («Игра → Язык»)
@@ -62,6 +63,7 @@ On release, rename `[Unreleased]` to `[X.Y.Z] — YYYY-MM-DD` and start a fresh 
 - Changed: new typefaces — Rubik for the interface and Unbounded for the logo and titles; drawn icons (trophy, sound, settings, pause, restart, home, ad) replace emoji
 - New: launch splash — fruits rain down and pile up while the logo fades in; tap to skip
 - Changed: new app icon — a watermelon with a strawberry, tangerine and peach on a mint background (iOS, Android, stores)
+- New: native launch screen — the app icon on a cream background replaces the white screen shown before the game starts (iOS and Android)
 - New: the game is saved — close the app mid-run and the menu offers Continue (and New game); a resumed run opens paused
 - Changed: the game is now called Fruity Drop (Fruity Drop: Merge Puzzle in the stores), «Fruity Drop» under the icon
 - New: the interface speaks six languages — Russian, English, German, French, Hungarian, Japanese; follows the device language by default, switchable in Settings → Game → Language

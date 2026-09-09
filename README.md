@@ -26,6 +26,7 @@ flutter run --flavor prod --dart-define=environment=prod
 | `script/run_test_script.sh` | unit-тесты по пакетам, общий `coverage/lcov.info` |
 | `script/gen_placeholder_audio.py` | перегенерировать плейсхолдер-звуки и музыкальный луп в `core/resources/audio/` |
 | `script/gen_dev_icons.sh` | перегенерировать dev-иконки с плашкой DEV из `store/` (iOS + Android) |
+| `script/gen_launch_images.sh` | перегенерировать картинки нативного экрана запуска (скруглённая иконка) из `store/` |
 | `flutter test integration_test -d <deviceId> --flavor dev --dart-define=environment=dev` | смоук-тест игры на симуляторе/устройстве |
 
 Подпись Android — `android/key.properties` (шаблон `android/key.properties.example`). Процесс релиза — `.claude/my_docs/RELEASE_PROCESS.md`.
