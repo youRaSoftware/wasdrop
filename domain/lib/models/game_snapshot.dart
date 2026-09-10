@@ -35,6 +35,11 @@ class GameSnapshot extends Equatable {
   /// Слияний за партию и самый крупный фрукт партии (для статистики).
   final int merges;
   final BallTier? bestTier;
+
+  /// Оставшиеся заряды бонусов «Встряхнуть», «Бомбочка» и «Увеличить».
+  final int shakes;
+  final int bombs;
+  final int upgrades;
   final List<BallSnapshot> balls;
   final DateTime savedAt;
 
@@ -44,11 +49,24 @@ class GameSnapshot extends Equatable {
     required this.next,
     required this.merges,
     required this.bestTier,
+    required this.shakes,
+    required this.bombs,
+    required this.upgrades,
     required this.balls,
     required this.savedAt,
   });
 
   @override
-  List<Object?> get props =>
-      <Object?>[score, current, next, merges, bestTier, balls, savedAt];
+  List<Object?> get props => <Object?>[
+        score,
+        current,
+        next,
+        merges,
+        bestTier,
+        shakes,
+        bombs,
+        upgrades,
+        balls,
+        savedAt,
+      ];
 }

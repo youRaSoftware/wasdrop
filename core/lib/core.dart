@@ -16,3 +16,4 @@ export 'localization/fruit_label.dart';
 export 'localization/locale_keys.g.dart';
 export 'services/audio_service.dart';
 export 'services/settings_service.dart';
+export 'services/shake_detector.dart';

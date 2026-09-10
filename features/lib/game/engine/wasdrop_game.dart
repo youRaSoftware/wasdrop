@@ -11,7 +11,9 @@ import 'package:flutter/material.dart';
 
 import '../cubit/game_cubit.dart';
 import 'ball_body.dart';
+import 'bonus_effects.dart';
 import 'fruit_sprites.dart';
+import 'fx_sprites.dart';
 import 'jar_physics_world.dart';
 import 'jar_walls.dart';
 import 'merge_effects.dart';
@@ -24,6 +26,10 @@ import 'physics_tuning.dart';
 /// Управление как в suika: текущий шар висит вверху и едет за пальцем
 /// (драг), отпускание или тап — бросок; следующий появляется через
 /// кулдаун 450 мс.
+///
+/// Бонусы: [shake] подбрасывает все фрукты (заряды считает кубит); при
+/// взведённой бомбочке или увеличении ([pickMode]) тап по фрукту — взрыв
+/// или рост на уровень ([pickAt]), а тап мимо — отмена.
 ///
 /// Все числа физики (масштаб Box2D, гравитация, материалы, число шагов) —
 /// в [PhysicsTuning]; здесь только правила игры.
@@ -42,6 +48,11 @@ class WasDropGame extends Forge2DGame
   @override
   final FruitSprites fruitSprites = FruitSprites();
 
+  /// Спрайты бонусов: бомбочка и кадры взрыва.
+  final FxSprites fxSprites = FxSprites();
+
+  final math.Random _random = math.Random();
+
   WasDropGame({required this.cubit, required this.settings, this.resumeFrom})
       : super(
           world: JarPhysicsWorld.standard(),
@@ -52,6 +63,10 @@ class WasDropGame extends Forge2DGame
   static const double deadlineY = AppDimens.deadlineTopOffset;
   static const double spawnY = AppDimens.ballSpawnY;
   static const Duration dropCooldown = Duration(milliseconds: 450);
+
+  /// Насколько боковые стенки продолжаются выше верха стакана: подброшенный
+  /// встряской фрукт не должен перелететь через них.
+  static const double wallTopMargin = 300;
 
   /// Высота мира в мировых единицах — пересчитывается от размера виджета.
   double worldHeight = worldWidth * 440 / 310;
@@ -68,6 +83,17 @@ class WasDropGame extends Forge2DGame
 
   /// Сколько шагов Box2D сделал последний кадр (для тестов).
   int get lastPhysicsSteps => (world as JarPhysicsWorld).lastSteps;
+
+  /// Кулдаун встряски ещё не истёк.
+  bool get canShake => _shakeCooldownLeft <= 0;
+  double _shakeCooldownLeft = 0;
+
+  /// Осталось дрожать камере (после встряски).
+  double _cameraShakeLeft = 0;
+
+  /// Режим выбора фрукта: взведена бомбочка или увеличение.
+  bool get pickMode =>
+      cubit.state.armed == Bonus.bomb || cubit.state.armed == Bonus.upgrade;
 
   Body? _walls;
 
@@ -88,6 +114,7 @@ class WasDropGame extends Forge2DGame
     );
     world.subStepCount = PhysicsTuning.subSteps;
     await fruitSprites.load(images);
+    await fxSprites.load(images);
     camera.viewfinder.anchor = Anchor.topLeft;
     _layoutWorld(size);
     final GameSnapshot? snapshot = resumeFrom;
@@ -152,33 +179,45 @@ class WasDropGame extends Forge2DGame
       width: worldWidth,
       height: worldHeight,
       chamfer: AppDimens.jarInnerCornerRadius * worldWidth / canvasSize.x,
+      topMargin: wallTopMargin,
     );
   }
 
   // --- Ввод -----------------------------------------------------------------
 
+  // В режиме выбора любое касание — выбор фрукта (тап и начало драга
+  // взаимоисключающи: жест-арена отдаёт касание одному из них).
+
   @override
   void onDragStart(DragStartEvent event) {
-    _aim(event.canvasPosition);
+    if (pickMode) {
+      pickAt(screenToWorld(event.canvasPosition));
+    } else {
+      _aim(event.canvasPosition);
+    }
     super.onDragStart(event);
   }
 
   @override
   void onDragUpdate(DragUpdateEvent event) {
-    _aim(event.canvasEndPosition);
+    if (!pickMode) _aim(event.canvasEndPosition);
     super.onDragUpdate(event);
   }
 
   @override
   void onDragEnd(DragEndEvent event) {
-    _drop();
+    if (!pickMode) _drop();
     super.onDragEnd(event);
   }
 
   @override
   void onTapUp(TapUpEvent event) {
-    _aim(event.canvasPosition);
-    _drop();
+    if (pickMode) {
+      pickAt(screenToWorld(event.canvasPosition));
+    } else {
+      _aim(event.canvasPosition);
+      _drop();
+    }
     super.onTapUp(event);
   }
 
@@ -195,7 +234,7 @@ class WasDropGame extends Forge2DGame
   }
 
   void _drop() {
-    if (!canDrop || paused || !isLoaded) return;
+    if (!canDrop || paused || !isLoaded || pickMode) return;
     if (cubit.state.status != GameStatus.playing) return;
     canDrop = false;
     final BallTier tier = cubit.state.current;
@@ -239,28 +278,7 @@ class WasDropGame extends Forge2DGame
     cubit.onMerge(a.tier);
     a.removeFromParent();
     b.removeFromParent();
-    if (next != null) {
-      // Новый шар крупнее слившихся: если они лежали на дне или у стенки,
-      // его круг в точке контакта уже пересекает пол/стенку, и Box2D
-      // выталкивает его наружу заметные 100–200 мс («проваливается»).
-      // Держим круг внутри стакана; соседей он расталкивает сам. Если
-      // зажали — гасим составляющую скорости «в стену».
-      final double r = AppDimens.ballRadii[next.index];
-      // У вытянутых фруктов габарит больше номинального радиуса.
-      final double e = fruitSprites[next]?.extent(r) ?? r;
-      final double x = mid.x.clamp(e, worldWidth - e);
-      final double y = math.min(mid.y, worldHeight - e);
-      if (x > mid.x) velocity.x = math.max(velocity.x, 0);
-      if (x < mid.x) velocity.x = math.min(velocity.x, 0);
-      if (y < mid.y) velocity.y = math.min(velocity.y, 0);
-      world.add(BallBody(
-        tier: next,
-        initialPosition: Vector2(x, y),
-        initialVelocity: velocity,
-        onMerge: merge,
-        popIn: true,
-      ));
-    }
+    if (next != null) _spawnInside(next, mid, velocity);
     // Вспышка + всплывающее «+N» (мокап, кадр 4). Для джекпота t11+t11
     // шара нет — эффект рисуем по размеру исчезнувших шаров.
     final BallTier effectTier = next ?? a.tier;
@@ -278,9 +296,180 @@ class WasDropGame extends Forge2DGame
     ]);
   }
 
+  /// Рождает шар тира [tier] с «попом» около [at]. Шар крупнее того, что
+  /// было на этом месте: если оно лежало на дне или у стенки, его круг уже
+  /// пересекает пол/стенку, и Box2D выталкивал бы его наружу заметные
+  /// 100–200 мс («проваливается»). Держим габарит внутри стакана (соседей
+  /// он расталкивает сам); если зажали — гасим составляющую [velocity]
+  /// «в стену».
+  void _spawnInside(
+    BallTier tier,
+    Vector2 at,
+    Vector2 velocity, {
+    double angle = 0,
+  }) {
+    final double r = AppDimens.ballRadii[tier.index];
+    // У вытянутых фруктов габарит больше номинального радиуса.
+    final double e = fruitSprites[tier]?.extent(r) ?? r;
+    final double x = at.x.clamp(e, worldWidth - e);
+    final double y = math.min(at.y, worldHeight - e);
+    if (x > at.x) velocity.x = math.max(velocity.x, 0);
+    if (x < at.x) velocity.x = math.min(velocity.x, 0);
+    if (y < at.y) velocity.y = math.min(velocity.y, 0);
+    world.add(BallBody(
+      tier: tier,
+      initialPosition: Vector2(x, y),
+      initialVelocity: velocity,
+      initialAngle: angle,
+      onMerge: merge,
+      popIn: true,
+    ));
+  }
+
+  // --- Бонусы ----------------------------------------------------------------
+
+  /// Живые фрукты: смонтированы, не сливаются и не взрываются.
+  Iterable<BallBody> _liveBalls() => world.children.whereType<BallBody>().where(
+        (BallBody b) => b.isMounted && !b.isRemoving && !b.merging,
+      );
+
+  /// Бонус «Встряхнуть»: каждый фрукт получает прирост скорости вверх
+  /// (глубже — сильнее: у линии проигрыша лететь некуда) и случайный вбок,
+  /// случайное вращение и «ойкает»; стакан вздрагивает. Заряды и статус
+  /// партии проверяет кубит, здесь — только кулдаун.
+  void shake() {
+    if (!isLoaded || !canShake) return;
+    _shakeCooldownLeft = PhysicsTuning.shakeCooldown;
+    _cameraShakeLeft = PhysicsTuning.shakeCameraDuration;
+    final double span = math.max(1, worldHeight - deadlineY);
+    for (final BallBody b in _liveBalls()) {
+      final double depth =
+          ((b.body.position.y - deadlineY) / span).clamp(0.0, 1.0);
+      final double lift = PhysicsTuning.shakeTopFactor +
+          (1 - PhysicsTuning.shakeTopFactor) * depth;
+      // Своя доля подскока у каждого фрукта — куча рассыпается, а не
+      // подпрыгивает строем.
+      final double share = PhysicsTuning.shakeLiftJitter +
+          (1 - PhysicsTuning.shakeLiftJitter) * _random.nextDouble();
+      final Vector2 dv = Vector2(
+        _signedRandom() * PhysicsTuning.shakeSideSpeed,
+        -PhysicsTuning.shakeLiftSpeed * lift * share,
+      );
+      b.body.applyLinearImpulse(dv * b.body.mass);
+      b.body.applyAngularImpulse(
+        _signedRandom() * PhysicsTuning.shakeSpin * b.body.rotationalInertia,
+      );
+      b.showSquishFace();
+    }
+  }
+
+  double _signedRandom() => _random.nextDouble() * 2 - 1;
+
+  /// Режим выбора: тап в мировой точке [point] по фрукту — взрыв или рост
+  /// (что взведено); тап мимо снимает режим.
+  void pickAt(Vector2 point) {
+    if (!pickMode) return;
+    BallBody? hit;
+    double best = double.infinity;
+    for (final BallBody b in _liveBalls()) {
+      final double d = b.body.position.distanceTo(point);
+      final double reach =
+          (fruitSprites[b.tier]?.extent(b.radius) ?? b.radius) + 6;
+      if (d <= reach && d < best) {
+        best = d;
+        hit = b;
+      }
+    }
+    if (hit == null) {
+      cubit.disarmBonus();
+      return;
+    }
+    if (cubit.state.armed == Bonus.bomb) {
+      explode(hit);
+    } else {
+      upgrade(hit);
+    }
+  }
+
+  /// Бустер «Увеличить»: фрукт [b] на месте становится следующим по цепочке
+  /// (с «попом» и вспышкой слияния, без очков); арбузу расти некуда — он
+  /// только «ойкает», режим остаётся. Публичный для тестов.
+  void upgrade(BallBody b) {
+    if (!b.isMounted || b.isRemoving || b.merging) return;
+    final BallTier? next = b.tier.next;
+    if (next == null) {
+      b.showSquishFace();
+      return;
+    }
+    cubit.useUpgrade(next);
+    b.merging = true;
+    final Vector2 at = b.body.position.clone();
+    final Vector2 velocity = b.body.linearVelocity.clone();
+    final double angle = b.body.angle;
+    b.removeFromParent();
+    _spawnInside(next, at, velocity, angle: angle);
+    world.add(MergeFlash(
+      center: at,
+      radius: AppDimens.ballRadii[next.index],
+      color: AppColors.tiers[next.index],
+    ));
+  }
+
+  /// Взрыв фрукта [b]: заряд списывается сразу, фрукт помечен исчезающим
+  /// (не сливается, не попадает в снимок), на нём тлеет бомбочка, после
+  /// фитиля — кадры взрыва и толчок соседей. Публичный для тестов.
+  void explode(BallBody b) {
+    if (!b.isMounted || b.isRemoving || b.merging) return;
+    cubit.useBomb();
+    b.merging = true;
+    b.showSquishFace();
+    world.add(BombFuse(
+      target: b,
+      sprite: fxSprites.bomb,
+      onExplode: () => _detonate(b),
+    ));
+  }
+
+  void _detonate(BallBody b) {
+    if (!b.isMounted || b.isRemoving) return;
+    final Vector2 center = b.body.position.clone();
+    final double r = b.radius;
+    b.removeFromParent();
+    final double reach = PhysicsTuning.bombPushRadius * r;
+    for (final BallBody other in _liveBalls()) {
+      final Vector2 delta = other.body.position - center;
+      final double d = delta.length;
+      if (d <= 0 || d > reach + other.radius) continue;
+      final double falloff = (1 - (d - r) / reach).clamp(0.2, 1.0);
+      final Vector2 dv = delta / d * (PhysicsTuning.bombPushSpeed * falloff);
+      other.body.applyLinearImpulse(dv * other.body.mass);
+      other.showSquishFace();
+    }
+    world.add(BoomEffect(center: center, radius: r, frames: fxSprites.boom));
+  }
+
+  void _updateShake(double dt) {
+    if (_shakeCooldownLeft > 0) _shakeCooldownLeft -= dt;
+    if (_cameraShakeLeft <= 0) return;
+    _cameraShakeLeft = math.max(0, _cameraShakeLeft - dt);
+    if (_cameraShakeLeft == 0) {
+      camera.viewfinder.position = Vector2.zero();
+      return;
+    }
+    // Затухающая дрожь: амплитуда пропорциональна остатку времени.
+    final double a = PhysicsTuning.shakeCameraAmplitude *
+        _cameraShakeLeft /
+        PhysicsTuning.shakeCameraDuration;
+    camera.viewfinder.position = Vector2(
+      a * math.sin(_cameraShakeLeft * 90),
+      a * 0.5 * math.cos(_cameraShakeLeft * 70),
+    );
+  }
+
   @override
   void update(double dt) {
     super.update(dt);
+    _updateShake(dt);
     if (paused || cubit.state.status != GameStatus.playing) return;
     // Проигрыш: покоящийся шар выше линии дольше 1.5 с.
     final bool overLine = world.children.whereType<BallBody>().any(
@@ -297,11 +486,16 @@ class WasDropGame extends Forge2DGame
   }
 
   void reset() {
-    world.children.whereType<BallBody>().toList().forEach(
-          (BallBody b) => b.removeFromParent(),
-        );
+    world.children
+        .where(
+            (Component c) => c is BallBody || c is BombFuse || c is BoomEffect)
+        .toList()
+        .forEach((Component c) => c.removeFromParent());
     overLineTime = 0;
     canDrop = true;
+    _shakeCooldownLeft = 0;
+    _cameraShakeLeft = 0;
+    camera.viewfinder.position = Vector2.zero();
   }
 
   @override
@@ -323,6 +517,15 @@ class _JarOverlay extends Component with HasGameReference<WasDropGame> {
     final WasDropGame g = game;
     final GameTheme theme = GameThemes.byId(g.settings.value.themeId);
 
+    // Режим выбора фрукта: стакан приглушён, подвешенный фрукт и прицел
+    // скрыты (бомбочка и взрыв рисуются выше — priority 20+).
+    if (g.pickMode) {
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, WasDropGame.worldWidth, g.worldHeight),
+        Paint()..color = AppColors.scrim.withValues(alpha: 0.18),
+      );
+    }
+
     final Paint deadlinePaint = Paint()
       ..color = g.overLineTime > 0 ? theme.deadlineAlert : theme.deadline
       ..strokeWidth = 1.5
@@ -336,7 +539,8 @@ class _JarOverlay extends Component with HasGameReference<WasDropGame> {
       paint: deadlinePaint,
     );
 
-    if (!g.canDrop || g.cubit.state.status != GameStatus.playing) return;
+    if (!g.canDrop || g.pickMode) return;
+    if (g.cubit.state.status != GameStatus.playing) return;
 
     final BallTier tier = g.cubit.state.current;
     final double r = AppDimens.ballRadii[tier.index];

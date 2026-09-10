@@ -17,6 +17,8 @@ import 'package:features/game/cubit/game_cubit.dart';
 import 'package:features/game/engine/ball_body.dart';
 import 'package:features/game/engine/merge_effects.dart';
 import 'package:features/game/engine/wasdrop_game.dart';
+import 'package:features/game/screen/game_form.dart';
+import 'package:features/game/widgets/bonus_bar.dart';
 import 'package:features/game/widgets/game_hud.dart';
 import 'package:features/menu/screen/menu_screen.dart';
 import 'package:features/settings/screen/settings_form.dart';
@@ -42,6 +44,10 @@ void main() {
     // Release the background music player, otherwise its frame callback
     // trips the binding's leak check at the end of the test.
     addTearDown(appLocator<AudioService>().dispose);
+    // A previous (interrupted) run may have left a saved game or a language:
+    // start from a clean slate so the menu shows «Play».
+    await appLocator<GameRepository>().clear();
+    await appLocator<SettingsService>().setLocale(null);
     // No pumpAndSettle anywhere: the Flame game loop schedules frames
     // continuously, so pumpAndSettle would never return.
     await tester.pump(const Duration(milliseconds: 1500));
@@ -349,6 +355,88 @@ void main() {
     expect(game.cubit.state.status, GameStatus.playing);
     debugPrint('SMOKE drops OK: score=${game.cubit.state.score} ${describe()}');
 
+    // --- Bonuses: shake tosses every ball (3 charges); the bomb removes the
+    // tapped ball (1 charge). Never read a removed ball's body afterwards.
+    String live() => balls()
+        .map((BallBody b) => 't${b.tier.number}@(${b.body.position.x.round()},'
+            '${b.body.position.y.round()})')
+        .join(' ');
+    expect(game.cubit.state.shakes, GameRules.shakesPerGame);
+    expect(game.cubit.state.bombs, GameRules.bombsPerGame);
+    await tester.tap(find.byKey(BonusBar.shakeKey));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(game.cubit.state.armed, Bonus.shake);
+    expect(find.byKey(GameForm.bonusHintKey), findsOneWidget);
+    ShakeDetector.simulate();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(game.cubit.state.armed, isNull);
+    expect(game.cubit.state.shakes, GameRules.shakesPerGame - 1);
+    expect(
+      balls().any((BallBody b) => b.body.linearVelocity.length > 100),
+      isTrue,
+      reason: 'shake should toss the balls',
+    );
+    await tester.pump(const Duration(seconds: 2));
+    for (final BallBody b in balls()) {
+      expect(b.body.position.x, inInclusiveRange(0, WasDropGame.worldWidth));
+      expect(b.body.position.y, lessThanOrEqualTo(floor));
+    }
+    debugPrint('SMOKE shake OK: ${live()}');
+
+    // Bomb: arm it, tap a resting ball on screen, it blows up; with no
+    // charges left the button is disabled.
+    final int countBefore = balls().length;
+    final BallBody victim = balls().first;
+    await tester.tap(find.byKey(BonusBar.bombKey));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(game.cubit.state.armed, Bonus.bomb);
+    expect(find.byKey(GameForm.bonusHintKey), findsOneWidget);
+    final Rect canvas = tester.getRect(gameFinder);
+    final double scale = canvas.width / WasDropGame.worldWidth;
+    await tester.tapAt(
+      canvas.topLeft +
+          Offset(
+              victim.body.position.x * scale, victim.body.position.y * scale),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(game.cubit.state.armed, isNull);
+    expect(game.cubit.state.bombs, GameRules.bombsPerGame - 1);
+    expect(find.byKey(GameForm.bonusHintKey), findsNothing);
+    await tester.pump(const Duration(milliseconds: 700));
+    expect(victim.isMounted, isFalse);
+    expect(balls().length, countBefore - 1);
+    await tester.tap(find.byKey(BonusBar.bombKey));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(game.cubit.state.armed, isNull);
+    debugPrint('SMOKE bomb OK: ${live()}');
+
+    // Upgrade: arm it, tap a ball → it is replaced in place by the next tier
+    // (which may immediately merge with an equal neighbour).
+    final BallBody target =
+        balls().firstWhere((BallBody b) => b.tier.next != null);
+    final BallTier grown = target.tier.next!;
+    final int countBeforeUpgrade = balls().length;
+    await tester.tap(find.byKey(BonusBar.upgradeKey));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(game.cubit.state.armed, Bonus.upgrade);
+    await tester.tapAt(
+      canvas.topLeft +
+          Offset(
+              target.body.position.x * scale, target.body.position.y * scale),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(game.cubit.state.armed, isNull);
+    expect(game.cubit.state.upgrades, GameRules.upgradesPerGame - 1);
+    expect(target.isMounted, isFalse);
+    expect(balls().length, lessThanOrEqualTo(countBeforeUpgrade));
+    expect(
+      balls().any((BallBody b) => b.tier.index >= grown.index),
+      isTrue,
+      reason: 'the tapped ball should have grown to t${grown.number}',
+    );
+    await tester.pump(const Duration(seconds: 1));
+    debugPrint('SMOKE upgrade OK: ${live()}');
+
     // --- Save & resume: the snapshot survives a trip to the menu; the
     // resumed game opens paused with the same score and balls; a restart
     // clears it.
@@ -372,6 +460,11 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     expect(resumed.cubit.state.status, GameStatus.paused);
     expect(resumed.cubit.state.score, saved.score);
+    expect(saved.shakes, GameRules.shakesPerGame - 1);
+    expect(saved.bombs, GameRules.bombsPerGame - 1);
+    expect(saved.upgrades, GameRules.upgradesPerGame - 1);
+    expect(resumed.cubit.state.shakes, saved.shakes);
+    expect(resumed.cubit.state.bombs, saved.bombs);
     expect(
       resumed.world.children.whereType<BallBody>().length,
       saved.balls.length,

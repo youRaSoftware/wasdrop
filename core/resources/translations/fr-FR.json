@@ -72,5 +72,10 @@
     "night": "Jardin de nuit",
     "rose": "Rose poudré",
     "sky": "Ciel et nuages"
+  },
+  "bonus": {
+    "shakeHint": "Secouez le téléphone pour mélanger les fruits",
+    "pickFruit": "Touchez un fruit pour le faire exploser",
+    "pickUpgrade": "Touchez un fruit pour le faire grandir d'un niveau"
   }
 }

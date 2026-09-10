@@ -72,5 +72,10 @@
     "night": "Éjszakai kert",
     "rose": "Púderrózsaszín",
     "sky": "Ég és felhők"
+  },
+  "bonus": {
+    "shakeHint": "Rázd meg a telefont a gyümölcsök összekeveréséhez",
+    "pickFruit": "Koppints egy gyümölcsre, hogy felrobbantsd",
+    "pickUpgrade": "Koppints egy gyümölcsre, hogy egy szinttel nagyobb legyen"
   }
 }

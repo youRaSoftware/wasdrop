@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 /// SVG-иконки из `core_ui/assets/icons/` (24×24, штрих `textPrimary`
-/// 1.8 px, заливки из палитры). Многоцветные, поэтому не перекрашиваются —
+/// 1.8 px, заливки из палитры; `shake` и `bomb` — кнопки бонусов). Многоцветные, поэтому не перекрашиваются —
 /// ставить на светлые подложки (`surface`, кнопки).
 enum AppIcons {
   trophy('trophy'),
@@ -12,7 +12,10 @@ enum AppIcons {
   pause('pause'),
   restart('restart'),
   menuHome('menu_home'),
-  adPlay('ad_play');
+  adPlay('ad_play'),
+  shake('shake'),
+  bomb('bomb'),
+  upgrade('upgrade');
 
   final String file;
 

@@ -49,6 +49,9 @@ class GameCubit extends Cubit<GameState> {
                   next: resumeFrom.next,
                   merges: resumeFrom.merges,
                   bestTier: resumeFrom.bestTier,
+                  shakes: resumeFrom.shakes,
+                  bombs: resumeFrom.bombs,
+                  upgrades: resumeFrom.upgrades,
                 ),
         ) {
     _init(resume: resumeFrom != null);
@@ -111,9 +114,58 @@ class GameCubit extends Cubit<GameState> {
     _safeEmit(state.copyWith(current: state.next, next: _rollTier()));
   }
 
-  void pause() => _safeEmit(state.copyWith(status: GameStatus.paused));
+  void pause() =>
+      _safeEmit(state.copyWith(status: GameStatus.paused, disarm: true));
 
   void resume() => _safeEmit(state.copyWith(status: GameStatus.playing));
+
+  // --- Бонусы ----------------------------------------------------------------
+
+  /// Кнопка бонуса: взводит его (показывается подсказка) или, если он уже
+  /// взведён, снимает. Взвести можно один бонус за раз.
+  void armBonus(Bonus bonus) {
+    if (state.armed == bonus) {
+      disarmBonus();
+      return;
+    }
+    if (state.status != GameStatus.playing || state.charges(bonus) <= 0) {
+      return;
+    }
+    _safeEmit(state.copyWith(armed: bonus));
+  }
+
+  void disarmBonus() {
+    if (state.armed != null) _safeEmit(state.copyWith(disarm: true));
+  }
+
+  /// Телефон встряхнули при взведённой встряске: заряд списан. Сами фрукты
+  /// подбрасывает движок (`WasDropGame.shake`).
+  bool useShake() {
+    if (state.armed != Bonus.shake || state.shakes <= 0) return false;
+    if (state.status != GameStatus.playing) return false;
+    audio.shake();
+    _safeEmit(state.copyWith(shakes: state.shakes - 1, disarm: true));
+    return true;
+  }
+
+  /// Движок взорвал выбранный фрукт: заряд списан, режим выбора снят.
+  void useBomb() {
+    if (state.armed != Bonus.bomb || state.bombs <= 0) return;
+    audio.bomb();
+    _safeEmit(state.copyWith(bombs: state.bombs - 1, disarm: true));
+  }
+
+  /// Движок увеличил выбранный фрукт до [produced]: заряд списан, режим
+  /// выбора снят; очков не даёт, но крупнейший фрукт партии обновляется.
+  void useUpgrade(BallTier produced) {
+    if (state.armed != Bonus.upgrade || state.upgrades <= 0) return;
+    audio.merge(BallTier.values[produced.index - 1]);
+    _safeEmit(state.copyWith(
+      upgrades: state.upgrades - 1,
+      bestTier: _maxTier(state.bestTier, produced),
+      disarm: true,
+    ));
+  }
 
   /// Сохраняет партию (счёт, очередь, шары [balls]) для «Продолжить» в
   /// меню. Законченная или пустая партия снимок стирает.
@@ -128,6 +180,9 @@ class GameCubit extends Cubit<GameState> {
       next: state.next,
       merges: state.merges,
       bestTier: state.bestTier,
+      shakes: state.shakes,
+      bombs: state.bombs,
+      upgrades: state.upgrades,
       balls: balls,
       savedAt: DateTime.now(),
     ));
@@ -143,6 +198,7 @@ class GameCubit extends Cubit<GameState> {
       status: GameStatus.gameOver,
       isNewRecord: isRecord,
       bestScore: stats.bestScore,
+      disarm: true,
     ));
   }
 
@@ -162,6 +218,10 @@ class GameCubit extends Cubit<GameState> {
       next: _rollTier(),
       merges: 0,
       resetBestTier: true,
+      shakes: GameRules.shakesPerGame,
+      bombs: GameRules.bombsPerGame,
+      upgrades: GameRules.upgradesPerGame,
+      disarm: true,
     ));
   }
 

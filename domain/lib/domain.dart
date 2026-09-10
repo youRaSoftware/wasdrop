@@ -1,6 +1,7 @@
 library domain;
 
 export 'enums/ball_tier.dart';
+export 'models/game_rules.dart';
 export 'models/game_snapshot.dart';
 export 'models/game_stats_model.dart';
 export 'models/settings_model.dart';

@@ -49,5 +49,6 @@ Bundle / application id: `com.wasdrop` (prod), `com.wasdrop.dev` (dev).
 |---|---|
 | Changelog (единый источник правды по версиям) | `.claude/changelog/CHANGELOG.md` |
 | Тексты «Что нового» для сторов | `.claude/my_docs/release_notes_X.Y.Z.txt` |
+| Бриф о продукте для работы над сторами (факты, лимиты полей, терминология на 6 языках) | `.claude/my_docs/STORE_BRIEF.md` |
 | Описания / ключевые слова сторов | `.claude/my_docs/STORE_LISTINGS.md` (создать при первом релизе) |
 | Артефакты сборки | `build/app/outputs/…`, `build/ios/ipa/`, `build/ios/archive/` |

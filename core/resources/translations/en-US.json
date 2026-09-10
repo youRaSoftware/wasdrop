@@ -72,5 +72,10 @@
     "night": "Night garden",
     "rose": "Powder rose",
     "sky": "Sky and clouds"
+  },
+  "bonus": {
+    "shakeHint": "Shake your phone to mix up the fruits",
+    "pickFruit": "Tap a fruit to blow it up",
+    "pickUpgrade": "Tap a fruit to grow it one level"
   }
 }

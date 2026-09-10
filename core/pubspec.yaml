@@ -22,6 +22,7 @@ dependencies:
   equatable: ^2.0.7
   flame_audio: ^2.12.2
   easy_localization: ^3.0.8
+  sensors_plus: ^7.1.0
 
 dev_dependencies:
   flutter_test:

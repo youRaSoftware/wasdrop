@@ -32,6 +32,10 @@ class GameRepositoryImpl implements GameRepository {
         next: BallTier.fromNumber(data['next'] as int) ?? BallTier.t1,
         merges: (data['merges'] as int?) ?? 0,
         bestTier: BallTier.fromNumber((data['bestTier'] as int?) ?? 0),
+        // Снимок до появления бонусов — полные заряды.
+        shakes: (data['shakes'] as int?) ?? GameRules.shakesPerGame,
+        bombs: (data['bombs'] as int?) ?? GameRules.bombsPerGame,
+        upgrades: (data['upgrades'] as int?) ?? GameRules.upgradesPerGame,
         balls: balls,
         savedAt: DateTime.fromMillisecondsSinceEpoch(data['savedAt'] as int),
       );
@@ -50,6 +54,9 @@ class GameRepositoryImpl implements GameRepository {
       'next': snapshot.next.number,
       'merges': snapshot.merges,
       'bestTier': snapshot.bestTier?.number ?? 0,
+      'shakes': snapshot.shakes,
+      'bombs': snapshot.bombs,
+      'upgrades': snapshot.upgrades,
       'savedAt': snapshot.savedAt.millisecondsSinceEpoch,
       'balls': <List<Object>>[
         for (final BallSnapshot b in snapshot.balls)

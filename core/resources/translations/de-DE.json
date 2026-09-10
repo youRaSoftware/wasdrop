@@ -72,5 +72,10 @@
     "night": "Nachtgarten",
     "rose": "Puderrosa",
     "sky": "Himmel und Wolken"
+  },
+  "bonus": {
+    "shakeHint": "Schüttle das Handy, um die Früchte zu mischen",
+    "pickFruit": "Tippe auf eine Frucht, um sie zu sprengen",
+    "pickUpgrade": "Tippe auf eine Frucht, um sie eine Stufe wachsen zu lassen"
   }
 }

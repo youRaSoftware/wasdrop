@@ -48,6 +48,7 @@
 - [x] `script/run.sh dev` — меню открывается на iOS-симуляторе (шрифт, плашка DEV)
 - [x] Игра: бросок по тапу, падение, слияние двух t1 → t2 (+2) — покрыто `integration_test/game_smoke_test.dart`, прошёл на iPhone 17 Pro (симулятор) 2026-09-06
 - [ ] Линия проигрыша (1.5 с над линией → game over) — проверить руками
+- [x] Только портрет: Dart + Info.plist (`UIRequiresFullScreen`) + манифест (2026-09-10)
 - [x] Android: dev-флейвор собрался (`flutter build apk --flavor dev --debug`) и запустился на эмуляторе Small_Phone (Android 17 preview, образ с 16 KB страницами): сплеш с физикой, меню, Box2D через FFI грузится без ошибок (2026-09-09). Геймплей на Android руками ещё не проверяли
 - [x] Иконка приложения: iOS `AppIcon` / `AppIcon-Dev`, Android mipmap + adaptive (dev source set с плашкой DEV), store-размеры в `store/` (2026-09-07)
 - [x] Сплеш на Flutter: `SplashGame` — фрукты сыплются с неба и складываются в кучу, лого проявляется, 2.6 с или тап → меню (2026-09-08)
@@ -85,10 +86,23 @@
 - [x] Локализация: `easy_localization`, шесть языков (en, ru, de, fr, hu, ja), `LocaleKeys` из `core/resources/translations`, пикер «Язык» в настройках, `CFBundleLocalizations` (план `plans/2026-09-08_localization.md`, 2026-09-08)
 - [x] Пакет дизайнера (`my_docs/TZ_ASSETS.md`): шрифты Rubik + Unbounded вместо Archivo, 8 SVG-иконок вместо эмодзи (`AppIcon`), темы-обои `GameThemes` × 6 с пикером в паузе и настройках, `AppThemeScope`, статичный декор (звёзды/облака/лепестки) (2026-09-08)
 
+### Фаза 3б: Бонусы (ТЗ на ассеты — `my_docs/TZ_BONUS_ASSETS.md`)
+- [x] Полоса `BonusBar` под стаканом: три `IconCircleButton` с бейджами зарядов; заряды на партию в `GameRules` (встряска ×3, бомбочка ×1, увеличение ×1), остаток в `GameState` и в снимке партии; кнопка взводит бонус (`GameState.armed`), пилюля-подсказка над стаканом (2026-09-10)
+- [x] «Встряхнуть»: после взведения — `ShakeDetector` (`sensors_plus`, 15 м/с², кулдаун 1.2 с; `simulate()` для тестов) → импульс вверх 560 ед/с у дна (×0.45 у линии, случайная доля 0.6–1 на фрукт) и ±240 вбок, вращение, «ойк», дрожание камеры; стенки продолжены на 300 ед. вверх (2026-09-10)
+- [x] «Бомбочка»: режим выбора с приглушённым стаканом, `BombFuse` 0.3 с → `BoomEffect` (3 кадра) → фрукт удалён, соседи оттолкнуты; тап мимо — отмена; заряд списывается при выборе (2026-09-10)
+- [x] «Увеличить»: режим выбора, тап по фрукту → на месте следующий тир с «попом» и вспышкой, без очков, арбуз не растёт; иконка `upgrade.svg` временная — заменить на дизайнерскую (ТЗ § «Бустер») (2026-09-10)
+- [x] Ключи `bonus.*` на 6 языках, `AudioService.shake/bomb` с плейсхолдерами; смоук-тест: встряска через `ShakeDetector.simulate()`, бомба и увеличение тапом по экрану, заряды в снимке (2026-09-10)
+- [ ] Пополнение зарядов (rewarded-реклама) — вместе с «Продолжить за рекламу», см. Фазу 5
+- [ ] Порог тряски проверить на устройстве (`ShakeDetector.defaultThreshold`)
+
 ### Фаза 4: Релиз
 - [ ] Ключ подписи Android (`android/key.properties`), Apple Team / профили
 - [ ] Store-листинги (`.claude/my_docs/STORE_LISTINGS.md`), скриншоты
 - [ ] Первый релиз 1.0.0 — процесс: [my_docs/RELEASE_PROCESS.md](../my_docs/RELEASE_PROCESS.md)
+
+### Фаза 5: Сервисы (после 1.0 — нужен аккаунт и сеть)
+- [ ] **Лидерборд** — `games_services` (Game Center на iOS, Play Games Services на Android). Что нужно: App Store Connect → приложение → Game Center включить, завести Leaderboard (ID, формат «очки, больше — лучше»); Xcode → capability Game Center (entitlement). Play Console → Play Games Services → создать игровой проект, OAuth-клиент с SHA-1 ключа подписи (release + debug), Leaderboard ID, `android/app/src/main/res/values/games-ids.xml` + `APP_ID` в манифесте; приложение в Play должно существовать. В коде: вход (тихий при старте, кнопка в меню), `submitScore` при проигрыше и при новом рекорде, кнопка «Рекорды» в меню и на экране проигрыша (иконка кубка есть). Без сети — просто не показываем.
+- [ ] **Реклама** (rewarded: «Продолжить за рекламу» = снять верхний слой; пополнение бонусов) — `google_mobile_ads` (AdMob). Что нужно: аккаунт AdMob (платёжные данные), приложения iOS/Android (App ID) и rewarded-блоки (Ad Unit ID) на каждую платформу; iOS — `GADApplicationIdentifier` и `SKAdNetworkItems` в Info.plist, `NSUserTrackingUsageDescription` + запрос ATT (или только неперсонализированная реклама); Android — `com.google.android.gms.ads.APPLICATION_ID` в манифесте и permission `INTERNET` (в release его сейчас нет); согласие GDPR/UK через UMP SDK до первого показа; в App Privacy и Data safety указать сбор идентификаторов/данных об использовании, политика конфиденциальности с разделом про рекламу; в dev — тестовые ID (`AppConfig.useTestAds`), на устройствах — test devices. Заглушка `continueAfterAd` заменяется на показ rewarded и колбэк награды.
 
 ---
 
@@ -112,3 +126,4 @@
 | 2026-09-08 | [Мультиязычность: en, ru, de, fr, hu, ja](2026-09-08_localization.md) | ✅ Готово |
 | 2026-09-09 | [Название Fruity Drop + сохранение партии](2026-09-09_rename_and_save_game.md) | ✅ Готово |
 | 2026-09-09 | Нативный экран запуска iOS/Android с иконкой на кремовом фоне | ✅ Готово |
+| 2026-09-10 | Бонусы «Встряхнуть» и «Бомбочка» (план в `~/.claude/plans`, ТЗ на ассеты `my_docs/TZ_BONUS_ASSETS.md`) | ✅ Готово |

@@ -33,6 +33,8 @@ On release, rename `[Unreleased]` to `[X.Y.Z] — YYYY-MM-DD` and start a fresh 
 - Новое: заставка при запуске — фрукты сыплются с неба и складываются в кучу, лого проявляется поверх; тап пропускает
 - Изменено: новая иконка приложения — арбуз с клубникой, мандарином и персиком на мятном фоне (iOS, Android, сторы)
 - Новое: нативный экран запуска — вместо белого экрана до старта игры показывается иконка на кремовом фоне (iOS и Android)
+- Исправлено: экран больше не поворачивается в альбомную ориентацию (в том числе экран запуска и iPad) — игра только в портрете
+- Новое: бонусы под стаканом — «Встряхнуть» (три раза за партию: нажмите кнопку и потрясите телефон, фрукты подпрыгнут и перемешаются), «Бомбочка» (раз за партию: выберите любой фрукт, и он взорвётся, расталкивая соседей) и «Увеличить» (раз за партию: выбранный фрукт становится на уровень больше); заряды сохраняются вместе с партией
 - Новое: партия сохраняется — если закрыть приложение посреди игры, в меню появится «Продолжить» (и «Новая игра»); восстановленная партия открывается в паузе
 - Изменено: игра называется Fruity Drop (в сторах — Fruity Drop: Merge Puzzle), под иконкой «Fruity Drop»
 - Новое: интерфейс на шести языках — русский, английский, немецкий, французский, венгерский, японский; по умолчанию язык устройства, выбор в настройках («Игра → Язык»)
@@ -64,6 +66,8 @@ On release, rename `[Unreleased]` to `[X.Y.Z] — YYYY-MM-DD` and start a fresh 
 - New: launch splash — fruits rain down and pile up while the logo fades in; tap to skip
 - Changed: new app icon — a watermelon with a strawberry, tangerine and peach on a mint background (iOS, Android, stores)
 - New: native launch screen — the app icon on a cream background replaces the white screen shown before the game starts (iOS and Android)
+- Fixed: the screen no longer rotates to landscape (launch screen and iPad included) — the game is portrait only
+- New: bonuses under the jar — Shake (three per run: tap the button, then shake your phone and the fruits jump and reshuffle), Bomb (one per run: pick any fruit and it blows up, pushing its neighbours away) and Grow (one per run: the picked fruit becomes one level bigger); charges are saved with the run
 - New: the game is saved — close the app mid-run and the menu offers Continue (and New game); a resumed run opens paused
 - Changed: the game is now called Fruity Drop (Fruity Drop: Merge Puzzle in the stores), «Fruity Drop» under the icon
 - New: the interface speaks six languages — Russian, English, German, French, Hungarian, Japanese; follows the device language by default, switchable in Settings → Game → Language

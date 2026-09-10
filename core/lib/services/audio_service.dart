@@ -23,6 +23,8 @@ class AudioService {
   static const String _drop = 'sfx_drop.wav';
   static const String _gameOver = 'sfx_game_over.wav';
   static const String _record = 'sfx_record.wav';
+  static const String _shake = 'sfx_shake.wav';
+  static const String _bomb = 'sfx_bomb.wav';
 
   static String _merge(BallTier tier) =>
       'sfx_merge_${tier.number.toString().padLeft(2, '0')}.wav';
@@ -56,6 +58,8 @@ class AudioService {
         _drop,
         _gameOver,
         _record,
+        _shake,
+        _bomb,
         for (final BallTier tier in BallTier.values) _merge(tier),
       ]);
       _ready = true;
@@ -131,6 +135,18 @@ class AudioService {
   /// Проигрыш (или новый рекорд).
   void gameOver({required bool isRecord}) {
     _sfx(isRecord ? _record : _gameOver, 0.9);
+    _haptic(HapticFeedback.heavyImpact);
+  }
+
+  /// Бонус «Встряхнуть»: дребезг фруктов в стакане.
+  void shake() {
+    _sfx(_shake, 0.7);
+    _haptic(HapticFeedback.mediumImpact);
+  }
+
+  /// Бонус «Бомбочка»: взрыв.
+  void bomb() {
+    _sfx(_bomb, 0.9);
     _haptic(HapticFeedback.heavyImpact);
   }
 

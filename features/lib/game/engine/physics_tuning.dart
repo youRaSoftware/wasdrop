@@ -99,4 +99,33 @@ abstract final class PhysicsTuning {
 
   /// Ниже этой скорости шар считается покоящимся (выше порога сна).
   static const double settledSpeed = 8;
+
+  // --- Бонусы -----------------------------------------------------------
+
+  /// Встряска: прирост скорости вверх у дна (подскок ≈ v²/2g ≈ 160 ед.,
+  /// четверть стакана; при 380 куча лишь вздрагивала); у линии проигрыша —
+  /// в [shakeTopFactor] раз меньше, верхним фруктам некуда лететь. Каждый
+  /// фрукт получает свою долю от [shakeLiftJitter] до 1, чтобы куча
+  /// рассыпалась, а не подпрыгивала строем. Боковой прирост — случайный в
+  /// пределах ±[shakeSideSpeed].
+  static const double shakeLiftSpeed = 560;
+  static const double shakeLiftJitter = 0.6;
+  static const double shakeSideSpeed = 240;
+  static const double shakeTopFactor = 0.45;
+
+  /// Случайный прирост угловой скорости при встряске, рад/с.
+  static const double shakeSpin = 10;
+
+  /// Пауза между встрясками, с.
+  static const double shakeCooldown = 1.5;
+
+  /// Дрожание стакана после встряски: амплитуда (ед.) и длительность (с).
+  static const double shakeCameraAmplitude = 9;
+  static const double shakeCameraDuration = 0.4;
+
+  /// Бомбочка: фитиль до взрыва (с), радиус толчка соседей (в радиусах
+  /// взорванного фрукта) и прирост скорости у самого центра.
+  static const double bombFuse = 0.3;
+  static const double bombPushRadius = 2.5;
+  static const double bombPushSpeed = 260;
 }

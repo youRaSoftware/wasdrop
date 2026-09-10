@@ -20,16 +20,21 @@ class JarWalls {
 /// остаётся внутри, и солвер возвращает шар в стакан. [chamfer] > 0 —
 /// 45° скосы в нижних углах под визуальное скругление стакана: прямой
 /// физический угол давал бы фрукту закатиться под скругление и обрезаться.
+/// [topMargin] — насколько боковые стенки продолжаются выше верха мира
+/// (игра передаёт большой запас: подброшенный встряской фрукт не должен
+/// перелететь через стенку); по умолчанию — на толщину стенки.
 Body buildJarWalls(
   Forge2DWorld world, {
   required double width,
   required double height,
   double chamfer = 0,
   double thickness = 40,
+  double? topMargin,
 }) {
   final double w = width;
   final double h = height;
   final double t = thickness;
+  final double top = topMargin ?? thickness;
   List<Vector2> rect(double x1, double y1, double x2, double y2) => <Vector2>[
         Vector2(x1, y1),
         Vector2(x2, y1),
@@ -37,8 +42,8 @@ Body buildJarWalls(
         Vector2(x1, y2),
       ];
   final List<List<Vector2>> boxes = <List<Vector2>>[
-    rect(-t, -t, 0, h + t), // левая
-    rect(w, -t, w + t, h + t), // правая
+    rect(-t, -top, 0, h + t), // левая
+    rect(w, -top, w + t, h + t), // правая
     rect(-t, h, w + t, h + t), // дно
   ];
   if (chamfer > 0) {
