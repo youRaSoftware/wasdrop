@@ -23,7 +23,29 @@
     "best": "ベスト — {score}",
     "restart": "やり直す",
     "menu": "メニュー",
-    "continueAd": "広告を見てつづける"
+    "continueAd": "広告を見てつづける",
+    "continueFree": "つづける",
+    "adUnavailable": "現在、広告を表示できません",
+    "removeAds": "広告を削除"
+  },
+  "premium": {
+    "title": "プレミアム",
+    "subtitle": "一度の購入で永久に",
+    "featureNoAds": "広告なし",
+    "featureThemes": "6種類すべての壁紙",
+    "featureContinue": "動画なしでコンティニューとボーナス補充",
+    "buy": "{price} で購入",
+    "restore": "購入を復元",
+    "active": "プレミアムは有効です",
+    "activeBody": "ありがとうございます！広告なし、全壁紙、動画なしの補充が使えます。",
+    "done": "完了",
+    "storeUnavailable": "App Store に接続できません。通信を確認してもう一度お試しください。",
+    "purchaseFailed": "購入に失敗しました。後でもう一度お試しください。",
+    "nothingToRestore": "復元できる購入はありません。",
+    "restored": "購入を復元しました！",
+    "pending": "購入は承認待ちです。",
+    "privacy": "プライバシーポリシー",
+    "terms": "利用規約"
   },
   "settings": {
     "title": "設定",
@@ -50,7 +72,13 @@
     "resetTitle": "統計をリセットしますか？",
     "resetBody": "ベストスコア、プレイ回数、合体回数がゼロになります。",
     "resetConfirm": "リセット",
-    "cancel": "キャンセル"
+    "cancel": "キャンセル",
+    "premium": "プレミアム",
+    "premiumRow": "広告を削除して壁紙を解放",
+    "premiumStatus": "プレミアム",
+    "premiumActive": "有効",
+    "restorePurchases": "購入を復元",
+    "adPrivacy": "広告のプライバシー設定"
   },
   "fruits": {
     "cherry": "さくらんぼ",

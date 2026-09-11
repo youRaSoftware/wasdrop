@@ -9,8 +9,9 @@ part 'settings_state.dart';
 /// Тумблеры звука/вибрации/прицела идут напрямую в `SettingsService`.
 class SettingsCubit extends Cubit<SettingsState> {
   final StatsRepository statsRepository;
+  final AdsService ads;
 
-  SettingsCubit({required this.statsRepository})
+  SettingsCubit({required this.statsRepository, required this.ads})
       : super(const SettingsState()) {
     _init();
   }
@@ -18,6 +19,9 @@ class SettingsCubit extends Cubit<SettingsState> {
   Future<void> _init() async {
     final GameStatsModel stats = await statsRepository.getStats();
     _safeEmit(state.copyWith(stats: stats));
+    _safeEmit(
+      state.copyWith(adPrivacyRequired: await ads.privacyOptionsRequired()),
+    );
     try {
       final PackageInfo info = await PackageInfo.fromPlatform();
       _safeEmit(
@@ -40,6 +44,9 @@ class SettingsCubit extends Cubit<SettingsState> {
   void askLanguage() => _safeEmit(state.copyWith(choosingLanguage: true));
 
   void closeLanguage() => _safeEmit(state.copyWith(choosingLanguage: false));
+
+  /// Форма UMP «Настройки рекламы» (изменить согласие).
+  Future<void> showAdPrivacyOptions() => ads.showPrivacyOptions();
 
   Future<void> confirmReset() async {
     await statsRepository.saveStats(const GameStatsModel.empty());

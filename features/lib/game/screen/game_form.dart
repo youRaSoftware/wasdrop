@@ -42,6 +42,7 @@ class _GameFormState extends State<GameForm> with WidgetsBindingObserver {
   );
   late final ShakeDetector _shakeDetector =
       ShakeDetector(onShake: _onDeviceShake);
+  final PremiumService _premium = appLocator<PremiumService>();
   Timer? _autosave;
 
   @override
@@ -50,15 +51,20 @@ class _GameFormState extends State<GameForm> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _autosave = Timer.periodic(GameForm.autosaveInterval, (_) => _save());
     _shakeDetector.start();
+    _premium.isPremium.addListener(_onPremiumChanged);
   }
 
   @override
   void dispose() {
+    _premium.isPremium.removeListener(_onPremiumChanged);
     _autosave?.cancel();
     unawaited(_shakeDetector.stop());
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
+
+  /// Купили премиум из paywall поверх игры — кнопки рекламы меняются.
+  void _onPremiumChanged() => setState(() {});
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -72,6 +78,16 @@ class _GameFormState extends State<GameForm> with WidgetsBindingObserver {
   void _save() {
     if (!_game.isLoaded || _cubit.isClosed) return;
     unawaited(_cubit.saveSnapshot(_game.captureBalls()));
+  }
+
+  /// «Продолжить» после проигрыша: кубит показывает ролик (или пропускает
+  /// его премиуму); если продолжение выдано — движок снимает верхний слой,
+  /// и только потом партия возвращается в игру.
+  Future<void> _continue() async {
+    if (!await _cubit.requestContinue()) return;
+    if (!mounted || !_game.isLoaded) return;
+    _game.clearTopLayer();
+    _cubit.resumeAfterContinue();
   }
 
   /// Телефон встряхнули: срабатывает только при взведённой встряске
@@ -88,7 +104,8 @@ class _GameFormState extends State<GameForm> with WidgetsBindingObserver {
     final GameTheme theme = AppThemeScope.of(context);
     final Bonus? armed = state.armed;
 
-    _game.paused = state.status != GameStatus.playing;
+    final bool isPremium = _premium.isPremium.value;
+    _game.paused = state.status != GameStatus.playing || state.adBusy;
 
     return AppScaffold(
       body: SafeArea(
@@ -124,7 +141,11 @@ class _GameFormState extends State<GameForm> with WidgetsBindingObserver {
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
-                  child: BonusBar(onArm: _cubit.armBonus),
+                  child: BonusBar(
+                    onArm: _cubit.armBonus,
+                    onRefill: _cubit.requestRefill,
+                    isPremium: isPremium,
+                  ),
                 ),
               ],
             ),
@@ -150,7 +171,12 @@ class _GameFormState extends State<GameForm> with WidgetsBindingObserver {
                   _game.reset();
                 },
                 onMenu: () => context.goNamed('menu'),
-                onContinueAd: _cubit.continueAfterAd,
+                onContinueAd: _continue,
+                onRemoveAds: () => context.pushNamed('premium'),
+                canContinue: state.continues > 0,
+                isPremium: isPremium,
+                adBusy: state.adBusy,
+                adUnavailable: state.adUnavailable,
               ),
           ],
         ),

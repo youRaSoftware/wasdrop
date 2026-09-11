@@ -20,7 +20,9 @@ import 'package:features/game/engine/wasdrop_game.dart';
 import 'package:features/game/screen/game_form.dart';
 import 'package:features/game/widgets/bonus_bar.dart';
 import 'package:features/game/widgets/game_hud.dart';
+import 'package:features/game/widgets/game_over_overlay.dart';
 import 'package:features/menu/screen/menu_screen.dart';
+import 'package:features/premium/screen/premium_form.dart';
 import 'package:features/settings/screen/settings_form.dart';
 import 'package:features/splash/engine/splash_game.dart';
 import 'package:features/splash/screen/splash_screen.dart';
@@ -48,6 +50,9 @@ void main() {
     // start from a clean slate so the menu shows «Play».
     await appLocator<GameRepository>().clear();
     await appLocator<SettingsService>().setLocale(null);
+    final PremiumService premium = appLocator<PremiumService>();
+    await premium.setPremium(false);
+    addTearDown(() => premium.setPremium(false));
     // No pumpAndSettle anywhere: the Flame game loop schedules frames
     // continuously, so pumpAndSettle would never return.
     await tester.pump(const Duration(milliseconds: 1500));
@@ -73,8 +78,23 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     expect(find.text(LocaleKeys.settings_title.tr()), findsOneWidget);
     expect(find.text(LocaleKeys.settings_aimLine.tr()), findsOneWidget);
-    // Theme picker: choosing «night» persists and reaches the theme scope.
+    // Theme picker: «night» is a premium wallpaper — without the purchase
+    // its dot opens the paywall (no store in tests: the buy button is
+    // disabled, «back» returns); with premium it selects and persists and
+    // reaches the theme scope.
     expect(find.byType(ThemePicker), findsOneWidget);
+    expect(find.byKey(SettingsForm.premiumRowKey), findsOneWidget);
+    await tester.tap(find.byKey(const Key('theme_night')));
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.byType(PremiumForm), findsOneWidget);
+    expect(find.byKey(PremiumForm.restoreKey), findsOneWidget);
+    expect(settings.value.themeId, isNot('night'));
+    await tester.tap(find.byIcon(Icons.arrow_back_rounded));
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.byType(PremiumForm), findsNothing);
+    await premium.setPremium(true);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byKey(SettingsForm.premiumRowKey), findsNothing);
     await tester.tap(find.byKey(const Key('theme_night')));
     await tester.pump(const Duration(milliseconds: 400));
     expect(settings.value.themeId, 'night');
@@ -405,13 +425,25 @@ void main() {
     await tester.pump(const Duration(milliseconds: 700));
     expect(victim.isMounted, isFalse);
     expect(balls().length, countBefore - 1);
+    // With no charges left the button offers the one refill per game;
+    // premium (set in the settings step) gets it without an ad.
+    expect(game.cubit.state.canRefill(Bonus.bomb), isTrue);
     await tester.tap(find.byKey(BonusBar.bombKey));
-    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(milliseconds: 300));
     expect(game.cubit.state.armed, isNull);
+    expect(game.cubit.state.bombs, GameRules.bombsPerGame);
+    expect(game.cubit.state.bombRefills, GameRules.refillsPerBonus - 1);
+    expect(game.cubit.state.canRefill(Bonus.bomb), isFalse);
     debugPrint('SMOKE bomb OK: ${live()}');
 
     // Upgrade: arm it, tap a ball → it is replaced in place by the next tier
-    // (which may immediately merge with an equal neighbour).
+    // (which may immediately merge with an equal neighbour). A shake can
+    // cascade-merge the pile into a single fruit that the bomb then removes,
+    // so drop a fresh one when the jar is empty.
+    if (balls().isEmpty) {
+      await tester.tapAt(Offset(jar.left + jar.width * 0.5, jar.center.dy));
+      await tester.pump(const Duration(seconds: 2));
+    }
     final BallBody target =
         balls().firstWhere((BallBody b) => b.tier.next != null);
     final BallTier grown = target.tier.next!;
@@ -461,10 +493,13 @@ void main() {
     expect(resumed.cubit.state.status, GameStatus.paused);
     expect(resumed.cubit.state.score, saved.score);
     expect(saved.shakes, GameRules.shakesPerGame - 1);
-    expect(saved.bombs, GameRules.bombsPerGame - 1);
+    expect(saved.bombs, GameRules.bombsPerGame);
+    expect(saved.bombRefills, GameRules.refillsPerBonus - 1);
     expect(saved.upgrades, GameRules.upgradesPerGame - 1);
+    expect(saved.upgradeRefills, GameRules.refillsPerBonus);
     expect(resumed.cubit.state.shakes, saved.shakes);
     expect(resumed.cubit.state.bombs, saved.bombs);
+    expect(resumed.cubit.state.bombRefills, saved.bombRefills);
     expect(
       resumed.world.children.whereType<BallBody>().length,
       saved.balls.length,
@@ -474,10 +509,49 @@ void main() {
     await tester.tap(find.text(LocaleKeys.pause_resume.tr()));
     await tester.pump(const Duration(milliseconds: 400));
     expect(resumed.cubit.state.status, GameStatus.playing);
+
+    // --- Continue after game over: premium (set in the settings step) gets
+    // it without an ad — the top layer above the deadline is cleared, the
+    // game resumes and the one continue per game is spent; the second game
+    // over offers no continue. A refill on an exhausted bonus is free too.
+    expect(premium.isPremium.value, isTrue);
+    await resumed.cubit.gameOver();
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(resumed.cubit.state.status, GameStatus.gameOver);
+    expect(find.byKey(GameOverOverlay.continueKey), findsOneWidget);
+    expect(find.byKey(GameOverOverlay.removeAdsKey), findsNothing);
+    await tester.tap(find.byKey(GameOverOverlay.continueKey));
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(resumed.cubit.state.status, GameStatus.playing);
+    expect(resumed.cubit.state.continues, GameRules.continuesPerGame - 1);
+    expect(resumed.overLineTime, 0);
+    for (final BallBody b in resumed.liveBalls()) {
+      expect(
+        b.body.position.y - b.radius,
+        greaterThanOrEqualTo(WasDropGame.deadlineY),
+        reason: 'continue must clear every fruit above the deadline',
+      );
+    }
+    expect(resumed.cubit.state.upgrades, 0);
+    expect(resumed.cubit.state.canRefill(Bonus.upgrade), isTrue);
+    await tester.tap(find.byKey(BonusBar.upgradeKey));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(resumed.cubit.state.upgrades, GameRules.upgradesPerGame);
+    expect(
+      resumed.cubit.state.upgradeRefills,
+      GameRules.refillsPerBonus - 1,
+    );
+    expect(resumed.cubit.state.armed, isNull);
+    await resumed.cubit.gameOver();
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.byKey(GameOverOverlay.continueKey), findsNothing);
+    debugPrint('SMOKE continue OK');
+
     resumed.cubit.restart();
     resumed.reset();
     await tester.pump(const Duration(milliseconds: 500));
     expect(await gameRepo.load(), isNull);
+    expect(resumed.cubit.state.continues, GameRules.continuesPerGame);
     debugPrint('SMOKE OK: resume flow finished');
   });
 }

@@ -23,7 +23,29 @@
     "best": "record — {score}",
     "restart": "Rejouer",
     "menu": "Menu",
-    "continueAd": "Continuer avec une pub"
+    "continueAd": "Continuer avec une pub",
+    "continueFree": "Continuer",
+    "adUnavailable": "Publicité indisponible pour le moment",
+    "removeAds": "Supprimer les pubs"
+  },
+  "premium": {
+    "title": "PREMIUM",
+    "subtitle": "Un seul achat, à vie",
+    "featureNoAds": "Sans publicité",
+    "featureThemes": "Les six fonds d'écran",
+    "featureContinue": "Continuer et recharger les bonus sans vidéos",
+    "buy": "Acheter pour {price}",
+    "restore": "Restaurer les achats",
+    "active": "Premium est actif",
+    "activeBody": "Merci ! Sans pub, tous les fonds et recharges sans vidéos.",
+    "done": "OK",
+    "storeUnavailable": "L'App Store est indisponible. Vérifiez la connexion et réessayez.",
+    "purchaseFailed": "L'achat a échoué. Réessayez plus tard.",
+    "nothingToRestore": "Aucun achat à restaurer.",
+    "restored": "Achat restauré !",
+    "pending": "L'achat est en attente d'approbation.",
+    "privacy": "Politique de confidentialité",
+    "terms": "Conditions d'utilisation"
   },
   "settings": {
     "title": "RÉGLAGES",
@@ -50,7 +72,13 @@
     "resetTitle": "RÉINITIALISER LES STATISTIQUES ?",
     "resetBody": "Le record, les parties jouées et les fusions seront remis à zéro.",
     "resetConfirm": "Réinitialiser",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "premium": "PREMIUM",
+    "premiumRow": "Supprimer les pubs, débloquer les fonds",
+    "premiumStatus": "Premium",
+    "premiumActive": "Actif",
+    "restorePurchases": "Restaurer les achats",
+    "adPrivacy": "Confidentialité des pubs"
   },
   "fruits": {
     "cherry": "cerise",

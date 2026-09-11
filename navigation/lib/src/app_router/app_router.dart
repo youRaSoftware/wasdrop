@@ -52,6 +52,12 @@ class AppRouter {
         pageBuilder: (BuildContext context, GoRouterState state) =>
             _fade(context, state, const SettingsScreen()),
       ),
+      GoRoute(
+        path: '/premium',
+        name: 'premium',
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _fade(context, state, const PremiumScreen()),
+      ),
     ],
   );
 }

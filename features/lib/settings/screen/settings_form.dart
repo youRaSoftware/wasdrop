@@ -13,12 +13,15 @@ import '../widgets/settings_section.dart';
 import '../widgets/settings_value_row.dart';
 import '../widgets/theme_label.dart';
 
-/// Экран настроек: секции «Звук», «Игра» (линия прицела, обои, язык),
-/// «Статистика», «Фрукты», «О приложении». Тумблеры привязаны к
-/// [SettingsService.settings], статистика, версия и оверлеи —
+/// Экран настроек: секции «Премиум» (paywall или статус), «Звук», «Игра»
+/// (линия прицела, обои — закрытые ведут на paywall, язык), «Статистика»,
+/// «Фрукты», «О приложении» (версия, лицензии, восстановить покупки,
+/// настройки рекламы для регионов с обязательным согласием). Тумблеры
+/// привязаны к [SettingsService.settings], статистика, версия и оверлеи —
 /// в [SettingsCubit].
 class SettingsForm extends StatelessWidget {
   static const Key languageRowKey = Key('settings_language');
+  static const Key premiumRowKey = Key('settings_premium');
 
   const SettingsForm({super.key});
 
@@ -27,6 +30,7 @@ class SettingsForm extends StatelessWidget {
     final SettingsCubit cubit = context.read<SettingsCubit>();
     final SettingsState state = context.watch<SettingsCubit>().state;
     final SettingsService settings = appLocator<SettingsService>();
+    final PremiumService premium = appLocator<PremiumService>();
     final AppConfig config = appLocator<AppConfig>();
     final GameStatsModel stats = state.stats;
     final BallTier? bestTier = stats.bestTier;
@@ -66,6 +70,34 @@ class SettingsForm extends StatelessWidget {
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
                     children: <Widget>[
+                      ValueListenableBuilder<bool>(
+                        valueListenable: premium.isPremium,
+                        builder:
+                            (BuildContext context, bool isPremium, Widget? _) {
+                          return SettingsSection(
+                            title: context.tr(LocaleKeys.settings_premium),
+                            children: <Widget>[
+                              if (isPremium)
+                                SettingsValueRow(
+                                  label: context
+                                      .tr(LocaleKeys.settings_premiumStatus),
+                                  value: context
+                                      .tr(LocaleKeys.settings_premiumActive),
+                                  leading:
+                                      const AppIcon(AppIcons.crown, size: 22),
+                                )
+                              else
+                                SettingsLinkRow(
+                                  key: premiumRowKey,
+                                  label: context
+                                      .tr(LocaleKeys.settings_premiumRow),
+                                  onPressed: () => context.pushNamed('premium'),
+                                ),
+                            ],
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
                       ValueListenableBuilder<SettingsModel>(
                         valueListenable: settings.settings,
                         builder: (BuildContext context, SettingsModel value,
@@ -123,12 +155,23 @@ class SettingsForm extends StatelessWidget {
                                           ),
                                         ),
                                         const SizedBox(height: 10),
-                                        ThemePicker(
-                                          themes: GameThemes.all,
-                                          selectedId: value.themeId,
-                                          onSelect: settings.setThemeId,
-                                          labelOf: (GameTheme t) =>
-                                              themeLabel(context, t),
+                                        ValueListenableBuilder<bool>(
+                                          valueListenable: premium.isPremium,
+                                          builder: (BuildContext context,
+                                              bool isPremium, Widget? _) {
+                                            return ThemePicker(
+                                              themes: GameThemes.all,
+                                              selectedId: value.themeId,
+                                              onSelect: settings.setThemeId,
+                                              labelOf: (GameTheme t) =>
+                                                  themeLabel(context, t),
+                                              lockedIds: isPremium
+                                                  ? const <String>{}
+                                                  : GameThemes.lockedIds,
+                                              onLockedTap: () =>
+                                                  context.pushNamed('premium'),
+                                            );
+                                          },
                                         ),
                                       ],
                                     ),
@@ -209,6 +252,16 @@ class SettingsForm extends StatelessWidget {
                               applicationVersion: state.version,
                             ),
                           ),
+                          SettingsLinkRow(
+                            label: context
+                                .tr(LocaleKeys.settings_restorePurchases),
+                            onPressed: () => context.pushNamed('premium'),
+                          ),
+                          if (state.adPrivacyRequired)
+                            SettingsLinkRow(
+                              label: context.tr(LocaleKeys.settings_adPrivacy),
+                              onPressed: cubit.showAdPrivacyOptions,
+                            ),
                         ],
                       ),
                     ],

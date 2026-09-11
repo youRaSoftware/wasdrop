@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../enums/ball_tier.dart';
+import 'game_rules.dart';
 
 /// Шар в сохранённой партии. Координаты — мировые единицы (ширина мира 360);
 /// [bottomOffset] — расстояние от центра до дна: высота мира зависит от
@@ -40,6 +41,13 @@ class GameSnapshot extends Equatable {
   final int shakes;
   final int bombs;
   final int upgrades;
+
+  /// Оставшиеся продолжения после проигрыша и пополнения зарядов
+  /// (за ролик / премиуму даром) — лимиты на партию.
+  final int continues;
+  final int shakeRefills;
+  final int bombRefills;
+  final int upgradeRefills;
   final List<BallSnapshot> balls;
   final DateTime savedAt;
 
@@ -54,6 +62,10 @@ class GameSnapshot extends Equatable {
     required this.upgrades,
     required this.balls,
     required this.savedAt,
+    this.continues = GameRules.continuesPerGame,
+    this.shakeRefills = GameRules.refillsPerBonus,
+    this.bombRefills = GameRules.refillsPerBonus,
+    this.upgradeRefills = GameRules.refillsPerBonus,
   });
 
   @override
@@ -66,6 +78,10 @@ class GameSnapshot extends Equatable {
         shakes,
         bombs,
         upgrades,
+        continues,
+        shakeRefills,
+        bombRefills,
+        upgradeRefills,
         balls,
         savedAt,
       ];

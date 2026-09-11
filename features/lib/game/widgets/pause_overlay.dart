@@ -7,7 +7,7 @@ import '../../settings/widgets/theme_label.dart';
 
 /// Оверлей паузы (мокап, кадр 5): Продолжить / Заново / В меню, тумблеры
 /// «Звук» и «Вибрация» и пикер тем-обоев — всё привязано к
-/// [SettingsService.settings].
+/// [SettingsService.settings]; закрытые обои ведут на paywall.
 class PauseOverlay extends StatelessWidget {
   final VoidCallback onResume;
   final VoidCallback onRestart;
@@ -23,6 +23,7 @@ class PauseOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final SettingsService settings = appLocator<SettingsService>();
+    final PremiumService premium = appLocator<PremiumService>();
 
     return AppOverlay(
       width: 300,
@@ -76,11 +77,19 @@ class PauseOverlay extends StatelessWidget {
                   Text(context.tr(LocaleKeys.pause_wallpapers),
                       style: AppFonts.best),
                   const SizedBox(height: 10),
-                  ThemePicker(
-                    themes: GameThemes.all,
-                    selectedId: value.themeId,
-                    onSelect: settings.setThemeId,
-                    labelOf: (GameTheme t) => themeLabel(context, t),
+                  ValueListenableBuilder<bool>(
+                    valueListenable: premium.isPremium,
+                    builder: (BuildContext context, bool isPremium, Widget? _) {
+                      return ThemePicker(
+                        themes: GameThemes.all,
+                        selectedId: value.themeId,
+                        onSelect: settings.setThemeId,
+                        labelOf: (GameTheme t) => themeLabel(context, t),
+                        lockedIds:
+                            isPremium ? const <String>{} : GameThemes.lockedIds,
+                        onLockedTap: () => context.pushNamed('premium'),
+                      );
+                    },
                   ),
                   const SizedBox(height: 2),
                 ],

@@ -329,9 +329,31 @@ class WasDropGame extends Forge2DGame
   // --- Бонусы ----------------------------------------------------------------
 
   /// Живые фрукты: смонтированы, не сливаются и не взрываются.
-  Iterable<BallBody> _liveBalls() => world.children.whereType<BallBody>().where(
+  Iterable<BallBody> liveBalls() => world.children.whereType<BallBody>().where(
         (BallBody b) => b.isMounted && !b.isRemoving && !b.merging,
       );
+
+  /// «Продолжить» после проигрыша: снимает верхний слой — фрукты с центром
+  /// выше `deadlineY + continueClearDepth` и любой, чей верх выше линии, —
+  /// со вспышкой на месте каждого; таймер проигрыша и бросок сбрасываются.
+  /// Статус партии переключает кубит после этого вызова.
+  void clearTopLayer() {
+    final double cut = deadlineY + PhysicsTuning.continueClearDepth;
+    final List<BallBody> doomed = liveBalls()
+        .where((BallBody b) =>
+            b.body.position.y < cut || b.body.position.y - b.radius < deadlineY)
+        .toList();
+    for (final BallBody b in doomed) {
+      world.add(MergeFlash(
+        center: b.body.position,
+        radius: b.radius,
+        color: AppColors.tiers[b.tier.index],
+      ));
+      b.removeFromParent();
+    }
+    overLineTime = 0;
+    canDrop = true;
+  }
 
   /// Бонус «Встряхнуть»: каждый фрукт получает прирост скорости вверх
   /// (глубже — сильнее: у линии проигрыша лететь некуда) и случайный вбок,
@@ -342,7 +364,7 @@ class WasDropGame extends Forge2DGame
     _shakeCooldownLeft = PhysicsTuning.shakeCooldown;
     _cameraShakeLeft = PhysicsTuning.shakeCameraDuration;
     final double span = math.max(1, worldHeight - deadlineY);
-    for (final BallBody b in _liveBalls()) {
+    for (final BallBody b in liveBalls()) {
       final double depth =
           ((b.body.position.y - deadlineY) / span).clamp(0.0, 1.0);
       final double lift = PhysicsTuning.shakeTopFactor +
@@ -371,7 +393,7 @@ class WasDropGame extends Forge2DGame
     if (!pickMode) return;
     BallBody? hit;
     double best = double.infinity;
-    for (final BallBody b in _liveBalls()) {
+    for (final BallBody b in liveBalls()) {
       final double d = b.body.position.distanceTo(point);
       final double reach =
           (fruitSprites[b.tier]?.extent(b.radius) ?? b.radius) + 6;
@@ -436,7 +458,7 @@ class WasDropGame extends Forge2DGame
     final double r = b.radius;
     b.removeFromParent();
     final double reach = PhysicsTuning.bombPushRadius * r;
-    for (final BallBody other in _liveBalls()) {
+    for (final BallBody other in liveBalls()) {
       final Vector2 delta = other.body.position - center;
       final double d = delta.length;
       if (d <= 0 || d > reach + other.radius) continue;

@@ -128,4 +128,9 @@ abstract final class PhysicsTuning {
   static const double bombFuse = 0.3;
   static const double bombPushRadius = 2.5;
   static const double bombPushSpeed = 260;
+
+  /// «Продолжить» после проигрыша: убираются фрукты с центром выше
+  /// `deadlineY + continueClearDepth` (верхняя треть стакана) и любой, чей
+  /// верх выше линии, — чтобы после продолжения было куда бросать.
+  static const double continueClearDepth = 180;
 }

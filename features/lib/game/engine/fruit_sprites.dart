@@ -8,6 +8,7 @@ import 'package:flame/extensions.dart';
 import 'package:flame/sprite.dart';
 import 'package:flame_forge2d/flame_forge2d.dart'
     show Circle, Polygon, ShapeGeometry;
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/services.dart' show AssetManifest, rootBundle;
 
 /// Кто умеет отдать спрайты фруктов (реализует `WasDropGame`); нужен, чтобы
@@ -154,7 +155,7 @@ class FruitSprites {
       final ui.Image squish = exists(squishFile)
           ? await images.load(squishFile, package: package)
           : idle;
-      final _BodyFit fit = await _measureBody(idle);
+      final FruitBodyFit fit = await measureBody(idle);
       _byTier[tier] = FruitSprite(
         idle: Sprite(idle),
         squish: Sprite(squish),
@@ -189,12 +190,13 @@ class FruitSprites {
   /// силуэта и формы в [_directions] направлениях (остаток 2–3 %). Нижняя
   /// опорная точка совпадает с низом силуэта — фрукт стоит на дне.
   /// Под фруктом в PNG не должно быть теней — они стали бы «низом».
-  static Future<_BodyFit> _measureBody(ui.Image image) async {
+  @visibleForTesting
+  static Future<FruitBodyFit> measureBody(ui.Image image) async {
     final ByteData? data =
         await image.toByteData(format: ui.ImageByteFormat.rawRgba);
     final int w = image.width;
     final int h = image.height;
-    final _BodyFit fallback = _BodyFit.circle(
+    final FruitBodyFit fallback = FruitBodyFit.circle(
       radiusPx: w * 0.475,
       center: Vector2(w / 2, h / 2),
     );
@@ -258,7 +260,7 @@ class FruitSprites {
         circleRadius = r;
       }
     }
-    final _BodyFit circle = _BodyFit.circle(
+    final FruitBodyFit circle = FruitBodyFit.circle(
       radiusPx: circleRadius,
       center: Vector2(widestCenter, bottomEdge - circleRadius),
     );
@@ -353,7 +355,7 @@ class FruitSprites {
       }
     }
     if (bestHull == null) return circle;
-    return _BodyFit(
+    return FruitBodyFit(
       radiusPx: meanSupport,
       center: center,
       hull: bestHull,
@@ -394,7 +396,9 @@ class FruitSprites {
   }
 }
 
-class _BodyFit {
+/// Результат подгонки тела по спрайту (px исходника); публичный ради
+/// `test/fruit_shape_preview_test.dart`, который рисует форму поверх фрукта.
+class FruitBodyFit {
   final double radiusPx;
   final Vector2 center;
   final List<Vector2>? hull;
@@ -402,7 +406,7 @@ class _BodyFit {
   final double maxExtentPx;
   final double minExtentPx;
 
-  const _BodyFit({
+  const FruitBodyFit({
     required this.radiusPx,
     required this.center,
     required this.hull,
@@ -411,7 +415,7 @@ class _BodyFit {
     required this.minExtentPx,
   });
 
-  _BodyFit.circle({required double radiusPx, required Vector2 center})
+  FruitBodyFit.circle({required double radiusPx, required Vector2 center})
       : this(
           radiusPx: radiusPx,
           center: center,

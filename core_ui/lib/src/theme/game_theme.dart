@@ -26,7 +26,8 @@ class GameTheme {
   final Color hudText;
   final ThemeDecor decor;
 
-  /// Задел под подписку: закрытая тема показывается с замком.
+  /// Тема из премиума: без покупки показывается с замком, тап по ней
+  /// открывает paywall (`PremiumService.canUseTheme`).
   final bool isLocked;
 
   const GameTheme({
@@ -87,6 +88,7 @@ abstract final class GameThemes {
     jarWall: Color(0xFF9CC9A9),
     deadline: Color(0xFF85AB90),
     hudText: Color(0xFF1F4A2E),
+    isLocked: true,
   );
 
   static const GameTheme night = GameTheme(
@@ -100,6 +102,7 @@ abstract final class GameThemes {
     deadlineAlert: Color(0xFFFF5D7A),
     hudText: Color(0xFFF2EFE6),
     decor: ThemeDecor.stars,
+    isLocked: true,
   );
 
   static const GameTheme rose = GameTheme(
@@ -111,6 +114,7 @@ abstract final class GameThemes {
     deadline: Color(0xFFC18FA3),
     hudText: Color(0xFF6E2E48),
     decor: ThemeDecor.petals,
+    isLocked: true,
   );
 
   static const GameTheme sky = GameTheme(
@@ -122,6 +126,7 @@ abstract final class GameThemes {
     deadline: Color(0xFF7AA2B9),
     hudText: Color(0xFF6E9FBD),
     decor: ThemeDecor.clouds,
+    isLocked: true,
   );
 
   static const List<GameTheme> all = <GameTheme>[
@@ -134,6 +139,12 @@ abstract final class GameThemes {
   ];
 
   /// Тема по id; неизвестный id → [cream].
+  /// Темы из премиума.
+  static Set<String> get lockedIds => <String>{
+        for (final GameTheme t in all)
+          if (t.isLocked) t.id,
+      };
+
   static GameTheme byId(String id) {
     for (final GameTheme theme in all) {
       if (theme.id == id) return theme;

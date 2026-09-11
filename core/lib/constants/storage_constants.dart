@@ -4,4 +4,7 @@ class StorageConstants {
 
   /// Сохранённая партия (`GameRepository`).
   static const String gameBox = 'gameBox';
+
+  /// Кэш покупки «Премиум навсегда» (`PremiumRepository`).
+  static const String premiumBox = 'premiumBox';
 }

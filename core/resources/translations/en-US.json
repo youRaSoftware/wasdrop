@@ -23,7 +23,29 @@
     "best": "best — {score}",
     "restart": "Restart",
     "menu": "Menu",
-    "continueAd": "Continue with an ad"
+    "continueAd": "Continue with an ad",
+    "continueFree": "Continue",
+    "adUnavailable": "Ads are unavailable right now",
+    "removeAds": "Remove ads"
+  },
+  "premium": {
+    "title": "PREMIUM",
+    "subtitle": "One purchase, forever",
+    "featureNoAds": "No ads",
+    "featureThemes": "All six wallpapers",
+    "featureContinue": "Continue and bonus refills without videos",
+    "buy": "Buy for {price}",
+    "restore": "Restore purchases",
+    "active": "Premium is active",
+    "activeBody": "Thank you! No ads, all wallpapers and refills without videos.",
+    "done": "Done",
+    "storeUnavailable": "App Store is unavailable. Check your connection and try again.",
+    "purchaseFailed": "Purchase failed. Please try again later.",
+    "nothingToRestore": "No purchases to restore.",
+    "restored": "Purchase restored!",
+    "pending": "Purchase is waiting for approval.",
+    "privacy": "Privacy policy",
+    "terms": "Terms of use"
   },
   "settings": {
     "title": "SETTINGS",
@@ -50,7 +72,13 @@
     "resetTitle": "RESET STATISTICS?",
     "resetBody": "Best score, games played and merges will be set to zero.",
     "resetConfirm": "Reset",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "premium": "PREMIUM",
+    "premiumRow": "Remove ads and unlock wallpapers",
+    "premiumStatus": "Premium",
+    "premiumActive": "Active",
+    "restorePurchases": "Restore purchases",
+    "adPrivacy": "Ad privacy settings"
   },
   "fruits": {
     "cherry": "cherry",

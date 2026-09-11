@@ -36,6 +36,12 @@ class GameRepositoryImpl implements GameRepository {
         shakes: (data['shakes'] as int?) ?? GameRules.shakesPerGame,
         bombs: (data['bombs'] as int?) ?? GameRules.bombsPerGame,
         upgrades: (data['upgrades'] as int?) ?? GameRules.upgradesPerGame,
+        continues: (data['continues'] as int?) ?? GameRules.continuesPerGame,
+        shakeRefills:
+            (data['shakeRefills'] as int?) ?? GameRules.refillsPerBonus,
+        bombRefills: (data['bombRefills'] as int?) ?? GameRules.refillsPerBonus,
+        upgradeRefills:
+            (data['upgradeRefills'] as int?) ?? GameRules.refillsPerBonus,
         balls: balls,
         savedAt: DateTime.fromMillisecondsSinceEpoch(data['savedAt'] as int),
       );
@@ -57,6 +63,10 @@ class GameRepositoryImpl implements GameRepository {
       'shakes': snapshot.shakes,
       'bombs': snapshot.bombs,
       'upgrades': snapshot.upgrades,
+      'continues': snapshot.continues,
+      'shakeRefills': snapshot.shakeRefills,
+      'bombRefills': snapshot.bombRefills,
+      'upgradeRefills': snapshot.upgradeRefills,
       'savedAt': snapshot.savedAt.millisecondsSinceEpoch,
       'balls': <List<Object>>[
         for (final BallSnapshot b in snapshot.balls)

@@ -1,0 +1,46 @@
+{
+  "identifier" : "F1D2A9E0-7A11-4C4B-9E7C-000000000001",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "7.99",
+      "familyShareable" : false,
+      "internalID" : "F1D2A9E0-7A11-4C4B-9E7C-000000000002",
+      "localizations" : [
+        {
+          "description" : "No ads, all themes. One purchase, forever.",
+          "displayName" : "Premium Forever",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "Без рекламы и все темы. Одна покупка навсегда.",
+          "displayName" : "Премиум навсегда",
+          "locale" : "ru"
+        }
+      ],
+      "productID" : "com.wasdrop.premium.lifetime",
+      "referenceName" : "Premium Lifetime",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6809236566",
+    "_developerTeamID" : "4YLBF6N3R4",
+    "_failTransactionsEnabled" : false,
+    "_lastSynced" : 0,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

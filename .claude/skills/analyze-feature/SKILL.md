@@ -78,7 +78,7 @@ Step-by-step flows (→), one per scenario (play → merge → game over → res
 Tables: Domain | Data | Presentation | Engine | Navigation — file | purpose.
 
 ## 11. Config & Stubs
-Flavor-dependent behaviour (AppConfig), mocks, TODO stubs (e.g. continueAfterAd).
+Flavor-dependent behaviour (AppConfig), mocks, TODO stubs (e.g. prod AdMob ids in `AdsConfig`).
 
 ## 12. Not Yet Implemented
 TODOs from code and spec gaps (strike through items done since).

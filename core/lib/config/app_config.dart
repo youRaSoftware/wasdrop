@@ -44,6 +44,7 @@ class AppConfig {
   /// Плашка «DEV» поверх приложения — только в dev-сборке.
   bool get showFlavorBanner => isDev;
 
-  /// В dev используем тестовые рекламные блоки (rewarded ad — TODO).
+  /// В dev — тестовые блоки AdMob и debug-география EEA для формы согласия
+  /// (см. `AdsConfig`, `AdsService`).
   bool get useTestAds => isDev;
 }

@@ -20,6 +20,8 @@ class GameScreen extends StatelessWidget {
         statsRepository: appLocator<StatsRepository>(),
         gameRepository: appLocator<GameRepository>(),
         audio: appLocator<AudioService>(),
+        premium: appLocator<PremiumService>(),
+        ads: appLocator<AdsService>(),
         resumeFrom: resumeFrom,
       ),
       child: GameForm(resumeFrom: resumeFrom),

@@ -28,6 +28,20 @@ class GameState extends Equatable {
   /// Взведённый бонус (null — обычная игра).
   final Bonus? armed;
 
+  /// Оставшиеся продолжения после проигрыша (за ролик / премиуму даром).
+  final int continues;
+
+  /// Оставшиеся пополнения зарядов каждого бонуса (за ролик / премиуму).
+  final int shakeRefills;
+  final int bombRefills;
+  final int upgradeRefills;
+
+  /// Идёт показ ролика (кнопки рекламы заблокированы, движок на паузе).
+  final bool adBusy;
+
+  /// Последний ролик не загрузился — показать подсказку.
+  final bool adUnavailable;
+
   const GameState({
     required this.score,
     required this.bestScore,
@@ -41,6 +55,12 @@ class GameState extends Equatable {
     this.bombs = GameRules.bombsPerGame,
     this.upgrades = GameRules.upgradesPerGame,
     this.armed,
+    this.continues = GameRules.continuesPerGame,
+    this.shakeRefills = GameRules.refillsPerBonus,
+    this.bombRefills = GameRules.refillsPerBonus,
+    this.upgradeRefills = GameRules.refillsPerBonus,
+    this.adBusy = false,
+    this.adUnavailable = false,
   });
 
   int charges(Bonus bonus) => switch (bonus) {
@@ -48,6 +68,23 @@ class GameState extends Equatable {
         Bonus.bomb => bombs,
         Bonus.upgrade => upgrades,
       };
+
+  int refills(Bonus bonus) => switch (bonus) {
+        Bonus.shake => shakeRefills,
+        Bonus.bomb => bombRefills,
+        Bonus.upgrade => upgradeRefills,
+      };
+
+  /// Полные заряды бонуса (после пополнения).
+  static int fullCharges(Bonus bonus) => switch (bonus) {
+        Bonus.shake => GameRules.shakesPerGame,
+        Bonus.bomb => GameRules.bombsPerGame,
+        Bonus.upgrade => GameRules.upgradesPerGame,
+      };
+
+  /// Кнопка бонуса без зарядов предлагает пополнение.
+  bool canRefill(Bonus bonus) =>
+      status == GameStatus.playing && charges(bonus) == 0 && refills(bonus) > 0;
 
   /// [bestTier] сбрасывается в null, только если передать `bestTier: null`
   /// явно через [resetBestTier]; [armed] снимается через [disarm].
@@ -66,6 +103,12 @@ class GameState extends Equatable {
     int? upgrades,
     Bonus? armed,
     bool disarm = false,
+    int? continues,
+    int? shakeRefills,
+    int? bombRefills,
+    int? upgradeRefills,
+    bool? adBusy,
+    bool? adUnavailable,
   }) {
     return GameState(
       score: score ?? this.score,
@@ -80,6 +123,12 @@ class GameState extends Equatable {
       bombs: bombs ?? this.bombs,
       upgrades: upgrades ?? this.upgrades,
       armed: disarm ? null : (armed ?? this.armed),
+      continues: continues ?? this.continues,
+      shakeRefills: shakeRefills ?? this.shakeRefills,
+      bombRefills: bombRefills ?? this.bombRefills,
+      upgradeRefills: upgradeRefills ?? this.upgradeRefills,
+      adBusy: adBusy ?? this.adBusy,
+      adUnavailable: adUnavailable ?? this.adUnavailable,
     );
   }
 
@@ -97,5 +146,11 @@ class GameState extends Equatable {
         bombs,
         upgrades,
         armed,
+        continues,
+        shakeRefills,
+        bombRefills,
+        upgradeRefills,
+        adBusy,
+        adUnavailable,
       ];
 }

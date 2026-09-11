@@ -23,7 +23,29 @@
     "best": "Rekord — {score}",
     "restart": "Neustart",
     "menu": "Menü",
-    "continueAd": "Weiter mit Werbung"
+    "continueAd": "Weiter mit Werbung",
+    "continueFree": "Weiter",
+    "adUnavailable": "Werbung ist gerade nicht verfügbar",
+    "removeAds": "Werbung entfernen"
+  },
+  "premium": {
+    "title": "PREMIUM",
+    "subtitle": "Einmal zahlen, für immer",
+    "featureNoAds": "Keine Werbung",
+    "featureThemes": "Alle sechs Themes",
+    "featureContinue": "Weiterspielen und Bonus-Aufladung ohne Videos",
+    "buy": "Kaufen für {price}",
+    "restore": "Käufe wiederherstellen",
+    "active": "Premium ist aktiv",
+    "activeBody": "Danke! Keine Werbung, alle Themes und Aufladungen ohne Videos.",
+    "done": "Fertig",
+    "storeUnavailable": "Der App Store ist nicht erreichbar. Prüfe die Verbindung und versuche es erneut.",
+    "purchaseFailed": "Kauf fehlgeschlagen. Bitte später erneut versuchen.",
+    "nothingToRestore": "Keine Käufe zum Wiederherstellen.",
+    "restored": "Kauf wiederhergestellt!",
+    "pending": "Der Kauf wartet auf Bestätigung.",
+    "privacy": "Datenschutz",
+    "terms": "Nutzungsbedingungen"
   },
   "settings": {
     "title": "EINSTELLUNGEN",
@@ -50,7 +72,13 @@
     "resetTitle": "STATISTIK ZURÜCKSETZEN?",
     "resetBody": "Rekord, gespielte Spiele und Verschmelzungen werden auf null gesetzt.",
     "resetConfirm": "Zurücksetzen",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "premium": "PREMIUM",
+    "premiumRow": "Werbung entfernen, alle Themes freischalten",
+    "premiumStatus": "Premium",
+    "premiumActive": "Aktiv",
+    "restorePurchases": "Käufe wiederherstellen",
+    "adPrivacy": "Werbe-Datenschutz"
   },
   "fruits": {
     "cherry": "Kirsche",

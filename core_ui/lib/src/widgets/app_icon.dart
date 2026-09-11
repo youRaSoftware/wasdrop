@@ -15,7 +15,8 @@ enum AppIcons {
   adPlay('ad_play'),
   shake('shake'),
   bomb('bomb'),
-  upgrade('upgrade');
+  upgrade('upgrade'),
+  crown('crown');
 
   final String file;
 

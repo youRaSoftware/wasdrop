@@ -13,6 +13,7 @@ class SettingsScreen extends StatelessWidget {
     return BlocProvider<SettingsCubit>(
       create: (BuildContext context) => SettingsCubit(
         statsRepository: appLocator<StatsRepository>(),
+        ads: appLocator<AdsService>(),
       ),
       child: const SettingsForm(),
     );

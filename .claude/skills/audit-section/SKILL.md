@@ -68,7 +68,7 @@ Read all documentation and the UI reference. Build the expected behaviour: scree
 #### 4.2 Cubit
 - Async work after `close()` guarded (`isClosed` check) — `GameCubit._init()` / `gameOver()` await the repository, then emit → must be guarded (MEDIUM)
 - Every state transition reachable from UI / engine; no method both public and unused
-- Persisted writes: best score saved on game over; `gamesPlayed` incremented once per game (double increment on `continueAfterAd` → restart? check)
+- Persisted writes: best score saved on game over; `gamesPlayed` incremented once per game (a continued game must not count twice: `_continued` in GameCubit)
 - Randomness: `_rollTier` weights sum to the `nextInt` bound (15) — off-by-one = wrong distribution (MEDIUM)
 
 #### 4.3 State
@@ -101,7 +101,7 @@ Compare against siblings: repeated overlay panel decoration (pause vs game over)
 |---|---|---|---|
 
 ### Step 7: Horizontal — dead / useless logic
-- Repository methods with 0 callers; cubit methods unreferenced from UI/engine; empty stubs (`continueAfterAd` is a **known stub**, list under "Stubs", not "dead")
+- Repository methods with 0 callers; cubit methods unreferenced from UI/engine; empty stubs (list under "Stubs", not "dead")
 - Model fields carried through provider → model but never displayed or used (`gamesPlayed`?)
 - Constants defined but unused (`StorageConstants` vs literal box names)
 

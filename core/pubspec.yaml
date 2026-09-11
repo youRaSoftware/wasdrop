@@ -23,6 +23,8 @@ dependencies:
   flame_audio: ^2.12.2
   easy_localization: ^3.0.8
   sensors_plus: ^7.1.0
+  in_app_purchase: ^3.3.0
+  google_mobile_ads: ^9.1.0
 
 dev_dependencies:
   flutter_test:

@@ -11,6 +11,7 @@ class App extends StatelessWidget {
     final AppConfig config = appLocator<AppConfig>();
     final AppRouter appRouter = appLocator<AppRouter>();
     final SettingsService settings = appLocator<SettingsService>();
+    final PremiumService premium = appLocator<PremiumService>();
 
     return MaterialApp.router(
       title: config.appName,
@@ -28,19 +29,28 @@ class App extends StatelessWidget {
       builder: (BuildContext context, Widget? child) {
         final Widget content = child ?? const SizedBox.shrink();
         // Тема-обои для всех экранов — из настроек, без DI в core_ui.
-        return ValueListenableBuilder<SettingsModel>(
-          valueListenable: settings.settings,
-          builder: (BuildContext context, SettingsModel value, Widget? _) {
-            return AppThemeScope(
-              theme: GameThemes.byId(value.themeId),
-              child: config.showFlavorBanner
-                  ? Banner(
-                      message: config.flavor.name.toUpperCase(),
-                      location: BannerLocation.topEnd,
-                      color: AppColors.alert,
-                      child: content,
-                    )
-                  : content,
+        // Премиум-тема без покупки (возврат, сброс) откатывается к cream.
+        return ValueListenableBuilder<bool>(
+          valueListenable: premium.isPremium,
+          builder: (BuildContext context, bool isPremium, Widget? _) {
+            return ValueListenableBuilder<SettingsModel>(
+              valueListenable: settings.settings,
+              builder: (BuildContext context, SettingsModel value, Widget? _) {
+                final GameTheme chosen = GameThemes.byId(value.themeId);
+                return AppThemeScope(
+                  theme: isPremium || !chosen.isLocked
+                      ? chosen
+                      : GameThemes.byId(GameThemes.defaultId),
+                  child: config.showFlavorBanner
+                      ? Banner(
+                          message: config.flavor.name.toUpperCase(),
+                          location: BannerLocation.topEnd,
+                          color: AppColors.alert,
+                          child: content,
+                        )
+                      : content,
+                );
+              },
             );
           },
         );

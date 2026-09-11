@@ -12,11 +12,15 @@ class SettingsState extends Equatable {
   /// Показан оверлей выбора языка.
   final bool choosingLanguage;
 
+  /// UMP требует пункт «Настройки рекламы» (регион с обязательным согласием).
+  final bool adPrivacyRequired;
+
   const SettingsState({
     this.stats = const GameStatsModel.empty(),
     this.version = '',
     this.confirmingReset = false,
     this.choosingLanguage = false,
+    this.adPrivacyRequired = false,
   });
 
   SettingsState copyWith({
@@ -24,16 +28,23 @@ class SettingsState extends Equatable {
     String? version,
     bool? confirmingReset,
     bool? choosingLanguage,
+    bool? adPrivacyRequired,
   }) {
     return SettingsState(
       stats: stats ?? this.stats,
       version: version ?? this.version,
       confirmingReset: confirmingReset ?? this.confirmingReset,
       choosingLanguage: choosingLanguage ?? this.choosingLanguage,
+      adPrivacyRequired: adPrivacyRequired ?? this.adPrivacyRequired,
     );
   }
 
   @override
-  List<Object?> get props =>
-      <Object?>[stats, version, confirmingReset, choosingLanguage];
+  List<Object?> get props => <Object?>[
+        stats,
+        version,
+        confirmingReset,
+        choosingLanguage,
+        adPrivacyRequired,
+      ];
 }

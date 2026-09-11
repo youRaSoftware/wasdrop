@@ -10,6 +10,8 @@ class GameCubit extends Cubit<GameState> {
   final StatsRepository statsRepository;
   final GameRepository gameRepository;
   final AudioService audio;
+  final PremiumService premium;
+  final AdsService ads;
   final Random _random = Random();
 
   /// Первый бросаемый тир (пул — он и следующие [dropWeights.length] - 1).
@@ -21,6 +23,11 @@ class GameCubit extends Cubit<GameState> {
   /// Статистика текущей партии уже записана в репозиторий.
   bool _runSaved = false;
 
+  /// Партия продолжена после проигрыша: следующий проигрыш не считает
+  /// игру второй раз, а слияния пишутся дельтой от [_savedMerges].
+  bool _continued = false;
+  int _savedMerges = 0;
+
   /// Рекорд до начала партии — с ним сравнивается счёт для «НОВЫЙ РЕКОРД»
   /// (сам `bestScore` в состоянии растёт вместе со счётом по ходу партии).
   int _startBest = 0;
@@ -31,6 +38,8 @@ class GameCubit extends Cubit<GameState> {
     required this.statsRepository,
     required this.gameRepository,
     required this.audio,
+    required this.premium,
+    required this.ads,
     GameSnapshot? resumeFrom,
   }) : super(
           resumeFrom == null
@@ -52,6 +61,10 @@ class GameCubit extends Cubit<GameState> {
                   shakes: resumeFrom.shakes,
                   bombs: resumeFrom.bombs,
                   upgrades: resumeFrom.upgrades,
+                  continues: resumeFrom.continues,
+                  shakeRefills: resumeFrom.shakeRefills,
+                  bombRefills: resumeFrom.bombRefills,
+                  upgradeRefills: resumeFrom.upgradeRefills,
                 ),
         ) {
     _init(resume: resumeFrom != null);
@@ -114,8 +127,10 @@ class GameCubit extends Cubit<GameState> {
     _safeEmit(state.copyWith(current: state.next, next: _rollTier()));
   }
 
-  void pause() =>
-      _safeEmit(state.copyWith(status: GameStatus.paused, disarm: true));
+  void pause() {
+    if (state.adBusy) return;
+    _safeEmit(state.copyWith(status: GameStatus.paused, disarm: true));
+  }
 
   void resume() => _safeEmit(state.copyWith(status: GameStatus.playing));
 
@@ -136,6 +151,49 @@ class GameCubit extends Cubit<GameState> {
 
   void disarmBonus() {
     if (state.armed != null) _safeEmit(state.copyWith(disarm: true));
+  }
+
+  /// Кнопка бонуса без зарядов: пополнить их — премиуму сразу, остальным
+  /// за rewarded-ролик. Лимит — [GameRules.refillsPerBonus] на партию.
+  Future<void> requestRefill(Bonus bonus) async {
+    if (state.adBusy || !state.canRefill(bonus)) return;
+    _safeEmit(state.copyWith(adBusy: true, adUnavailable: false, disarm: true));
+    final bool granted = await _watchAd(AdPlacement.refill);
+    if (isClosed) return;
+    if (!granted) {
+      _safeEmit(state.copyWith(adBusy: false));
+      return;
+    }
+    audio.merge(BallTier.t3);
+    final int full = GameState.fullCharges(bonus);
+    _safeEmit(switch (bonus) {
+      Bonus.shake => state.copyWith(
+          adBusy: false,
+          shakes: full,
+          shakeRefills: state.shakeRefills - 1,
+        ),
+      Bonus.bomb => state.copyWith(
+          adBusy: false,
+          bombs: full,
+          bombRefills: state.bombRefills - 1,
+        ),
+      Bonus.upgrade => state.copyWith(
+          adBusy: false,
+          upgrades: full,
+          upgradeRefills: state.upgradeRefills - 1,
+        ),
+    });
+  }
+
+  /// Премиум — награда сразу; иначе ролик. `unavailable` поднимает
+  /// подсказку [GameState.adUnavailable].
+  Future<bool> _watchAd(AdPlacement placement) async {
+    if (premium.isPremium.value) return true;
+    final AdResult result = await ads.showRewarded(placement);
+    if (result == AdResult.unavailable && !isClosed) {
+      _safeEmit(state.copyWith(adUnavailable: true));
+    }
+    return result == AdResult.earned;
   }
 
   /// Телефон встряхнули при взведённой встряске: заряд списан. Сами фрукты
@@ -183,6 +241,10 @@ class GameCubit extends Cubit<GameState> {
       shakes: state.shakes,
       bombs: state.bombs,
       upgrades: state.upgrades,
+      continues: state.continues,
+      shakeRefills: state.shakeRefills,
+      bombRefills: state.bombRefills,
+      upgradeRefills: state.upgradeRefills,
       balls: balls,
       savedAt: DateTime.now(),
     ));
@@ -192,23 +254,52 @@ class GameCubit extends Cubit<GameState> {
     final bool isRecord = state.score > _startBest;
     audio.gameOver(isRecord: isRecord);
     unawaited(gameRepository.clear());
-    final GameStatsModel stats = await _saveRun(state, countGame: true);
-    _startBest = stats.bestScore;
+    // Партия с продолжением уже посчитана при первом проигрыше.
+    final GameStatsModel stats = await _saveRun(state, countGame: !_continued);
     _safeEmit(state.copyWith(
       status: GameStatus.gameOver,
       isNewRecord: isRecord,
       bestScore: stats.bestScore,
       disarm: true,
+      adUnavailable: false,
     ));
+  }
+
+  /// «Продолжить» на экране проигрыша: премиуму сразу, остальным за
+  /// rewarded-ролик. Возвращает, выдано ли продолжение; статус партии не
+  /// меняет — форма сначала снимает верхний слой в движке, потом зовёт
+  /// [resumeAfterContinue].
+  Future<bool> requestContinue() async {
+    if (state.status != GameStatus.gameOver || state.adBusy) return false;
+    if (state.continues <= 0) return false;
+    _safeEmit(state.copyWith(adBusy: true, adUnavailable: false));
+    final bool granted = await _watchAd(AdPlacement.continueGame);
+    if (isClosed) return false;
+    if (!granted) {
+      _safeEmit(state.copyWith(adBusy: false));
+      return false;
+    }
+    _continued = true;
+    _savedMerges = state.merges;
+    _runSaved = false;
+    _safeEmit(state.copyWith(adBusy: false, continues: state.continues - 1));
+    return true;
+  }
+
+  void resumeAfterContinue() {
+    if (state.status != GameStatus.gameOver) return;
+    _safeEmit(state.copyWith(status: GameStatus.playing, isNewRecord: false));
   }
 
   void restart() {
     // Партия, брошенная из паузы, тоже идёт в статистику.
     if (!_runSaved) {
-      unawaited(_saveRun(state, countGame: state.score > 0));
+      unawaited(_saveRun(state, countGame: !_continued && state.score > 0));
     }
     unawaited(gameRepository.clear());
     _runSaved = false;
+    _continued = false;
+    _savedMerges = 0;
     _startBest = state.bestScore;
     _safeEmit(state.copyWith(
       score: 0,
@@ -222,26 +313,26 @@ class GameCubit extends Cubit<GameState> {
       bombs: GameRules.bombsPerGame,
       upgrades: GameRules.upgradesPerGame,
       disarm: true,
+      continues: GameRules.continuesPerGame,
+      shakeRefills: GameRules.refillsPerBonus,
+      bombRefills: GameRules.refillsPerBonus,
+      upgradeRefills: GameRules.refillsPerBonus,
+      adUnavailable: false,
     ));
-  }
-
-  /// TODO: rewarded ad, потом снять верхний слой шаров и продолжить.
-  void continueAfterAd() {
-    _safeEmit(state.copyWith(status: GameStatus.playing));
   }
 
   @override
   Future<void> close() async {
     // Выход в меню посреди партии — статистику всё равно записываем.
     if (!_runSaved && (state.score > 0 || state.merges > 0)) {
-      await _saveRun(state, countGame: state.score > 0);
+      await _saveRun(state, countGame: !_continued && state.score > 0);
     }
     return super.close();
   }
 
-  /// Записывает партию [run] в статистику: рекорд, слияния, самый крупный
-  /// фрукт и (если [countGame]) +1 к сыгранным. Возвращает новую
-  /// статистику.
+  /// Записывает партию [run] в статистику: рекорд, слияния (после
+  /// продолжения — только новые, с [_savedMerges]), самый крупный фрукт и
+  /// (если [countGame]) +1 к сыгранным. Возвращает новую статистику.
   Future<GameStatsModel> _saveRun(
     GameState run, {
     required bool countGame,
@@ -251,9 +342,10 @@ class GameCubit extends Cubit<GameState> {
     final GameStatsModel updated = stats.copyWith(
       bestScore: max(stats.bestScore, run.score),
       gamesPlayed: stats.gamesPlayed + (countGame ? 1 : 0),
-      totalMerges: stats.totalMerges + run.merges,
+      totalMerges: stats.totalMerges + max(0, run.merges - _savedMerges),
       bestTier: _maxTier(stats.bestTier, run.bestTier),
     );
+    _savedMerges = run.merges;
     await statsRepository.saveStats(updated);
     return updated;
   }

@@ -79,7 +79,7 @@
 ### Фаза 3: Полировка и настройки
 - [x] Звук и хаптика: `AudioService` (музыка-луп + SFX на тап/бросок/слияние/проигрыш/рекорд, хаптика), тумблеры «Звук» и «Вибрация» в паузе, 🔊/🔇 в меню (2026-09-06). Аудио пока плейсхолдеры из `script/gen_placeholder_audio.py` — заменить на настоящие
 - [x] Экран настроек `/settings` (⚙️ в меню): Звуки / Музыка / Вибрация, Линия прицела, статистика (рекорд, игр, слияний, самый большой фрукт) со сбросом, цепочка фруктов, версия и лицензии; `SettingsService` вынесен из `AudioService`; статистика партии пишется при проигрыше/рестарте/выходе (2026-09-08)
-- [ ] Rewarded ad — «Продолжить за рекламу»: после просмотра снять верхний слой шаров (`continueAfterAd`)
+- [x] Rewarded ad — «Продолжить за рекламу»: после просмотра снять верхний слой шаров (`requestContinue` + `clearTopLayer`, 2026-09-11)
 - [x] Анимации: нажатие кнопок (`AppPressable`), появление оверлеев (`AppOverlay`), каскадный вход меню, декоративные шары (2026-09-06)
 - [x] Сохранение партии: `GameRepository` (`gameBox`), автосейв раз в 2 с / в фоне / при выходе в меню, «Продолжить» и «Новая игра» в меню, восстановление шаров с углами и скоростями (2026-09-09)
 - [x] Название: витринное «Fruity Drop: Merge Puzzle», под иконкой «Fruity Drop» / «Fruity Dev» (pbxproj, gradle, `AppConfig`, лого) (2026-09-09)
@@ -92,17 +92,21 @@
 - [x] «Бомбочка»: режим выбора с приглушённым стаканом, `BombFuse` 0.3 с → `BoomEffect` (3 кадра) → фрукт удалён, соседи оттолкнуты; тап мимо — отмена; заряд списывается при выборе (2026-09-10)
 - [x] «Увеличить»: режим выбора, тап по фрукту → на месте следующий тир с «попом» и вспышкой, без очков, арбуз не растёт; иконка `upgrade.svg` временная — заменить на дизайнерскую (ТЗ § «Бустер») (2026-09-10)
 - [x] Ключи `bonus.*` на 6 языках, `AudioService.shake/bomb` с плейсхолдерами; смоук-тест: встряска через `ShakeDetector.simulate()`, бомба и увеличение тапом по экрану, заряды в снимке (2026-09-10)
-- [ ] Пополнение зарядов (rewarded-реклама) — вместе с «Продолжить за рекламу», см. Фазу 5
+- [x] Пополнение зарядов (rewarded-реклама, `requestRefill`, 2026-09-11)
 - [ ] Порог тряски проверить на устройстве (`ShakeDetector.defaultThreshold`)
 
 ### Фаза 4: Релиз
+Решение 2026-09-11: 1.0 выходит **только на iOS**, сразу с рекламой и покупкой «Премиум навсегда» (Android — позже). Порядок: покупка → реклама (реклама с первого дня учитывает `isPremium`).
+- [x] **Покупка «Премиум навсегда»** (2026-09-11) — non-consumable `com.wasdrop.premium.lifetime`, 7.99 USD, локализации на 6 языков в ASC; Agreements/Tax/Banking приняты, sandbox-тестер есть. В коде: `PremiumService` (`in_app_purchase`, StoreKit 2, кэш в Hive), paywall `/premium`, замки на темах mint/night/rose/sky, «Восстановить покупки», секция «Премиум» в настройках. Тест: схема dev из Xcode + `ios/Runner/Products.storekit`; sandbox — prod на устройстве.
+- [x] **Реклама** (2026-09-11) — `AdsService` (`google_mobile_ads`, UMP-согласие), rewarded «Продолжить» (снимает верхний слой, 1 раз за партию) и пополнение зарядов (1 раз на бонус за партию); премиум — то же без роликов. Только iOS.
+- [ ] **Перед выкладкой 1.0**: (1) аккаунт AdMob → App ID и два rewarded-блока в `AdsConfig` и `GAD_APPLICATION_ID` (pbxproj, prod-конфигурации); (2) URL политики конфиденциальности в `AppLinks.privacyPolicy`; (3) App Privacy в ASC (см. `STORE_BRIEF.md`); (4) скриншот paywall и заметка в карточке покупки; (5) в AdMob — опубликовать GDPR- и IDFA-сообщения (Privacy & messaging), добавить test device; (6) прогнать sandbox-покупку и restore на prod-сборке, ролики на dev.
 - [ ] Ключ подписи Android (`android/key.properties`), Apple Team / профили
 - [ ] Store-листинги (`.claude/my_docs/STORE_LISTINGS.md`), скриншоты
 - [ ] Первый релиз 1.0.0 — процесс: [my_docs/RELEASE_PROCESS.md](../my_docs/RELEASE_PROCESS.md)
 
 ### Фаза 5: Сервисы (после 1.0 — нужен аккаунт и сеть)
 - [ ] **Лидерборд** — `games_services` (Game Center на iOS, Play Games Services на Android). Что нужно: App Store Connect → приложение → Game Center включить, завести Leaderboard (ID, формат «очки, больше — лучше»); Xcode → capability Game Center (entitlement). Play Console → Play Games Services → создать игровой проект, OAuth-клиент с SHA-1 ключа подписи (release + debug), Leaderboard ID, `android/app/src/main/res/values/games-ids.xml` + `APP_ID` в манифесте; приложение в Play должно существовать. В коде: вход (тихий при старте, кнопка в меню), `submitScore` при проигрыше и при новом рекорде, кнопка «Рекорды» в меню и на экране проигрыша (иконка кубка есть). Без сети — просто не показываем.
-- [ ] **Реклама** (rewarded: «Продолжить за рекламу» = снять верхний слой; пополнение бонусов) — `google_mobile_ads` (AdMob). Что нужно: аккаунт AdMob (платёжные данные), приложения iOS/Android (App ID) и rewarded-блоки (Ad Unit ID) на каждую платформу; iOS — `GADApplicationIdentifier` и `SKAdNetworkItems` в Info.plist, `NSUserTrackingUsageDescription` + запрос ATT (или только неперсонализированная реклама); Android — `com.google.android.gms.ads.APPLICATION_ID` в манифесте и permission `INTERNET` (в release его сейчас нет); согласие GDPR/UK через UMP SDK до первого показа; в App Privacy и Data safety указать сбор идентификаторов/данных об использовании, политика конфиденциальности с разделом про рекламу; в dev — тестовые ID (`AppConfig.useTestAds`), на устройствах — test devices. Заглушка `continueAfterAd` заменяется на показ rewarded и колбэк награды.
+- [ ] **Реклама на Android** (iOS сделана в Фазе 4) — `google_mobile_ads` (AdMob). Что нужно: аккаунт AdMob (платёжные данные), приложения iOS/Android (App ID) и rewarded-блоки (Ad Unit ID) на каждую платформу; iOS — `GADApplicationIdentifier` и `SKAdNetworkItems` в Info.plist, `NSUserTrackingUsageDescription` + запрос ATT (или только неперсонализированная реклама); Android — `com.google.android.gms.ads.APPLICATION_ID` в манифесте и permission `INTERNET` (в release его сейчас нет); согласие GDPR/UK через UMP SDK до первого показа; в App Privacy и Data safety указать сбор идентификаторов/данных об использовании, политика конфиденциальности с разделом про рекламу; в dev — тестовые ID (`AppConfig.useTestAds`), на устройствах — test devices. В коде всё уже есть (`AdsService`, `GameCubit.requestContinue/requestRefill`): снять `Platform.isIOS` в `AdsService.supported` и добавить Android-ID в `AdsConfig`.
 
 ---
 
@@ -110,7 +114,7 @@
 - Локализация: показать переводы de/fr/hu/ja носителям; добавить языки — новый JSON + значение в `AppLocalizationEnum`
 - Настройки, отложенные до релиза: «Политика конфиденциальности», «Оценить приложение», «Написать разработчику» (нужны URL, `url_launcher` / `in_app_review`), тёмная тема, выбор способа броска (тап / отпускание)
 - Таблица рекордов, ежедневные задания
-- Подписка: закрытые темы-обои (`GameTheme.isLocked`, пикер уже показывает замок), тёмный комплект иконок для ночной темы
+- Подписки (monthly/yearly) поверх покупки «навсегда» — если появится регулярный контент; тёмный комплект иконок для ночной темы
 - Физика: если после ручной проверки «слишком прыгает / липнет» — крутить `PhysicsTuning` (restitution, angularDamping, gravity)
 
 ---

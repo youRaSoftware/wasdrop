@@ -23,7 +23,29 @@
     "best": "rekord — {score}",
     "restart": "Újra",
     "menu": "Menü",
-    "continueAd": "Folytatás hirdetéssel"
+    "continueAd": "Folytatás hirdetéssel",
+    "continueFree": "Folytatás",
+    "adUnavailable": "A reklám most nem elérhető",
+    "removeAds": "Reklámok eltávolítása"
+  },
+  "premium": {
+    "title": "PRÉMIUM",
+    "subtitle": "Egy vásárlás, örökre",
+    "featureNoAds": "Reklám nélkül",
+    "featureThemes": "Mind a hat háttér",
+    "featureContinue": "Folytatás és bónuszfeltöltés videók nélkül",
+    "buy": "Megveszem: {price}",
+    "restore": "Vásárlások visszaállítása",
+    "active": "A prémium aktív",
+    "activeBody": "Köszönjük! Reklám nélkül, minden háttér és feltöltés videók nélkül.",
+    "done": "Kész",
+    "storeUnavailable": "Az App Store nem elérhető. Ellenőrizd a kapcsolatot, és próbáld újra.",
+    "purchaseFailed": "A vásárlás nem sikerült. Próbáld újra később.",
+    "nothingToRestore": "Nincs visszaállítható vásárlás.",
+    "restored": "Vásárlás visszaállítva!",
+    "pending": "A vásárlás jóváhagyásra vár.",
+    "privacy": "Adatvédelmi irányelvek",
+    "terms": "Felhasználási feltételek"
   },
   "settings": {
     "title": "BEÁLLÍTÁSOK",
@@ -50,7 +72,13 @@
     "resetTitle": "TÖRLÖD A STATISZTIKÁT?",
     "resetBody": "A rekord, a lejátszott játékok és az egyesítések nullázódnak.",
     "resetConfirm": "Törlés",
-    "cancel": "Mégse"
+    "cancel": "Mégse",
+    "premium": "PRÉMIUM",
+    "premiumRow": "Reklámok ki, minden háttér elérhető",
+    "premiumStatus": "Prémium",
+    "premiumActive": "Aktív",
+    "restorePurchases": "Vásárlások visszaállítása",
+    "adPrivacy": "Hirdetési adatvédelem"
   },
   "fruits": {
     "cherry": "cseresznye",

@@ -16,6 +16,7 @@ class DataDI {
     final Box<dynamic> statsBox = await Hive.openBox<dynamic>('statsBox');
     final Box<dynamic> settingsBox = await Hive.openBox<dynamic>('settingsBox');
     final Box<dynamic> gameBox = await Hive.openBox<dynamic>('gameBox');
+    final Box<dynamic> premiumBox = await Hive.openBox<dynamic>('premiumBox');
 
     final GetIt locator = GetIt.instance;
 
@@ -28,6 +29,9 @@ class DataDI {
     locator.registerLazySingleton<GameHiveProvider>(
       () => GameHiveProvider(gameBox),
     );
+    locator.registerLazySingleton<PremiumHiveProvider>(
+      () => PremiumHiveProvider(premiumBox),
+    );
 
     locator.registerLazySingleton<StatsRepository>(
       () => StatsRepositoryImpl(locator<StatsHiveProvider>()),
@@ -37,6 +41,9 @@ class DataDI {
     );
     locator.registerLazySingleton<GameRepository>(
       () => GameRepositoryImpl(locator<GameHiveProvider>()),
+    );
+    locator.registerLazySingleton<PremiumRepository>(
+      () => PremiumRepositoryImpl(locator<PremiumHiveProvider>()),
     );
   }
 }
