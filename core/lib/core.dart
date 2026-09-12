@@ -9,7 +9,7 @@ export 'package:navigation/navigation.dart';
 
 export 'config/ads_config.dart';
 export 'config/app_config.dart';
-export 'constants/app_links.dart';
+export 'constants/app_constants.dart';
 export 'constants/route_constants.dart';
 export 'constants/storage_constants.dart';
 export 'di/app_di.dart';

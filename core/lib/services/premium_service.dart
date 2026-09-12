@@ -4,6 +4,8 @@ import 'package:domain/domain.dart';
 import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
+import '../config/app_config.dart';
+
 /// Состояние магазина для paywall: цена известна или магазин недоступен
 /// (нет сети, нет продукта, dev-сборка без StoreKit-конфига).
 enum PremiumStoreStatus { loading, ready, unavailable }
@@ -80,7 +82,9 @@ class PremiumService {
       onError: (Object error) =>
           debugPrint('PremiumService: purchase stream error: $error'),
     );
-    unawaited(refresh());
+    // Без монетизации стор не опрашиваем: paywall скрыт, кэш премиума
+    // (если покупка была в другой версии) продолжает действовать.
+    if (AppConfig.monetizationEnabled) unawaited(refresh());
   }
 
   /// Перезапрашивает продукт (paywall открыт заново, появилась сеть).

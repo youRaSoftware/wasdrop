@@ -185,10 +185,12 @@ class GameCubit extends Cubit<GameState> {
     });
   }
 
-  /// Премиум — награда сразу; иначе ролик. `unavailable` поднимает
-  /// подсказку [GameState.adUnavailable].
+  /// Без рекламы (премиум или монетизация выключена) — награда сразу;
+  /// иначе ролик. `unavailable` поднимает подсказку [GameState.adUnavailable].
+  bool get adFree => !AppConfig.monetizationEnabled || premium.isPremium.value;
+
   Future<bool> _watchAd(AdPlacement placement) async {
-    if (premium.isPremium.value) return true;
+    if (adFree) return true;
     final AdResult result = await ads.showRewarded(placement);
     if (result == AdResult.unavailable && !isClosed) {
       _safeEmit(state.copyWith(adUnavailable: true));

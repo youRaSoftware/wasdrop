@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:core/core.dart';
 import 'package:core_ui/core_ui.dart';
 import 'package:domain/domain.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../game/engine/fruit_assets.dart';
 import '../cubit/settings_cubit.dart';
@@ -15,8 +18,9 @@ import '../widgets/theme_label.dart';
 
 /// Экран настроек: секции «Премиум» (paywall или статус), «Звук», «Игра»
 /// (линия прицела, обои — закрытые ведут на paywall, язык), «Статистика»,
-/// «Фрукты», «О приложении» (версия, лицензии, восстановить покупки,
-/// настройки рекламы для регионов с обязательным согласием). Тумблеры
+/// «Фрукты», «О приложении» (версия, лицензии, восстановить покупки, политика
+/// конфиденциальности, настройки рекламы для регионов с обязательным
+/// согласием). Тумблеры
 /// привязаны к [SettingsService.settings], статистика, версия и оверлеи —
 /// в [SettingsCubit].
 class SettingsForm extends StatelessWidget {
@@ -70,34 +74,38 @@ class SettingsForm extends StatelessWidget {
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
                     children: <Widget>[
-                      ValueListenableBuilder<bool>(
-                        valueListenable: premium.isPremium,
-                        builder:
-                            (BuildContext context, bool isPremium, Widget? _) {
-                          return SettingsSection(
-                            title: context.tr(LocaleKeys.settings_premium),
-                            children: <Widget>[
-                              if (isPremium)
-                                SettingsValueRow(
-                                  label: context
-                                      .tr(LocaleKeys.settings_premiumStatus),
-                                  value: context
-                                      .tr(LocaleKeys.settings_premiumActive),
-                                  leading:
-                                      const AppIcon(AppIcons.crown, size: 22),
-                                )
-                              else
-                                SettingsLinkRow(
-                                  key: premiumRowKey,
-                                  label: context
-                                      .tr(LocaleKeys.settings_premiumRow),
-                                  onPressed: () => context.pushNamed('premium'),
-                                ),
-                            ],
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 20),
+                      // Секция «Премиум» — только с монетизацией (1.0 без неё).
+                      if (AppConfig.monetizationEnabled) ...<Widget>[
+                        ValueListenableBuilder<bool>(
+                          valueListenable: premium.isPremium,
+                          builder: (BuildContext context, bool isPremium,
+                              Widget? _) {
+                            return SettingsSection(
+                              title: context.tr(LocaleKeys.settings_premium),
+                              children: <Widget>[
+                                if (isPremium)
+                                  SettingsValueRow(
+                                    label: context
+                                        .tr(LocaleKeys.settings_premiumStatus),
+                                    value: context
+                                        .tr(LocaleKeys.settings_premiumActive),
+                                    leading:
+                                        const AppIcon(AppIcons.crown, size: 22),
+                                  )
+                                else
+                                  SettingsLinkRow(
+                                    key: premiumRowKey,
+                                    label: context
+                                        .tr(LocaleKeys.settings_premiumRow),
+                                    onPressed: () =>
+                                        context.pushNamed('premium'),
+                                  ),
+                              ],
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                      ],
                       ValueListenableBuilder<SettingsModel>(
                         valueListenable: settings.settings,
                         builder: (BuildContext context, SettingsModel value,
@@ -252,10 +260,20 @@ class SettingsForm extends StatelessWidget {
                               applicationVersion: state.version,
                             ),
                           ),
+                          if (AppConfig.monetizationEnabled)
+                            SettingsLinkRow(
+                              label: context
+                                  .tr(LocaleKeys.settings_restorePurchases),
+                              onPressed: () => context.pushNamed('premium'),
+                            ),
                           SettingsLinkRow(
-                            label: context
-                                .tr(LocaleKeys.settings_restorePurchases),
-                            onPressed: () => context.pushNamed('premium'),
+                            label: context.tr(LocaleKeys.premium_privacy),
+                            onPressed: () => unawaited(
+                              launchUrl(
+                                Uri.parse(AppConstants.privacyPolicyUrl),
+                                mode: LaunchMode.externalApplication,
+                              ),
+                            ),
                           ),
                           if (state.adPrivacyRequired)
                             SettingsLinkRow(

@@ -3,11 +3,19 @@ import 'package:core_ui/core_ui.dart';
 import 'package:domain/domain.dart';
 import 'package:flutter/material.dart';
 
-import '../../game/engine/fruit_assets.dart';
+import '../widgets/menu_fruit_pile.dart';
 
-/// Меню (мокап, кадр 1): лого, плашка рекорда, ИГРАТЬ, звук / настройки и
-/// декоративные шары по краям. Элементы появляются каскадом.
+/// Меню (мокап, кадр 1): лого, плашка рекорда, ИГРАТЬ, звук / настройки над
+/// живой кучей фруктов ([MenuFruitPile], выбрано 2026-09-12 вместо
+/// статичного коллажа). Контент — колонка не шире
+/// [MenuScreen.contentMaxWidth] по центру, на планшете лого крупнее.
+/// Элементы появляются каскадом.
 class MenuScreen extends StatefulWidget {
+  static const double contentMaxWidth = 420;
+
+  /// Ширина экрана, с которой лого растёт (планшеты).
+  static const double wideScreen = 600;
+
   static const Key playButtonKey = Key('menu_play');
   static const Key newGameButtonKey = Key('menu_new_game');
   static const Key settingsButtonKey = Key('menu_settings');
@@ -71,171 +79,163 @@ class _MenuScreenState extends State<MenuScreen>
     final SettingsService settings = appLocator<SettingsService>();
     final GameTheme theme = AppThemeScope.of(context);
 
+    final bool wide = MediaQuery.sizeOf(context).width >= MenuScreen.wideScreen;
+    final TextStyle titleStyle =
+        AppFonts.title.copyWith(fontSize: wide ? 64 : AppFonts.title.fontSize);
+
     return AppScaffold(
       body: Stack(
+        fit: StackFit.expand,
         children: <Widget>[
-          // Декоративные шары по краям.
-          Align(
-            alignment: const Alignment(-1.25, -0.55),
-            child: _Reveal(
-              animation: _step(0.3, 0.9),
-              child: BallView(
-                tier: BallTier.t6,
-                diameter: 88,
-                image: FruitAssets.idle(BallTier.t6),
-              ),
-            ),
-          ),
-          Align(
-            alignment: const Alignment(1.3, -0.1),
-            child: _Reveal(
-              animation: _step(0.4, 1),
-              child: BallView(
-                tier: BallTier.t8,
-                diameter: 112,
-                image: FruitAssets.idle(BallTier.t8),
-              ),
-            ),
-          ),
-          Align(
-            alignment: const Alignment(-1.05, 0.45),
-            child: _Reveal(
-              animation: _step(0.5, 1),
-              child: BallView(
-                tier: BallTier.t3,
-                diameter: 56,
-                image: FruitAssets.idle(BallTier.t3),
-              ),
-            ),
+          // Живая куча фруктов под интерфейсом.
+          FadeTransition(
+            opacity: _step(0.2, 0.8),
+            child: const MenuFruitPile(),
           ),
           SafeArea(
-            child: Column(
-              children: <Widget>[
-                const Spacer(flex: 2),
-                _Reveal(
-                  animation: _step(0, 0.55),
-                  scaleFrom: 0.85,
-                  child: Text.rich(
-                    TextSpan(
-                      children: <InlineSpan>[
-                        const TextSpan(text: 'Fruity '),
-                        TextSpan(
-                          text: 'Drop',
-                          style:
-                              AppFonts.title.copyWith(color: AppColors.accent),
-                        ),
-                      ],
-                    ),
-                    style: AppFonts.title.copyWith(color: theme.hudText),
-                  ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: MenuScreen.contentMaxWidth,
                 ),
-                const SizedBox(height: 16),
-                _Reveal(
-                  animation: _step(0.2, 0.7),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(22),
-                      border: Border.all(color: AppColors.stroke, width: 2),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        const AppIcon(AppIcons.trophy, size: 24),
-                        const SizedBox(width: 8),
-                        Text(
-                          context.tr(
-                            LocaleKeys.menu_best,
-                            namedArgs: <String, String>{'score': '$_bestScore'},
-                          ),
-                          style: AppFonts.button.copyWith(
-                            fontSize: 17,
-                            color: AppColors.secondaryText,
-                            fontFeatures: const <FontFeature>[
-                              FontFeature.tabularFigures(),
+                child: Column(
+                  children: <Widget>[
+                    const Spacer(flex: 2),
+                    _Reveal(
+                      animation: _step(0, 0.55),
+                      scaleFrom: 0.85,
+                      // Одной строкой: на планшете лого шире колонки.
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text.rich(
+                          TextSpan(
+                            children: <InlineSpan>[
+                              const TextSpan(text: 'Fruity '),
+                              TextSpan(
+                                text: 'Drop',
+                                style: titleStyle.copyWith(
+                                    color: AppColors.accent),
+                              ),
                             ],
                           ),
+                          maxLines: 1,
+                          style: titleStyle.copyWith(color: theme.hudText),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-                const Spacer(),
-                _Reveal(
-                  animation: _step(0.35, 0.9),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 60),
-                    child: Column(
-                      children: <Widget>[
-                        SizedBox(
-                          width: double.infinity,
-                          child: PrimaryButton(
-                            key: MenuScreen.playButtonKey,
-                            label: context.tr(
-                              _savedGame == null
-                                  ? LocaleKeys.menu_play
-                                  : LocaleKeys.menu_continue,
-                            ),
-                            height: 64,
-                            onPressed: () => context.goNamed(
-                              'game',
-                              extra: _savedGame,
-                            ),
-                          ),
+                    const SizedBox(height: 16),
+                    _Reveal(
+                      animation: _step(0.2, 0.7),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 10,
                         ),
-                        if (_savedGame != null) ...<Widget>[
-                          const SizedBox(height: 6),
-                          AppTextButton(
-                            key: MenuScreen.newGameButtonKey,
-                            label: context.tr(LocaleKeys.menu_newGame),
-                            onPressed: _startNewGame,
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(22),
+                          border: Border.all(color: AppColors.stroke, width: 2),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            const AppIcon(AppIcons.trophy, size: 24),
+                            const SizedBox(width: 8),
+                            Text(
+                              context.tr(
+                                LocaleKeys.menu_best,
+                                namedArgs: <String, String>{
+                                  'score': '$_bestScore'
+                                },
+                              ),
+                              style: AppFonts.button.copyWith(
+                                fontSize: 17,
+                                color: AppColors.secondaryText,
+                                fontFeatures: const <FontFeature>[
+                                  FontFeature.tabularFigures(),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    _Reveal(
+                      animation: _step(0.35, 0.9),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 60),
+                        child: Column(
+                          children: <Widget>[
+                            SizedBox(
+                              width: double.infinity,
+                              child: PrimaryButton(
+                                key: MenuScreen.playButtonKey,
+                                label: context.tr(
+                                  _savedGame == null
+                                      ? LocaleKeys.menu_play
+                                      : LocaleKeys.menu_continue,
+                                ),
+                                height: 64,
+                                onPressed: () => context.goNamed(
+                                  'game',
+                                  extra: _savedGame,
+                                ),
+                              ),
+                            ),
+                            if (_savedGame != null) ...<Widget>[
+                              const SizedBox(height: 6),
+                              AppTextButton(
+                                key: MenuScreen.newGameButtonKey,
+                                label: context.tr(LocaleKeys.menu_newGame),
+                                onPressed: _startNewGame,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Звук и настройки — сразу под кнопкой: низ экрана
+                    // отдан фруктам.
+                    const SizedBox(height: 20),
+                    _Reveal(
+                      animation: _step(0.55, 1),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          ValueListenableBuilder<SettingsModel>(
+                            valueListenable: settings.settings,
+                            builder: (BuildContext context, SettingsModel value,
+                                Widget? _) {
+                              return IconCircleButton(
+                                key: MenuScreen.soundButtonKey,
+                                onPressed: () =>
+                                    settings.setSoundOn(!value.soundOn),
+                                child: AppIcon(
+                                  value.soundOn
+                                      ? AppIcons.soundOn
+                                      : AppIcons.soundOff,
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(width: 16),
+                          IconCircleButton(
+                            key: MenuScreen.settingsButtonKey,
+                            onPressed: () async {
+                              await context.pushNamed('settings');
+                              // Рекорд могли сбросить в настройках.
+                              _loadStats();
+                            },
+                            child: const AppIcon(AppIcons.settings),
                           ),
                         ],
-                      ],
+                      ),
                     ),
-                  ),
+                    const Spacer(flex: 3),
+                  ],
                 ),
-                const Spacer(flex: 2),
-                _Reveal(
-                  animation: _step(0.55, 1),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      ValueListenableBuilder<SettingsModel>(
-                        valueListenable: settings.settings,
-                        builder: (BuildContext context, SettingsModel value,
-                            Widget? _) {
-                          return IconCircleButton(
-                            key: MenuScreen.soundButtonKey,
-                            onPressed: () =>
-                                settings.setSoundOn(!value.soundOn),
-                            child: AppIcon(
-                              value.soundOn
-                                  ? AppIcons.soundOn
-                                  : AppIcons.soundOff,
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(width: 16),
-                      IconCircleButton(
-                        key: MenuScreen.settingsButtonKey,
-                        onPressed: () async {
-                          await context.pushNamed('settings');
-                          // Рекорд могли сбросить в настройках.
-                          _loadStats();
-                        },
-                        child: const AppIcon(AppIcons.settings),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
-              ],
+              ),
             ),
           ),
         ],

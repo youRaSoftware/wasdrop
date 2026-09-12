@@ -27,7 +27,8 @@ class GameTheme {
   final ThemeDecor decor;
 
   /// Тема из премиума: без покупки показывается с замком, тап по ней
-  /// открывает paywall (`PremiumService.canUseTheme`).
+  /// открывает paywall (`PremiumService.canUseTheme`). Пока все темы
+  /// бесплатны (решение 2026-09-11), механизм остаётся на будущее.
   final bool isLocked;
 
   const GameTheme({
@@ -88,7 +89,6 @@ abstract final class GameThemes {
     jarWall: Color(0xFF9CC9A9),
     deadline: Color(0xFF85AB90),
     hudText: Color(0xFF1F4A2E),
-    isLocked: true,
   );
 
   static const GameTheme night = GameTheme(
@@ -102,7 +102,6 @@ abstract final class GameThemes {
     deadlineAlert: Color(0xFFFF5D7A),
     hudText: Color(0xFFF2EFE6),
     decor: ThemeDecor.stars,
-    isLocked: true,
   );
 
   static const GameTheme rose = GameTheme(
@@ -114,7 +113,6 @@ abstract final class GameThemes {
     deadline: Color(0xFFC18FA3),
     hudText: Color(0xFF6E2E48),
     decor: ThemeDecor.petals,
-    isLocked: true,
   );
 
   static const GameTheme sky = GameTheme(
@@ -126,7 +124,6 @@ abstract final class GameThemes {
     deadline: Color(0xFF7AA2B9),
     hudText: Color(0xFF6E9FBD),
     decor: ThemeDecor.clouds,
-    isLocked: true,
   );
 
   static const List<GameTheme> all = <GameTheme>[

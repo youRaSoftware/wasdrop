@@ -78,26 +78,32 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     expect(find.text(LocaleKeys.settings_title.tr()), findsOneWidget);
     expect(find.text(LocaleKeys.settings_aimLine.tr()), findsOneWidget);
-    // Theme picker: «night» is a premium wallpaper — without the purchase
-    // its dot opens the paywall (no store in tests: the buy button is
-    // disabled, «back» returns); with premium it selects and persists and
-    // reaches the theme scope.
+    // Premium row opens the paywall (no store in tests: the buy button is
+    // disabled, «back» returns); once premium is set the row turns into a
+    // status line. All wallpapers are free for now, so «night» selects,
+    // persists and reaches the theme scope without the purchase.
+    // Without monetization (release 1.0, the default) there is no premium
+    // row at all: run with --dart-define=monetization=on to cover the
+    // paywall.
     expect(find.byType(ThemePicker), findsOneWidget);
-    expect(find.byKey(SettingsForm.premiumRowKey), findsOneWidget);
-    await tester.tap(find.byKey(const Key('theme_night')));
-    await tester.pump(const Duration(seconds: 1));
-    expect(find.byType(PremiumForm), findsOneWidget);
-    expect(find.byKey(PremiumForm.restoreKey), findsOneWidget);
-    expect(settings.value.themeId, isNot('night'));
-    await tester.tap(find.byIcon(Icons.arrow_back_rounded));
-    await tester.pump(const Duration(seconds: 1));
-    expect(find.byType(PremiumForm), findsNothing);
-    await premium.setPremium(true);
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(find.byKey(SettingsForm.premiumRowKey), findsNothing);
+    expect(GameThemes.lockedIds, isEmpty);
+    if (AppConfig.monetizationEnabled) {
+      await tester.tap(find.byKey(SettingsForm.premiumRowKey));
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.byType(PremiumForm), findsOneWidget);
+      expect(find.byKey(PremiumForm.restoreKey), findsOneWidget);
+      await tester.tap(find.byIcon(Icons.arrow_back_rounded));
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.byType(PremiumForm), findsNothing);
+    } else {
+      expect(find.byKey(SettingsForm.premiumRowKey), findsNothing);
+    }
     await tester.tap(find.byKey(const Key('theme_night')));
     await tester.pump(const Duration(milliseconds: 400));
     expect(settings.value.themeId, 'night');
+    await premium.setPremium(true);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byKey(SettingsForm.premiumRowKey), findsNothing);
     expect(
       (await appLocator<SettingsRepository>().getSettings()).themeId,
       'night',
@@ -510,11 +516,12 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
     expect(resumed.cubit.state.status, GameStatus.playing);
 
-    // --- Continue after game over: premium (set in the settings step) gets
-    // it without an ad — the top layer above the deadline is cleared, the
-    // game resumes and the one continue per game is spent; the second game
-    // over offers no continue. A refill on an exhausted bonus is free too.
-    expect(premium.isPremium.value, isTrue);
+    // --- Continue after game over: without an ad (premium was set in the
+    // settings step; without monetization everyone gets it free) — the top
+    // layer above the deadline is cleared, the game resumes and the one
+    // continue per game is spent; the second game over offers no continue.
+    // A refill on an exhausted bonus is free too.
+    expect(resumed.cubit.adFree, isTrue);
     await resumed.cubit.gameOver();
     await tester.pump(const Duration(milliseconds: 600));
     expect(resumed.cubit.state.status, GameStatus.gameOver);

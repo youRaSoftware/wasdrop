@@ -66,6 +66,9 @@ class _GameFormState extends State<GameForm> with WidgetsBindingObserver {
   /// Купили премиум из paywall поверх игры — кнопки рекламы меняются.
   void _onPremiumChanged() => setState(() {});
 
+  /// Раскладка кнопок под монетизацию (`AppConfig.monetizationEnabled`).
+  static const bool _monetization = AppConfig.monetizationEnabled;
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.inactive ||
@@ -104,7 +107,8 @@ class _GameFormState extends State<GameForm> with WidgetsBindingObserver {
     final GameTheme theme = AppThemeScope.of(context);
     final Bonus? armed = state.armed;
 
-    final bool isPremium = _premium.isPremium.value;
+    // Без рекламы: премиум или монетизация выключена (релиз 1.0).
+    final bool isPremium = _cubit.adFree;
     _game.paused = state.status != GameStatus.playing || state.adBusy;
 
     return AppScaffold(
@@ -175,6 +179,7 @@ class _GameFormState extends State<GameForm> with WidgetsBindingObserver {
                 onRemoveAds: () => context.pushNamed('premium'),
                 canContinue: state.continues > 0,
                 isPremium: isPremium,
+                showRemoveAds: _monetization && !isPremium,
                 adBusy: state.adBusy,
                 adUnavailable: state.adUnavailable,
               ),

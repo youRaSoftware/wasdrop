@@ -18,12 +18,14 @@ class GameOverOverlay extends StatelessWidget {
   final VoidCallback onContinueAd;
   final VoidCallback onRemoveAds;
 
-  /// Есть продолжения; премиум — без ролика; идёт показ ролика; ролик не
-  /// загрузился (подсказка под кнопкой).
+  /// Есть продолжения; без ролика (премиум или монетизация выключена);
+  /// идёт показ ролика; ролик не загрузился (подсказка под кнопкой);
+  /// показывать «Убрать рекламу» (монетизация включена, премиума нет).
   final bool canContinue;
   final bool isPremium;
   final bool adBusy;
   final bool adUnavailable;
+  final bool showRemoveAds;
 
   const GameOverOverlay({
     required this.score,
@@ -37,6 +39,7 @@ class GameOverOverlay extends StatelessWidget {
     required this.isPremium,
     required this.adBusy,
     required this.adUnavailable,
+    this.showRemoveAds = false,
     super.key,
   });
 
@@ -116,7 +119,7 @@ class GameOverOverlay extends StatelessWidget {
             icon: const AppIcon(AppIcons.menuHome, size: 20),
             onPressed: onMenu,
           ),
-          if (canContinue || !isPremium) ...<Widget>[
+          if (canContinue || showRemoveAds) ...<Widget>[
             const Divider(color: AppColors.stroke),
             const SizedBox(height: 4),
           ],
@@ -144,7 +147,7 @@ class GameOverOverlay extends StatelessWidget {
               ),
             ),
           ],
-          if (!isPremium)
+          if (showRemoveAds)
             AppTextButton(
               key: removeAdsKey,
               label: context.tr(LocaleKeys.gameOver_removeAds),

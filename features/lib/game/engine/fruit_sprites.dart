@@ -104,6 +104,13 @@ class FruitSprites {
   static const String package = 'features';
   static const String folder = 'fruits';
 
+  /// Общий кэш на все движки (заставка, меню, игра): картинки и так лежат
+  /// в `Flame.images`, а подгонка форм по пикселям делается один раз — иначе
+  /// каждый экран заново сканировал 11 спрайтов и первый кадр замирал.
+  static final FruitSprites shared = FruitSprites();
+
+  Future<void>? _loading;
+
   /// Порог альфы, с которого пиксель считается телом фрукта. Высокий,
   /// чтобы не считать телом полупрозрачный ореол после удаления фона.
   static const int _alphaThreshold = 200;
@@ -138,7 +145,10 @@ class FruitSprites {
   static String fileName(BallTier tier, String state) =>
       '$folder/t${tier.number}_$state.png';
 
-  Future<void> load(Images images) async {
+  /// Идемпотентно: повторные вызовы ждут первую загрузку.
+  Future<void> load(Images images) => _loading ??= _load(images);
+
+  Future<void> _load(Images images) async {
     final Set<String> manifest =
         (await AssetManifest.loadFromAssetBundle(rootBundle))
             .listAssets()

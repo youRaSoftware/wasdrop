@@ -5,6 +5,7 @@
 #   script/run.sh dev            # debug on the current device
 #   script/run.sh prod --release
 #   script/run.sh dev -d <deviceId>
+#   script/run.sh dev --dart-define=monetization=on   # реклама и paywall (AppConfig)
 
 set -euo pipefail
 cd "$(dirname "$0")/.."

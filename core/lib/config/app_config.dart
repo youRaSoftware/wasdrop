@@ -47,4 +47,14 @@ class AppConfig {
   /// В dev — тестовые блоки AdMob и debug-география EEA для формы согласия
   /// (см. `AdsConfig`, `AdsService`).
   bool get useTestAds => isDev;
+
+  /// Монетизация (rewarded-реклама и покупка «Премиум навсегда»).
+  /// Релиз 1.0 выходит без неё: всё бесплатно, продолжение и пополнение
+  /// зарядов даются без роликов (те же лимиты), paywall и секция «Премиум»
+  /// скрыты, SDK рекламы и StoreKit не трогаются. Включается
+  /// `--dart-define=monetization=on` (для разработки и для обновления, где
+  /// реклама появится). Решение 2026-09-12: рекламные сети (AppLovin и др.)
+  /// требуют уже опубликованное приложение.
+  static const bool monetizationEnabled =
+      String.fromEnvironment('monetization') == 'on';
 }

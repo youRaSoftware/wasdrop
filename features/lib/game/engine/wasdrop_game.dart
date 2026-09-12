@@ -46,7 +46,7 @@ class WasDropGame extends Forge2DGame
 
   /// Спрайты фруктов по тирам (грузятся один раз в [onLoad]).
   @override
-  final FruitSprites fruitSprites = FruitSprites();
+  final FruitSprites fruitSprites = FruitSprites.shared;
 
   /// Спрайты бонусов: бомбочка и кадры взрыва.
   final FxSprites fxSprites = FxSprites();

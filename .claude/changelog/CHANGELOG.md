@@ -39,8 +39,9 @@ On release, rename `[Unreleased]` to `[X.Y.Z] — YYYY-MM-DD` and start a fresh 
 - Изменено: игра называется Fruity Drop (в сторах — Fruity Drop: Merge Puzzle), под иконкой «Fruity Drop»
 - Новое: интерфейс на шести языках — русский, английский, немецкий, французский, венгерский, японский; по умолчанию язык устройства, выбор в настройках («Игра → Язык»)
 - Новое: на iOS 18+ игра заявляет поддержку Game Mode (система снижает фоновую активность и отдаёт игре приоритет)
-- Новое: покупка «Премиум навсегда» (iOS) — без рекламы, все шесть обоев (бесплатно — Крем и Персиковый закат, остальные с замком), «Продолжить» и пополнение зарядов без роликов; экран покупки открывается из настроек, из закрытых обоев и с экрана проигрыша, там же «Восстановить покупки»
-- Новое: «Продолжить за рекламу» работает — после ролика верхний слой фруктов исчезает и партия продолжается (один раз за партию); кнопка бонуса без зарядов предлагает пополнить их за ролик (по разу на бонус за партию); без сети показывается «Реклама сейчас недоступна»
+- Новое: в меню внизу лежит живая куча фруктов — они сыплются при входе, их можно подбрасывать тапом; на iPad меню собрано в центре, а не растянуто на всю ширину
+- (скрыто в 1.0, включается флагом монетизации) Новое: покупка «Премиум навсегда» (iOS) — без рекламы, «Продолжить» и пополнение зарядов без роликов; экран покупки открывается из настроек, из закрытых обоев и с экрана проигрыша, там же «Восстановить покупки»
+- Новое: «Продолжить» после проигрыша — верхний слой фруктов исчезает и партия продолжается (один раз за партию); кнопка бонуса без зарядов пополняет их (по разу на бонус за партию). В 1.0 бесплатно; с включённой монетизацией — за rewarded-ролик, без сети «Реклама сейчас недоступна»
 - Исправлено: у клубники, киви, черники, винограда, персика и дыни были перепутаны спокойное лицо и «ойк» (в покое они сидели с открытым ртом); у арбуза и дыни убраны белые остатки фона внутри завитка хвостика
 - Исправлено: рекорд в меню показывал 0 после партии — теперь он обновляется и сохраняется сразу, как только счёт его превысил (и в HUD тоже); плашка рекорда в меню стала крупнее
 - Новое: экран настроек (⚙️ в меню): тумблеры «Звуки», «Музыка», «Вибрация», «Линия прицела»; статистика — рекорд, сыгранные игры, слияния, самый большой фрукт — со сбросом; цепочка всех 11 фруктов с названиями; версия и лицензии
@@ -75,8 +76,9 @@ On release, rename `[Unreleased]` to `[X.Y.Z] — YYYY-MM-DD` and start a fresh 
 - Changed: the game is now called Fruity Drop (Fruity Drop: Merge Puzzle in the stores), «Fruity Drop» under the icon
 - New: the interface speaks six languages — Russian, English, German, French, Hungarian, Japanese; follows the device language by default, switchable in Settings → Game → Language
 - New: on iOS 18+ the game opts into Game Mode (the system reduces background activity and prioritises the game)
-- New: "Premium Forever" purchase (iOS) — no ads, all six wallpapers (Cream and Peach sunset stay free, the rest show a lock), Continue and bonus refills without videos; the purchase screen opens from Settings, from a locked wallpaper and from the game-over panel, with "Restore purchases"
-- New: "Continue with an ad" works — after the video the top layer of fruit disappears and the game goes on (once per game); a bonus button with no charges offers a refill for a video (once per bonus per game); offline it says "Ads are unavailable right now"
+- New: a live pile of fruit at the bottom of the menu — it rains in and you can flick the fruit; on iPad the menu is centred instead of stretched
+- (hidden in 1.0 behind the monetization flag) New: "Premium Forever" purchase (iOS) — no ads, Continue and bonus refills without videos; the purchase screen opens from Settings, from a locked wallpaper and from the game-over panel, with "Restore purchases"
+- New: Continue after game over — the top layer of fruit disappears and the game goes on (once per game); a bonus button with no charges refills them (once per bonus per game). Free in 1.0; with monetization on it costs a rewarded video, offline it says "Ads are unavailable right now"
 - Fixed: strawberry, kiwi, blueberry, grape, peach and melon had their calm and "oof" faces swapped (they sat with open mouths); white background leftovers inside the watermelon and melon stem curls removed
 - Fixed: the menu showed a best score of 0 after a game — the record now updates and is saved the moment the score beats it (in the HUD too); the record chip in the menu is bigger
 - New: settings screen (⚙️ in the menu): Sounds, Music, Vibration and Aim line toggles; statistics — best score, games played, merges, biggest fruit — with a reset; the chain of all 11 fruits with names; version and licenses

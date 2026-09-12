@@ -44,7 +44,8 @@ class AdsService {
 
   AdsService(this._config, this._premium, this._audio);
 
-  bool get supported => Platform.isIOS;
+  /// Реклама возможна: включена монетизация и платформа iOS.
+  bool get supported => AppConfig.monetizationEnabled && Platform.isIOS;
 
   /// Нужна ли в настройках строка «Настройки рекламы» (UMP: пользователь
   /// из региона с обязательным согласием может его изменить).

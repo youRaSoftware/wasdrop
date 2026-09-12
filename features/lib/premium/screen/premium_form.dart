@@ -116,23 +116,26 @@ class PremiumForm extends StatelessWidget {
                             ),
                             label: context.tr(LocaleKeys.premium_featureNoAds),
                           ),
-                          PremiumFeatureRow(
-                            icon: const Icon(
-                              Icons.palette_rounded,
-                              size: 22,
-                              color: AppColors.accent,
-                            ),
-                            label: context.tr(LocaleKeys.premium_featureThemes),
-                            trailing: IgnorePointer(
-                              child: ThemePicker(
-                                themes: GameThemes.all,
-                                selectedId: '',
-                                onSelect: (String _) {},
-                                labelOf: (GameTheme t) =>
-                                    themeLabel(context, t),
+                          // Пункт про обои есть только пока есть закрытые темы.
+                          if (GameThemes.lockedIds.isNotEmpty)
+                            PremiumFeatureRow(
+                              icon: const Icon(
+                                Icons.palette_rounded,
+                                size: 22,
+                                color: AppColors.accent,
+                              ),
+                              label:
+                                  context.tr(LocaleKeys.premium_featureThemes),
+                              trailing: IgnorePointer(
+                                child: ThemePicker(
+                                  themes: GameThemes.all,
+                                  selectedId: '',
+                                  onSelect: (String _) {},
+                                  labelOf: (GameTheme t) =>
+                                      themeLabel(context, t),
+                                ),
                               ),
                             ),
-                          ),
                           PremiumFeatureRow(
                             icon: const AppIcon(AppIcons.adPlay, size: 22),
                             label:
@@ -197,8 +200,10 @@ class PremiumForm extends StatelessWidget {
                   PremiumLinkRow(
                     privacyLabel: context.tr(LocaleKeys.premium_privacy),
                     termsLabel: context.tr(LocaleKeys.premium_terms),
-                    onPrivacy: () => unawaited(_open(AppLinks.privacyPolicy)),
-                    onTerms: () => unawaited(_open(AppLinks.termsOfUse)),
+                    onPrivacy: () =>
+                        unawaited(_open(AppConstants.privacyPolicyUrl)),
+                    onTerms: () =>
+                        unawaited(_open(AppConstants.termsOfServiceUrl)),
                   ),
                 ],
               ),
