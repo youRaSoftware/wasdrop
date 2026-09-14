@@ -85,6 +85,7 @@
 - [x] Название: витринное «Fruity Drop: Merge Puzzle», под иконкой «Fruity Drop» / «Fruity Dev» (pbxproj, gradle, `AppConfig`, лого) (2026-09-09)
 - [x] Локализация: `easy_localization`, шесть языков (en, ru, de, fr, hu, ja), `LocaleKeys` из `core/resources/translations`, пикер «Язык» в настройках, `CFBundleLocalizations` (план `plans/2026-09-08_localization.md`, 2026-09-08)
 - [x] Пакет дизайнера (`my_docs/TZ_ASSETS.md`): шрифты Rubik + Unbounded вместо Archivo, 8 SVG-иконок вместо эмодзи (`AppIcon`), темы-обои `GameThemes` × 6 с пикером в паузе и настройках, `AppThemeScope`, статичный декор (звёзды/облака/лепестки) (2026-09-08)
+- [x] Баг «фрукты зависают в воздухе» после «Продолжить» → «Заново»: паузный движок не обрабатывал очереди Flame, `reset()` снимал шары без `destroyBody`; фикс — `WasDropGame.onMount` прогоняет очереди, страховка в `reset()`/`captureBalls()`, тест `features/test/game/wasdrop_game_restore_reset_test.dart` (2026-09-14)
 
 ### Фаза 3б: Бонусы (ТЗ на ассеты — `my_docs/TZ_BONUS_ASSETS.md`)
 - [x] Полоса `BonusBar` под стаканом: три `IconCircleButton` с бейджами зарядов; заряды на партию в `GameRules` (встряска ×3, бомбочка ×1, увеличение ×1), остаток в `GameState` и в снимке партии; кнопка взводит бонус (`GameState.armed`), пилюля-подсказка над стаканом (2026-09-10)
@@ -103,7 +104,7 @@
 - [ ] **Перед 1.1 (монетизация)**: вернуть в Info.plist `SKAdNetworkItems` (50 id) и `NSUserTrackingUsageDescription` (из git, коммит до «Ship 1.0 without monetization»); в `script/build.sh` добавить `--dart-define=monetization=on`; (1) аккаунт AdMob → App ID и два rewarded-блока в `AdsConfig` и `GAD_APPLICATION_ID` (pbxproj, prod-конфигурации); (2) ~~URL политики~~ — есть, `AppConstants.privacyPolicyUrl`; (3) App Privacy в ASC (см. `STORE_BRIEF.md`); (4) скриншот paywall и заметка в карточке покупки; (5) в AdMob — опубликовать GDPR- и IDFA-сообщения (Privacy & messaging), добавить test device; (6) прогнать sandbox-покупку и restore на prod-сборке, ролики на dev.
 - [ ] Ключ подписи Android (`android/key.properties`), Apple Team / профили
 - [ ] Store-листинги (`.claude/my_docs/STORE_LISTINGS.md`), скриншоты
-- [ ] Первый релиз 1.0.0 — процесс: [my_docs/RELEASE_PROCESS.md](../my_docs/RELEASE_PROCESS.md)
+- [x] Первый релиз 1.0.0 (iOS, без монетизации) — **отправлен на ревью 2026-09-14**; процесс: [my_docs/RELEASE_PROCESS.md](../my_docs/RELEASE_PROCESS.md). После одобрения: ссылка в AppLovin/AdMob, привязка к App Store, следующая версия 1.1 с монетизацией
 
 ### Фаза 5: Сервисы (после 1.0 — нужен аккаунт и сеть)
 - [ ] **Лидерборд** — `games_services` (Game Center на iOS, Play Games Services на Android). Что нужно: App Store Connect → приложение → Game Center включить, завести Leaderboard (ID, формат «очки, больше — лучше»); Xcode → capability Game Center (entitlement). Play Console → Play Games Services → создать игровой проект, OAuth-клиент с SHA-1 ключа подписи (release + debug), Leaderboard ID, `android/app/src/main/res/values/games-ids.xml` + `APP_ID` в манифесте; приложение в Play должно существовать. В коде: вход (тихий при старте, кнопка в меню), `submitScore` при проигрыше и при новом рекорде, кнопка «Рекорды» в меню и на экране проигрыша (иконка кубка есть). Без сети — просто не показываем.

@@ -122,6 +122,33 @@ class WasDropGame extends Forge2DGame
     world.add(_JarOverlay());
   }
 
+  @override
+  void onMount() {
+    super.onMount();
+    unawaited(_flushLifecycleEvents());
+  }
+
+  /// `GameWidget` после загрузки делает первый `update(0)` только у
+  /// незапаузенного движка, а восстановленная партия открывается в паузе.
+  /// Без этого прохода очереди Flame не обрабатывались: мир и шары из
+  /// [_restore] оставались несмонтированными (тела Box2D уже созданы, и
+  /// рендер идёт без монтирования — куча видна). Тогда «Заново» из паузы
+  /// снимало компоненты без `onRemove`, тела старой кучи оставались в мире
+  /// невидимыми, и новые фрукты «зависали» на них в воздухе; а
+  /// [captureBalls] не видел ни одного шара, и автосейв терял партию.
+  /// Загрузка компонентов асинхронна, поэтому очереди прогоняются
+  /// несколько раз, пока не опустеют.
+  Future<void> _flushLifecycleEvents() async {
+    for (int i = 0; i < 8; i++) {
+      // Дети попадают в очередь после `onMount` (в `setMounted`), поэтому
+      // первый проход — на следующем тике.
+      await Future<void>.delayed(Duration.zero);
+      if (!isMounted || isRemoved) return;
+      processLifecycleEvents();
+      if (!hasLifecycleEvents) return;
+    }
+  }
+
   /// Расставляет шары сохранённой партии: X как был, Y — от дна (высота
   /// мира зависит от экрана), угол и скорость — как в момент сохранения.
   void _restore(GameSnapshot snapshot) {
@@ -140,11 +167,11 @@ class WasDropGame extends Forge2DGame
     }
   }
 
-  /// Снимок шаров для сохранения партии (смонтированные, не сливающиеся).
+  /// Снимок шаров для сохранения партии (с созданным телом, не сливающиеся).
   List<BallSnapshot> captureBalls() {
     return world.children
         .whereType<BallBody>()
-        .where((BallBody b) => b.isMounted && !b.merging)
+        .where((BallBody b) => b.isLoaded && !b.merging)
         .map(
           (BallBody b) => BallSnapshot(
             tier: b.tier,
@@ -508,11 +535,19 @@ class WasDropGame extends Forge2DGame
   }
 
   void reset() {
-    world.children
+    final List<Component> stale = world.children
         .where(
             (Component c) => c is BallBody || c is BombFuse || c is BoomEffect)
-        .toList()
-        .forEach((Component c) => c.removeFromParent());
+        .toList();
+    for (final Component c in stale) {
+      // Flame зовёт `onRemove` (и `BodyComponent` — `destroyBody`) только у
+      // смонтированных компонентов; у загруженного, но ещё не смонтированного
+      // шара тело осталось бы в мире невидимым.
+      if (c is BallBody && c.isLoaded && !c.isMounted && c.body.isValid) {
+        world.destroyBody(c.body);
+      }
+      c.removeFromParent();
+    }
     overLineTime = 0;
     canDrop = true;
     _shakeCooldownLeft = 0;
