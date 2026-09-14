@@ -9,6 +9,7 @@ import '../config/app_config.dart';
 import '../services/ads_service.dart';
 import '../services/audio_service.dart';
 import '../services/premium_service.dart';
+import '../services/review_service.dart';
 import '../services/settings_service.dart';
 
 final GetIt appLocator = GetIt.instance;
@@ -36,4 +37,6 @@ Future<void> setupAppScope(Flavor flavor) async {
   final AdsService ads = AdsService(appLocator<AppConfig>(), premium, audio);
   appLocator.registerSingleton<AdsService>(ads);
   unawaited(ads.init());
+
+  appLocator.registerSingleton<ReviewService>(ReviewService());
 }

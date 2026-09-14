@@ -69,6 +69,7 @@
     "about": "ABOUT",
     "version": "Version",
     "licenses": "Licenses",
+    "rateApp": "Rate the app",
     "resetTitle": "RESET STATISTICS?",
     "resetBody": "Best score, games played and merges will be set to zero.",
     "resetConfirm": "Reset",

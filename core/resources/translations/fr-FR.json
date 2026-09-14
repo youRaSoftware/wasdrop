@@ -69,6 +69,7 @@
     "about": "À PROPOS",
     "version": "Version",
     "licenses": "Licences",
+    "rateApp": "Noter l’application",
     "resetTitle": "RÉINITIALISER LES STATISTIQUES ?",
     "resetBody": "Le record, les parties jouées et les fusions seront remis à zéro.",
     "resetConfirm": "Réinitialiser",

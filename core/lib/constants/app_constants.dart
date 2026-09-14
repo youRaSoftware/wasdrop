@@ -7,4 +7,8 @@ abstract final class AppConstants {
   /// Стандартное лицензионное соглашение Apple для приложений из App Store.
   static const String termsOfServiceUrl =
       'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
+
+  /// Apple ID приложения в App Store Connect — страница отзыва в App Store
+  /// («Оценить приложение» в настройках). Пустая строка скрывает кнопку.
+  static const String appStoreId = '6809236566';
 }

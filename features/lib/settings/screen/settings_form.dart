@@ -26,6 +26,7 @@ import '../widgets/theme_label.dart';
 class SettingsForm extends StatelessWidget {
   static const Key languageRowKey = Key('settings_language');
   static const Key premiumRowKey = Key('settings_premium');
+  static const Key rateAppKey = Key('settings_rate_app');
 
   const SettingsForm({super.key});
 
@@ -35,6 +36,7 @@ class SettingsForm extends StatelessWidget {
     final SettingsState state = context.watch<SettingsCubit>().state;
     final SettingsService settings = appLocator<SettingsService>();
     final PremiumService premium = appLocator<PremiumService>();
+    final ReviewService review = appLocator<ReviewService>();
     final AppConfig config = appLocator<AppConfig>();
     final GameStatsModel stats = state.stats;
     final BallTier? bestTier = stats.bestTier;
@@ -260,6 +262,12 @@ class SettingsForm extends StatelessWidget {
                               applicationVersion: state.version,
                             ),
                           ),
+                          if (review.canOpenStore)
+                            SettingsLinkRow(
+                              key: SettingsForm.rateAppKey,
+                              label: context.tr(LocaleKeys.settings_rateApp),
+                              onPressed: () => unawaited(review.openStore()),
+                            ),
                           if (AppConfig.monetizationEnabled)
                             SettingsLinkRow(
                               label: context

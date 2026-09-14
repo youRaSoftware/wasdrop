@@ -69,6 +69,7 @@
     "about": "アプリについて",
     "version": "バージョン",
     "licenses": "ライセンス",
+    "rateApp": "アプリを評価する",
     "resetTitle": "統計をリセットしますか？",
     "resetBody": "ベストスコア、プレイ回数、合体回数がゼロになります。",
     "resetConfirm": "リセット",

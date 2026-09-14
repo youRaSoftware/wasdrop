@@ -19,5 +19,6 @@ export 'localization/locale_keys.g.dart';
 export 'services/ads_service.dart';
 export 'services/audio_service.dart';
 export 'services/premium_service.dart';
+export 'services/review_service.dart';
 export 'services/settings_service.dart';
 export 'services/shake_detector.dart';

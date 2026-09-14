@@ -46,6 +46,7 @@ On release, rename `[Unreleased]` to `[X.Y.Z] — YYYY-MM-DD` and start a fresh 
 - Исправлено: у клубники, киви, черники, винограда, персика и дыни были перепутаны спокойное лицо и «ойк» (в покое они сидели с открытым ртом); у арбуза и дыни убраны белые остатки фона внутри завитка хвостика
 - Исправлено: рекорд в меню показывал 0 после партии — теперь он обновляется и сохраняется сразу, как только счёт его превысил (и в HUD тоже); плашка рекорда в меню стала крупнее
 - Исправлено: после «Продолжить» и сразу «Заново» из паузы новые фрукты зависали в воздухе — старая куча оставалась в физике невидимой; заодно автосохранение в такой паузе больше не теряет фрукты партии
+- Новое: «Оценить приложение» в настройках («О приложении») — открывает страницу отзыва в App Store
 - Новое: экран настроек (⚙️ в меню): тумблеры «Звуки», «Музыка», «Вибрация», «Линия прицела»; статистика — рекорд, сыгранные игры, слияния, самый большой фрукт — со сбросом; цепочка всех 11 фруктов с названиями; версия и лицензии
 
 ### EN
@@ -85,4 +86,5 @@ On release, rename `[Unreleased]` to `[X.Y.Z] — YYYY-MM-DD` and start a fresh 
 - Fixed: strawberry, kiwi, blueberry, grape, peach and melon had their calm and "oof" faces swapped (they sat with open mouths); white background leftovers inside the watermelon and melon stem curls removed
 - Fixed: the menu showed a best score of 0 after a game — the record now updates and is saved the moment the score beats it (in the HUD too); the record chip in the menu is bigger
 - Fixed: after «Continue» followed straight by «Restart» from the pause menu, new fruit hung in mid-air — the old pile stayed in the physics world invisibly; autosave in that pause no longer loses the game's fruit either
+- New: «Rate the app» in Settings («About») — opens the App Store review page
 - New: settings screen (⚙️ in the menu): Sounds, Music, Vibration and Aim line toggles; statistics — best score, games played, merges, biggest fruit — with a reset; the chain of all 11 fruits with names; version and licenses

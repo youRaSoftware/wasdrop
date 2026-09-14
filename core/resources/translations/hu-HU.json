@@ -69,6 +69,7 @@
     "about": "AZ ALKALMAZÁSRÓL",
     "version": "Verzió",
     "licenses": "Licencek",
+    "rateApp": "Az alkalmazás értékelése",
     "resetTitle": "TÖRLÖD A STATISZTIKÁT?",
     "resetBody": "A rekord, a lejátszott játékok és az egyesítések nullázódnak.",
     "resetConfirm": "Törlés",
