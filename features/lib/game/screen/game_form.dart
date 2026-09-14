@@ -23,6 +23,12 @@ import '../widgets/pause_overlay.dart';
 class GameForm extends StatefulWidget {
   static const Duration autosaveInterval = Duration(seconds: 2);
 
+  /// Игровая колонка (HUD, стакан, бонусы) не шире телефона и стакан не
+  /// выше [jarMaxAspect] ширин: на планшете партия идёт как на iPhone, а не
+  /// в широком низком стакане с фруктами в 2.5 раза крупнее (2026-09-13).
+  static const double contentMaxWidth = 760;
+  static const double jarMaxAspect = 1.7;
+
   static const Key bonusHintKey = Key('bonus_hint');
 
   final GameSnapshot? resumeFrom;
@@ -115,43 +121,58 @@ class _GameFormState extends State<GameForm> with WidgetsBindingObserver {
       body: SafeArea(
         child: Stack(
           children: <Widget>[
-            Column(
-              children: <Widget>[
-                const GameHud(),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(25, 8, 25, 4),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: <Widget>[
-                        _Jar(game: _game, theme: theme),
-                        if (armed != null)
-                          Positioned(
-                            top: 12,
-                            left: 8,
-                            right: 8,
-                            child: IgnorePointer(
-                              child: Center(
-                                child: _BonusHint(
-                                  key: GameForm.bonusHintKey,
-                                  bonus: armed,
-                                ),
-                              ),
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: GameForm.contentMaxWidth,
+                ),
+                child: Column(
+                  children: <Widget>[
+                    const GameHud(),
+                    Expanded(
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxHeight: GameForm.contentMaxWidth *
+                                GameForm.jarMaxAspect,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(25, 8, 25, 4),
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: <Widget>[
+                                _Jar(game: _game, theme: theme),
+                                if (armed != null)
+                                  Positioned(
+                                    top: 12,
+                                    left: 8,
+                                    right: 8,
+                                    child: IgnorePointer(
+                                      child: Center(
+                                        child: _BonusHint(
+                                          key: GameForm.bonusHintKey,
+                                          bonus: armed,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
-                      ],
+                        ),
+                      ),
                     ),
-                  ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+                      child: BonusBar(
+                        onArm: _cubit.armBonus,
+                        onRefill: _cubit.requestRefill,
+                        isPremium: isPremium,
+                      ),
+                    ),
+                  ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
-                  child: BonusBar(
-                    onArm: _cubit.armBonus,
-                    onRefill: _cubit.requestRefill,
-                    isPremium: isPremium,
-                  ),
-                ),
-              ],
+              ),
             ),
             if (state.status == GameStatus.paused)
               PauseOverlay(

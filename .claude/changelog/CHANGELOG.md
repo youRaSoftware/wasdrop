@@ -39,6 +39,7 @@ On release, rename `[Unreleased]` to `[X.Y.Z] — YYYY-MM-DD` and start a fresh 
 - Изменено: игра называется Fruity Drop (в сторах — Fruity Drop: Merge Puzzle), под иконкой «Fruity Drop»
 - Новое: интерфейс на шести языках — русский, английский, немецкий, французский, венгерский, японский; по умолчанию язык устройства, выбор в настройках («Игра → Язык»)
 - Новое: на iOS 18+ игра заявляет поддержку Game Mode (система снижает фоновую активность и отдаёт игре приоритет)
+- Исправлено: на iPad стакан был во всю ширину экрана, фрукты выходили огромными и партия заканчивалась за минуту; теперь стакан телефонных пропорций по центру
 - Новое: в меню внизу лежит живая куча фруктов — они сыплются при входе, их можно подбрасывать тапом; на iPad меню собрано в центре, а не растянуто на всю ширину
 - (скрыто в 1.0, включается флагом монетизации) Новое: покупка «Премиум навсегда» (iOS) — без рекламы, «Продолжить» и пополнение зарядов без роликов; экран покупки открывается из настроек, из закрытых обоев и с экрана проигрыша, там же «Восстановить покупки»
 - Новое: «Продолжить» после проигрыша — верхний слой фруктов исчезает и партия продолжается (один раз за партию); кнопка бонуса без зарядов пополняет их (по разу на бонус за партию). В 1.0 бесплатно; с включённой монетизацией — за rewarded-ролик, без сети «Реклама сейчас недоступна»
@@ -76,6 +77,7 @@ On release, rename `[Unreleased]` to `[X.Y.Z] — YYYY-MM-DD` and start a fresh 
 - Changed: the game is now called Fruity Drop (Fruity Drop: Merge Puzzle in the stores), «Fruity Drop» under the icon
 - New: the interface speaks six languages — Russian, English, German, French, Hungarian, Japanese; follows the device language by default, switchable in Settings → Game → Language
 - New: on iOS 18+ the game opts into Game Mode (the system reduces background activity and prioritises the game)
+- Fixed: on iPad the jar spanned the whole screen, fruit came out huge and a game was over in a minute; the jar now keeps phone proportions, centred
 - New: a live pile of fruit at the bottom of the menu — it rains in and you can flick the fruit; on iPad the menu is centred instead of stretched
 - (hidden in 1.0 behind the monetization flag) New: "Premium Forever" purchase (iOS) — no ads, Continue and bonus refills without videos; the purchase screen opens from Settings, from a locked wallpaper and from the game-over panel, with "Restore purchases"
 - New: Continue after game over — the top layer of fruit disappears and the game goes on (once per game); a bonus button with no charges refills them (once per bonus per game). Free in 1.0; with monetization on it costs a rewarded video, offline it says "Ads are unavailable right now"
