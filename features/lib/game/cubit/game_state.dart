@@ -82,9 +82,14 @@ class GameState extends Equatable {
         Bonus.upgrade => GameRules.upgradesPerGame,
       };
 
-  /// Кнопка бонуса без зарядов предлагает пополнение.
+  /// Кнопка бонуса без зарядов предлагает пополнение — только с
+  /// монетизацией (за ролик / премиуму); в 1.0 заряды 3 / 1 / 1 на партию
+  /// без пополнения (решение 2026-09-14).
   bool canRefill(Bonus bonus) =>
-      status == GameStatus.playing && charges(bonus) == 0 && refills(bonus) > 0;
+      AppConfig.monetizationEnabled &&
+      status == GameStatus.playing &&
+      charges(bonus) == 0 &&
+      refills(bonus) > 0;
 
   /// [bestTier] сбрасывается в null, только если передать `bestTier: null`
   /// явно через [resetBestTier]; [armed] снимается через [disarm].

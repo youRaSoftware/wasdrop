@@ -431,14 +431,19 @@ void main() {
     await tester.pump(const Duration(milliseconds: 700));
     expect(victim.isMounted, isFalse);
     expect(balls().length, countBefore - 1);
-    // With no charges left the button offers the one refill per game;
-    // premium (set in the settings step) gets it without an ad.
-    expect(game.cubit.state.canRefill(Bonus.bomb), isTrue);
+    // With no charges left: with monetization the button offers the one
+    // refill per game (premium, set in the settings step, gets it without
+    // an ad); without monetization (release 1.0) it is simply disabled.
+    final bool refills = AppConfig.monetizationEnabled;
+    expect(game.cubit.state.canRefill(Bonus.bomb), refills);
     await tester.tap(find.byKey(BonusBar.bombKey));
     await tester.pump(const Duration(milliseconds: 300));
     expect(game.cubit.state.armed, isNull);
-    expect(game.cubit.state.bombs, GameRules.bombsPerGame);
-    expect(game.cubit.state.bombRefills, GameRules.refillsPerBonus - 1);
+    expect(game.cubit.state.bombs, refills ? GameRules.bombsPerGame : 0);
+    expect(
+      game.cubit.state.bombRefills,
+      refills ? GameRules.refillsPerBonus - 1 : GameRules.refillsPerBonus,
+    );
     expect(game.cubit.state.canRefill(Bonus.bomb), isFalse);
     debugPrint('SMOKE bomb OK: ${live()}');
 
@@ -499,8 +504,11 @@ void main() {
     expect(resumed.cubit.state.status, GameStatus.paused);
     expect(resumed.cubit.state.score, saved.score);
     expect(saved.shakes, GameRules.shakesPerGame - 1);
-    expect(saved.bombs, GameRules.bombsPerGame);
-    expect(saved.bombRefills, GameRules.refillsPerBonus - 1);
+    expect(saved.bombs, refills ? GameRules.bombsPerGame : 0);
+    expect(
+      saved.bombRefills,
+      refills ? GameRules.refillsPerBonus - 1 : GameRules.refillsPerBonus,
+    );
     expect(saved.upgrades, GameRules.upgradesPerGame - 1);
     expect(saved.upgradeRefills, GameRules.refillsPerBonus);
     expect(resumed.cubit.state.shakes, saved.shakes);
@@ -540,13 +548,16 @@ void main() {
       );
     }
     expect(resumed.cubit.state.upgrades, 0);
-    expect(resumed.cubit.state.canRefill(Bonus.upgrade), isTrue);
+    expect(resumed.cubit.state.canRefill(Bonus.upgrade), refills);
     await tester.tap(find.byKey(BonusBar.upgradeKey));
     await tester.pump(const Duration(milliseconds: 400));
-    expect(resumed.cubit.state.upgrades, GameRules.upgradesPerGame);
+    expect(
+      resumed.cubit.state.upgrades,
+      refills ? GameRules.upgradesPerGame : 0,
+    );
     expect(
       resumed.cubit.state.upgradeRefills,
-      GameRules.refillsPerBonus - 1,
+      refills ? GameRules.refillsPerBonus - 1 : GameRules.refillsPerBonus,
     );
     expect(resumed.cubit.state.armed, isNull);
     await resumed.cubit.gameOver();
