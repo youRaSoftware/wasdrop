@@ -53,7 +53,7 @@ On release, rename `[Unreleased]` to `[X.Y.Z] — YYYY-MM-DD` and start a fresh 
 - Новое: режимы «На время» (две минуты на счёт, таймер в HUD) и «Вызов дня» (у всех одинаковые фрукты и заказы, один зачёт в день); у каждого режима свой рекорд
 - Новое: Game Center — таблицы рекордов по режимам и десять достижений (первый лимон … арбуз, очки, партии, заказы); кнопка-кубок в меню и «Рекорды» на экране проигрыша
 - Новое: подсказка «Как играть» при первом запуске (три шага) и в настройках
-- Изменено: новая иконка приложения — смеющийся арбуз на оранжевом фоне (iOS, Android, экран запуска)
+- Изменено: новая иконка приложения — персик, яблоко и вишня на небесно-голубом фоне (iOS, Android, экран запуска)
 - Улучшено: верх стакана тревожно мигает, пока фрукт лежит выше линии; слияние двух арбузов — джекпот с большой вспышкой
 - Новое: экран настроек (⚙️ в меню): тумблеры «Звуки», «Музыка», «Вибрация», «Линия прицела»; статистика — рекорд, сыгранные игры, слияния, самый большой фрукт — со сбросом; цепочка всех 11 фруктов с названиями; версия и лицензии
 
@@ -101,6 +101,6 @@ On release, rename `[Unreleased]` to `[X.Y.Z] — YYYY-MM-DD` and start a fresh 
 - New: «Time attack» (two minutes, a clock in the HUD) and «Daily challenge» (the same fruit and orders for everyone, one attempt a day) modes, each with its own best score
 - New: Game Center — per-mode leaderboards and ten achievements (first lemon … watermelon, points, games, orders); a trophy button in the menu and «Leaderboards» on the game over screen
 - New: a «How to play» walkthrough on first launch (three steps) and in Settings
-- Changed: new app icon — a laughing watermelon on orange (iOS, Android, launch screen)
+- Changed: new app icon — a peach, an apple and a cherry on sky blue (iOS, Android, launch screen)
 - Improved: the top of the jar pulses red while a fruit sits above the line; merging two watermelons is a jackpot with a big flash
 - New: settings screen (⚙️ in the menu): Sounds, Music, Vibration and Aim line toggles; statistics — best score, games played, merges, biggest fruit — with a reset; the chain of all 11 fruits with names; version and licenses
