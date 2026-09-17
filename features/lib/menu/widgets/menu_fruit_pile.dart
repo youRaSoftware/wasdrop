@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:core/core.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
@@ -29,6 +32,21 @@ class _MenuFruitPileState extends State<MenuFruitPile> {
     spawnInterval: MenuFruitPile.spawnInterval,
     maxTierIndex: MenuFruitPile.maxTierIndex,
   );
+
+  /// Наклон телефона пересыпает кучу (перевернул — упала к верху).
+  late final TiltDetector _tilt = TiltDetector(onTilt: _game.setTilt);
+
+  @override
+  void initState() {
+    super.initState();
+    _tilt.start();
+  }
+
+  @override
+  void dispose() {
+    unawaited(_tilt.stop());
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
