@@ -16,6 +16,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
       aimLineOn: _provider.aimLineOn,
       themeId: _provider.themeId ?? SettingsModel.defaultThemeId,
       localeCode: _provider.localeCode,
+      jarId: _provider.jarId ?? JarShapes.defaultId,
     );
   }
 
@@ -28,6 +29,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
       aimLineOn: settings.aimLineOn,
       themeId: settings.themeId,
       localeCode: settings.localeCode,
+      jarId: settings.jarId,
     );
   }
 }

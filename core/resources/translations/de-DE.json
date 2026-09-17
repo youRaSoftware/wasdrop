@@ -3,10 +3,17 @@
     "play": "SPIELEN",
     "best": "Rekord {score}",
     "continue": "WEITERSPIELEN",
-    "newGame": "Neues Spiel"
+    "newGame": "Neues Spiel",
+    "jar": "Glas",
+    "timed": "Auf Zeit",
+    "daily": "Tages-Challenge",
+    "dailyDone": "Heute: {score}",
+    "bestTimed": "Auf Zeit: {score}",
+    "bestDaily": "Challenge: {score}"
   },
   "hud": {
-    "best": "REKORD {score}"
+    "best": "REKORD {score}",
+    "daily": "TAG"
   },
   "pause": {
     "title": "PAUSE",
@@ -15,7 +22,9 @@
     "menu": "Menü",
     "sound": "Ton",
     "vibration": "Vibration",
-    "wallpapers": "HINTERGRÜNDE"
+    "wallpapers": "HINTERGRÜNDE",
+    "changeJar": "Glas wechseln",
+    "missions": "Aufträge"
   },
   "gameOver": {
     "title": "SPIEL VORBEI",
@@ -26,7 +35,9 @@
     "continueAd": "Weiter mit Werbung",
     "continueFree": "Weiter",
     "adUnavailable": "Werbung ist gerade nicht verfügbar",
-    "removeAds": "Werbung entfernen"
+    "removeAds": "Werbung entfernen",
+    "timeUp": "ZEIT ABGELAUFEN",
+    "dailyDone": "TAGESERGEBNIS"
   },
   "premium": {
     "title": "PREMIUM",
@@ -79,7 +90,10 @@
     "premiumStatus": "Premium",
     "premiumActive": "Aktiv",
     "restorePurchases": "Käufe wiederherstellen",
-    "adPrivacy": "Werbe-Datenschutz"
+    "adPrivacy": "Werbe-Datenschutz",
+    "bestTimed": "Rekord „Auf Zeit“",
+    "bestDaily": "Rekord Tages-Challenge",
+    "howToPlay": "So wird gespielt"
   },
   "fruits": {
     "cherry": "Kirsche",
@@ -106,5 +120,54 @@
     "shakeHint": "Schüttle das Handy, um die Früchte zu mischen",
     "pickFruit": "Tippe auf eine Frucht, um sie zu sprengen",
     "pickUpgrade": "Tippe auf eine Frucht, um sie eine Stufe wachsen zu lassen"
+  },
+  "jars": {
+    "title": "GLÄSER",
+    "stars": "{n} ★",
+    "locked": "Ab {n} ★",
+    "comingSoon": "Bald",
+    "nextGame": "Gilt für das nächste Spiel",
+    "classic": "Klassik",
+    "vase": "Vase",
+    "bowl": "Schale",
+    "shelf": "Ablage",
+    "flask": "Kolben",
+    "slope": "Schräge",
+    "hourglass": "Sanduhr",
+    "swing": "Schaukel"
+  },
+  "missions": {
+    "title": "AUFTRÄGE",
+    "getFruit": "Hol dir: {fruit}",
+    "collectFruits": "Sammle: {fruit} × {n}",
+    "mergeStreak": "{n} Fusionen in Folge",
+    "combo": "Zwei Fusionen mit einem Wurf",
+    "economy": "{fruit} in {n} Würfen",
+    "bonusBomb": "Sprenge: {fruit}",
+    "score": "Erreiche {n} Punkte",
+    "clean": "{n} Würfe ohne die Linie zu berühren",
+    "done": "AUFTRAG ERLEDIGT!",
+    "reward": "Belohnung",
+    "doneTotal": "Erledigt: {n}",
+    "stars": "Sterne: {n}",
+    "earned": "Sterne in diesem Spiel: +{n}",
+    "nextJar": "Nächstes Glas in {n} ★",
+    "allJars": "Alle Gläser freigeschaltet",
+    "dropsLeft": "Noch {n} Würfe"
+  },
+  "gameCenter": {
+    "leaderboards": "Bestenlisten",
+    "achievements": "Erfolge"
+  },
+  "onboarding": {
+    "step1Title": "WERFEN",
+    "step1": "Tippen oder ziehen — die Frucht fällt ins Glas.",
+    "step2Title": "VERSCHMELZEN",
+    "step2": "Zwei gleiche Früchte verschmelzen bei Berührung zur nächsten — von der Kirsche bis zur Wassermelone. Lass den Haufen nicht über die Linie steigen!",
+    "step3Title": "BOOSTER & AUFTRÄGE",
+    "step3": "Schütteln, Bombe und Wachsen helfen, wenn es im Glas eng wird. Erledige Aufträge für Sterne — sie schalten neue Gläser frei.",
+    "next": "Weiter",
+    "skip": "Überspringen",
+    "start": "Los geht’s!"
   }
 }

@@ -44,6 +44,12 @@ class GameRepositoryImpl implements GameRepository {
             (data['upgradeRefills'] as int?) ?? GameRules.refillsPerBonus,
         balls: balls,
         savedAt: DateTime.fromMillisecondsSinceEpoch(data['savedAt'] as int),
+        jarId: (data['jarId'] as String?) ?? JarShapes.defaultId,
+        missions: <Mission>[
+          for (final Object? raw
+              in (data['missions'] as List<dynamic>?) ?? const <dynamic>[])
+            _missionFrom(raw as List<dynamic>),
+        ],
       );
     } catch (_) {
       // Повреждённый или устаревший формат — партию не восстанавливаем.
@@ -68,6 +74,22 @@ class GameRepositoryImpl implements GameRepository {
       'bombRefills': snapshot.bombRefills,
       'upgradeRefills': snapshot.upgradeRefills,
       'savedAt': snapshot.savedAt.millisecondsSinceEpoch,
+      'jarId': snapshot.jarId,
+      // [id, type, tier (0 — нет), target, progress, done, rewardBonus
+      // (-1 — нет), rewardPoints]
+      'missions': <List<Object>>[
+        for (final Mission m in snapshot.missions)
+          <Object>[
+            m.id,
+            m.type.index,
+            m.tier?.number ?? 0,
+            m.target,
+            m.progress,
+            m.done,
+            m.reward.bonus?.index ?? -1,
+            m.reward.points,
+          ],
+      ],
       'balls': <List<Object>>[
         for (final BallSnapshot b in snapshot.balls)
           <Object>[b.tier.number, b.x, b.bottomOffset, b.angle, b.vx, b.vy],
@@ -77,4 +99,20 @@ class GameRepositoryImpl implements GameRepository {
 
   @override
   Future<void> clear() => _provider.clear();
+
+  static Mission _missionFrom(List<dynamic> v) {
+    final int bonus = v[6] as int;
+    return Mission(
+      id: v[0] as int,
+      type: MissionType.values[v[1] as int],
+      tier: BallTier.fromNumber(v[2] as int),
+      target: v[3] as int,
+      progress: v[4] as int,
+      done: v[5] as bool,
+      reward: MissionReward(
+        bonus: bonus < 0 ? null : Bonus.values[bonus],
+        points: v[7] as int,
+      ),
+    );
+  }
 }

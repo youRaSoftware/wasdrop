@@ -44,6 +44,16 @@ class _SettingsRepository implements SettingsRepository {
   Future<void> saveSettings(SettingsModel settings) async {}
 }
 
+class _ProgressRepository implements ProgressRepository {
+  ProgressModel progress = const ProgressModel.empty();
+
+  @override
+  Future<ProgressModel> getProgress() async => progress;
+
+  @override
+  Future<void> saveProgress(ProgressModel value) async => progress = value;
+}
+
 class _PremiumRepository implements PremiumRepository {
   @override
   Future<bool> isPremium() async => false;
@@ -107,6 +117,8 @@ void main() {
       audio: audio,
       premium: premium,
       ads: ads,
+      progressRepository: _ProgressRepository(),
+      gameCenter: GameCenterService(),
       resumeFrom: snapshot,
     );
     expect(cubit.state.status, GameStatus.paused);

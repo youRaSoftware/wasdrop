@@ -15,4 +15,7 @@ abstract final class GameRules {
 
   /// Пополнений зарядов каждого бонуса на партию (за ролик / премиуму).
   static const int refillsPerBonus = 1;
+
+  /// Длительность партии «На время», секунд.
+  static const int timedSeconds = 120;
 }

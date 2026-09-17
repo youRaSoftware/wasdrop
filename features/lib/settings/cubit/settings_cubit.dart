@@ -45,6 +45,10 @@ class SettingsCubit extends Cubit<SettingsState> {
 
   void closeLanguage() => _safeEmit(state.copyWith(choosingLanguage: false));
 
+  void showHelp() => _safeEmit(state.copyWith(showingHelp: true));
+
+  void closeHelp() => _safeEmit(state.copyWith(showingHelp: false));
+
   /// Форма UMP «Настройки рекламы» (изменить согласие).
   Future<void> showAdPrivacyOptions() => ads.showPrivacyOptions();
 

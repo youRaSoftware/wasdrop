@@ -3,10 +3,17 @@
     "play": "プレイ",
     "best": "ベスト {score}",
     "continue": "つづける",
-    "newGame": "新しいゲーム"
+    "newGame": "新しいゲーム",
+    "jar": "ジャー",
+    "timed": "タイムアタック",
+    "daily": "デイリーチャレンジ",
+    "dailyDone": "今日: {score}",
+    "bestTimed": "タイムアタック: {score}",
+    "bestDaily": "デイリー: {score}"
   },
   "hud": {
-    "best": "ベスト {score}"
+    "best": "ベスト {score}",
+    "daily": "デイリー"
   },
   "pause": {
     "title": "ポーズ",
@@ -15,7 +22,9 @@
     "menu": "メニュー",
     "sound": "サウンド",
     "vibration": "バイブレーション",
-    "wallpapers": "壁紙"
+    "wallpapers": "壁紙",
+    "changeJar": "ジャーを変更",
+    "missions": "オーダー"
   },
   "gameOver": {
     "title": "ゲームオーバー",
@@ -26,7 +35,9 @@
     "continueAd": "広告を見てつづける",
     "continueFree": "つづける",
     "adUnavailable": "現在、広告を表示できません",
-    "removeAds": "広告を削除"
+    "removeAds": "広告を削除",
+    "timeUp": "タイムアップ",
+    "dailyDone": "今日の結果"
   },
   "premium": {
     "title": "プレミアム",
@@ -79,7 +90,10 @@
     "premiumStatus": "プレミアム",
     "premiumActive": "有効",
     "restorePurchases": "購入を復元",
-    "adPrivacy": "広告のプライバシー設定"
+    "adPrivacy": "広告のプライバシー設定",
+    "bestTimed": "タイムアタック記録",
+    "bestDaily": "デイリーチャレンジ記録",
+    "howToPlay": "遊び方"
   },
   "fruits": {
     "cherry": "さくらんぼ",
@@ -106,5 +120,54 @@
     "shakeHint": "スマホを振ってフルーツをシャッフル",
     "pickFruit": "爆破するフルーツをタップ",
     "pickUpgrade": "タップしたフルーツが1段階成長します"
+  },
+  "jars": {
+    "title": "ジャー",
+    "stars": "{n} ★",
+    "locked": "{n} ★で解放",
+    "comingSoon": "近日公開",
+    "nextGame": "次のゲームから適用",
+    "classic": "クラシック",
+    "vase": "花瓶",
+    "bowl": "ボウル",
+    "shelf": "棚",
+    "flask": "フラスコ",
+    "slope": "スロープ",
+    "hourglass": "砂時計",
+    "swing": "ブランコ"
+  },
+  "missions": {
+    "title": "オーダー",
+    "getFruit": "{fruit}を作る",
+    "collectFruits": "{fruit}を{n}個作る",
+    "mergeStreak": "{n}回連続で合体",
+    "combo": "1回のドロップで2回合体",
+    "economy": "{n}回以内に{fruit}",
+    "bonusBomb": "{fruit}を爆破",
+    "score": "{n}点を獲得",
+    "clean": "ラインに触れずに{n}回ドロップ",
+    "done": "オーダー達成！",
+    "reward": "報酬",
+    "doneTotal": "達成: {n}",
+    "stars": "スター: {n}",
+    "earned": "このゲームのスター: +{n}",
+    "nextJar": "次のジャーまで{n} ★",
+    "allJars": "すべてのジャーが解放済み",
+    "dropsLeft": "残り{n}回"
+  },
+  "gameCenter": {
+    "leaderboards": "ランキング",
+    "achievements": "実績"
+  },
+  "onboarding": {
+    "step1Title": "落とす",
+    "step1": "タップかドラッグで果物をジャーに落とそう。",
+    "step2Title": "合体",
+    "step2": "同じ果物が触れると次の果物に合体 — さくらんぼからスイカまで。山をラインより上にしないで！",
+    "step3Title": "ブースターとオーダー",
+    "step3": "シェイク・爆弾・成長はジャーが混んだときの味方。オーダーを達成してスターを集めると、新しいジャーが開く。",
+    "next": "次へ",
+    "skip": "スキップ",
+    "start": "プレイ！"
   }
 }

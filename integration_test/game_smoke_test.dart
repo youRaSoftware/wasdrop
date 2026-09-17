@@ -21,6 +21,11 @@ import 'package:features/game/screen/game_form.dart';
 import 'package:features/game/widgets/bonus_bar.dart';
 import 'package:features/game/widgets/game_hud.dart';
 import 'package:features/game/widgets/game_over_overlay.dart';
+import 'package:features/game/widgets/mission_toast.dart';
+import 'package:features/game/widgets/missions_overlay.dart';
+import 'package:features/game/widgets/missions_panel.dart';
+import 'package:features/game/widgets/onboarding_overlay.dart';
+import 'package:features/jars/screen/jars_form.dart';
 import 'package:features/menu/screen/menu_screen.dart';
 import 'package:features/premium/screen/premium_form.dart';
 import 'package:features/settings/screen/settings_form.dart';
@@ -50,6 +55,16 @@ void main() {
     // start from a clean slate so the menu shows «Play».
     await appLocator<GameRepository>().clear();
     await appLocator<SettingsService>().setLocale(null);
+    await appLocator<SettingsService>().setJarId(JarShapes.defaultId);
+    {
+      // Fresh day for the daily challenge and a fresh first launch for the
+      // onboarding.
+      final ProgressRepository pr = appLocator<ProgressRepository>();
+      await pr.saveProgress((await pr.getProgress())
+          .copyWith(dailyPlayedSeed: 0, onboardingDone: false));
+    }
+    addTearDown(
+        () => appLocator<SettingsService>().setJarId(JarShapes.defaultId));
     final PremiumService premium = appLocator<PremiumService>();
     await premium.setPremium(false);
     addTearDown(() => premium.setPremium(false));
@@ -168,6 +183,38 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     expect(game.isLoaded, isTrue);
     expect(game.cubit.state.score, 0);
+
+    // --- Onboarding on the first game: three steps, the engine waits;
+    // «Let's play!» closes it for good.
+    expect(find.byType(OnboardingOverlay), findsOneWidget);
+    expect(game.paused, isTrue);
+    await tester.pump(const Duration(seconds: 2)); // screenshot window
+    await tester.tap(find.byKey(OnboardingOverlay.nextKey));
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(find.byKey(OnboardingOverlay.nextKey));
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(find.byKey(OnboardingOverlay.nextKey));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.byType(OnboardingOverlay), findsNothing);
+    expect(game.paused, isFalse);
+    expect(
+      (await appLocator<ProgressRepository>().getProgress()).onboardingDone,
+      isTrue,
+    );
+
+    // --- Missions: three orders in the panel; tapping it opens the orders
+    // overlay (game paused), closing resumes.
+    expect(game.cubit.state.missions, hasLength(3));
+    expect(find.byType(MissionCard), findsNWidgets(3));
+    await tester.tap(find.byKey(MissionsPanel.panelKey));
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.byType(MissionsOverlay), findsOneWidget);
+    expect(game.cubit.state.status, GameStatus.paused);
+    await tester.pump(const Duration(seconds: 2)); // screenshot window
+    await tester.tap(find.byKey(MissionsOverlay.closeKey));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.byType(MissionsOverlay), findsNothing);
+    expect(game.cubit.state.status, GameStatus.playing);
     // Fruit sprites: every tier has its own art (TZ_SPRITES § 5). Round
     // fruits are circles, elongated ones (grape, lemon, strawberry) get a
     // rounded polygon fitted to the silhouette.
@@ -412,6 +459,7 @@ void main() {
     // Bomb: arm it, tap a resting ball on screen, it blows up; with no
     // charges left the button is disabled.
     final int countBefore = balls().length;
+    final int mergesBeforeBomb = game.cubit.state.merges;
     final BallBody victim = balls().first;
     await tester.tap(find.byKey(BonusBar.bombKey));
     await tester.pump(const Duration(milliseconds: 100));
@@ -430,7 +478,11 @@ void main() {
     expect(find.byKey(GameForm.bonusHintKey), findsNothing);
     await tester.pump(const Duration(milliseconds: 700));
     expect(victim.isMounted, isFalse);
-    expect(balls().length, countBefore - 1);
+    // The blast can push two equal neighbours into a merge (−2 +1 each).
+    expect(
+      balls().length,
+      countBefore - 1 - (game.cubit.state.merges - mergesBeforeBomb),
+    );
     // With no charges left: with monetization the button offers the one
     // refill per game (premium, set in the settings step, gets it without
     // an ad); without monetization (release 1.0) it is simply disabled.
@@ -484,7 +536,10 @@ void main() {
     // resumed game opens paused with the same score and balls; a restart
     // clears it.
     final GameRepository gameRepo = appLocator<GameRepository>();
-    await game.cubit.saveSnapshot(game.captureBalls());
+    await game.cubit.saveSnapshot(
+      game.captureBalls(),
+      jarId: game.jarShape.id,
+    );
     final GameSnapshot? saved = await gameRepo.load();
     expect(saved, isNotNull);
     expect(saved!.balls.length, balls().length);
@@ -571,5 +626,154 @@ void main() {
     expect(await gameRepo.load(), isNull);
     expect(resumed.cubit.state.continues, GameRules.continuesPerGame);
     debugPrint('SMOKE OK: resume flow finished');
+
+    // --- Jar shapes: pick «Vase» in the jar picker (menu → jar button),
+    // start a game — the engine builds the vase walls, a fruit dropped at
+    // the edge of the narrow neck lands inside the jar, and the snapshot
+    // remembers the jar.
+    await tester.tap(find.byKey(GameHud.pauseButtonKey));
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(find.text(LocaleKeys.pause_menu.tr()));
+    await tester.pump(const Duration(milliseconds: 1500));
+    expect(find.byKey(MenuScreen.jarButtonKey), findsOneWidget);
+    await tester.tap(find.byKey(MenuScreen.jarButtonKey));
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.byType(JarsForm), findsOneWidget);
+    await tester.pump(const Duration(seconds: 2)); // screenshot window
+    await tester.tap(find.byKey(JarsForm.cardKey('vase')));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(appLocator<SettingsService>().value.jarId, 'vase');
+    // A locked jar (below the fold — the grid builds lazily) cannot be
+    // selected without stars.
+    await tester.scrollUntilVisible(
+      find.byKey(JarsForm.cardKey('hourglass')),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.byKey(JarsForm.cardKey('hourglass')));
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(appLocator<SettingsService>().value.jarId, 'vase');
+    await tester.tap(find.byIcon(Icons.arrow_back_rounded));
+    await tester.pump(const Duration(seconds: 1));
+    await tester.tap(find.byKey(MenuScreen.playButtonKey));
+    await tester.pump(const Duration(seconds: 2));
+    final WasDropGame vaseGame = tester
+        .widget<GameWidget<WasDropGame>>(find.byType(GameWidget<WasDropGame>))
+        .game!;
+    await tester.pump(const Duration(seconds: 1));
+    expect(vaseGame.jarShape.id, 'vase');
+    // The neck is narrower than the world: the hanging fruit is clamped to it.
+    final (double neckL, double neckR) =
+        vaseGame.jar.spanAt(WasDropGame.spawnY + r(BallTier.t1));
+    expect(neckL, greaterThan(20));
+    expect(neckR, lessThan(AppDimens.worldWidth - 20));
+    final Rect vaseRect = tester.getRect(find.byType(GameWidget<WasDropGame>));
+    // Tap at the very left edge of the canvas: the drop X is clamped into
+    // the neck, the fruit slides down the widening wall and rests inside.
+    await tester.tapAt(Offset(vaseRect.left + 2, vaseRect.top + 40));
+    await tester.pump(const Duration(seconds: 3));
+    final List<BallBody> vaseBalls =
+        vaseGame.world.children.whereType<BallBody>().toList();
+    expect(vaseBalls, hasLength(1));
+    final BallBody vaseBall = vaseBalls.single;
+    expect(vaseBall.body.position.x, greaterThan(vaseBall.radius - 3));
+    expect(vaseBall.body.position.y,
+        lessThanOrEqualTo(vaseGame.worldHeight - vaseBall.minExtent + 1.5));
+    expect(vaseBall.body.linearVelocity.length, lessThan(40));
+    await vaseGame.cubit.saveSnapshot(
+      vaseGame.captureBalls(),
+      jarId: vaseGame.jarShape.id,
+    );
+    expect((await gameRepo.load())!.jarId, 'vase');
+    debugPrint('SMOKE jar OK: vase ball at '
+        '${vaseBall.body.position.x.round()},${vaseBall.body.position.y.round()}');
+    await tester.pump(const Duration(seconds: 2)); // screenshot window
+
+    // --- Mission completion: feed merges until an order completes — the
+    // toast pops over the jar, a star lands in the progress box, the order
+    // is replaced and the reward is applied.
+    final ProgressRepository progressRepo = appLocator<ProgressRepository>();
+    final int starsBefore = (await progressRepo.getProgress()).stars;
+    final int doneBefore = vaseGame.cubit.state.completedCount;
+    final Mission scoreOrder = vaseGame.cubit.state.missions.firstWhere(
+      (Mission m) => m.type == MissionType.score,
+      orElse: () => vaseGame.cubit.state.missions.first,
+    );
+    for (int i = 0;
+        i < 60 && vaseGame.cubit.state.completedCount == doneBefore;
+        i++) {
+      // A t9 merge: 512 points; a getFruit/collect order needs its tier.
+      final BallTier? want = scoreOrder.tier;
+      vaseGame.cubit.onMerge(
+          want == null ? BallTier.t9 : BallTier.values[want.index - 1]);
+      await tester.pump(const Duration(milliseconds: 30));
+    }
+    expect(vaseGame.cubit.state.completedCount, doneBefore + 1);
+    expect(vaseGame.cubit.state.starsEarned, 1);
+    expect(find.byType(MissionToast), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 500)); // screenshot window
+    await tester.pump(const Duration(milliseconds: 1200));
+    expect(find.byType(MissionToast), findsNothing);
+    expect((await progressRepo.getProgress()).stars, starsBefore + 1);
+    expect(vaseGame.cubit.state.missions, hasLength(3));
+    debugPrint('SMOKE missions OK: stars=${starsBefore + 1}');
+
+    // --- Modes. Time attack: the HUD shows the clock, it counts down, the
+    // run is not saved. Daily: seeded queue, one attempt a day — after it
+    // the menu button shows today's score and is disabled.
+    await tester.tap(find.byKey(GameHud.pauseButtonKey));
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(find.text(LocaleKeys.pause_menu.tr()));
+    await tester.pump(const Duration(milliseconds: 1500));
+    await gameRepo.clear();
+    await tester.tap(find.byKey(MenuScreen.timedButtonKey));
+    await tester.pump(const Duration(seconds: 2));
+    final WasDropGame timedGame = tester
+        .widget<GameWidget<WasDropGame>>(find.byType(GameWidget<WasDropGame>))
+        .game!;
+    expect(timedGame.cubit.mode, GameMode.timed);
+    expect(find.byKey(GameHud.timerKey), findsOneWidget);
+    final int t0 = timedGame.cubit.state.secondsLeft!;
+    await tester.pump(const Duration(milliseconds: 2500));
+    expect(timedGame.cubit.state.secondsLeft, lessThan(t0));
+    await tester.pump(const Duration(seconds: 1)); // screenshot window
+    await tester.tap(find.byKey(GameHud.pauseButtonKey));
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(find.text(LocaleKeys.pause_menu.tr()));
+    await tester.pump(const Duration(milliseconds: 1500));
+    expect(await gameRepo.load(), isNull, reason: 'timed runs are not saved');
+    expect(find.text(LocaleKeys.menu_play.tr()), findsOneWidget);
+
+    final int todaySeed = dailySeed();
+    final ProgressModel beforeDaily = await progressRepo.getProgress();
+    expect(beforeDaily.dailyPlayed(todaySeed), isFalse);
+    await tester.tap(find.byKey(MenuScreen.dailyButtonKey));
+    await tester.pump(const Duration(seconds: 2));
+    final WasDropGame dailyGame = tester
+        .widget<GameWidget<WasDropGame>>(find.byType(GameWidget<WasDropGame>))
+        .game!;
+    expect(dailyGame.cubit.mode, GameMode.daily);
+    dailyGame.cubit.onMerge(BallTier.t2);
+    await dailyGame.cubit.gameOver();
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.byKey(GameOverOverlay.continueKey), findsNothing);
+    expect(find.text(LocaleKeys.gameOver_dailyDone.tr()), findsOneWidget);
+    await tester.pump(const Duration(seconds: 1)); // screenshot window
+    await tester.tap(find.text(LocaleKeys.gameOver_menu.tr()));
+    await tester.pump(const Duration(milliseconds: 1500));
+    final ProgressModel afterDaily = await progressRepo.getProgress();
+    expect(afterDaily.dailyPlayed(todaySeed), isTrue);
+    expect(afterDaily.dailyScore, greaterThan(0));
+    expect(
+      find.text(LocaleKeys.menu_dailyDone.tr(
+        namedArgs: <String, String>{'score': '${afterDaily.dailyScore}'},
+      )),
+      findsOneWidget,
+    );
+    // Reset the day so the next run can play it again.
+    await progressRepo.saveProgress(afterDaily.copyWith(dailyPlayedSeed: 0));
+    debugPrint('SMOKE modes OK: daily=${afterDaily.dailyScore}');
+    await gameRepo.clear();
   });
 }

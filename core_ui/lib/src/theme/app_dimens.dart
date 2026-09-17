@@ -37,12 +37,8 @@ class AppDimens {
   static const double iconButtonSize = 52;
   static const double panelRadius = 24;
   static const double panelPadding = 24;
-  static const double jarWallWidth = 5;
 
-  /// Радиус нижних углов стакана снаружи; внутренний = минус стенка.
-  /// Внутренний радиус повторяется скосами в физике, чтобы фрукт в углу
-  /// не обрезался скруглением.
-  static const double jarCornerRadius = 26;
-  static const double jarInnerCornerRadius = jarCornerRadius - jarWallWidth;
+  /// Толщина стенки стакана; форма (скругления, наклоны) — в `JarShape`.
+  static const double jarWallWidth = 5;
   static const double minTapTarget = 44;
 }

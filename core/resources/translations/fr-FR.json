@@ -3,10 +3,17 @@
     "play": "JOUER",
     "best": "Record {score}",
     "continue": "CONTINUER",
-    "newGame": "Nouvelle partie"
+    "newGame": "Nouvelle partie",
+    "jar": "Bocal",
+    "timed": "Contre la montre",
+    "daily": "Défi du jour",
+    "dailyDone": "Aujourd’hui : {score}",
+    "bestTimed": "Contre la montre : {score}",
+    "bestDaily": "Défi : {score}"
   },
   "hud": {
-    "best": "RECORD {score}"
+    "best": "RECORD {score}",
+    "daily": "JOUR"
   },
   "pause": {
     "title": "PAUSE",
@@ -15,7 +22,9 @@
     "menu": "Menu",
     "sound": "Son",
     "vibration": "Vibration",
-    "wallpapers": "FONDS D'ÉCRAN"
+    "wallpapers": "FONDS D'ÉCRAN",
+    "changeJar": "Changer de bocal",
+    "missions": "Commandes"
   },
   "gameOver": {
     "title": "PARTIE TERMINÉE",
@@ -26,7 +35,9 @@
     "continueAd": "Continuer avec une pub",
     "continueFree": "Continuer",
     "adUnavailable": "Publicité indisponible pour le moment",
-    "removeAds": "Supprimer les pubs"
+    "removeAds": "Supprimer les pubs",
+    "timeUp": "TEMPS ÉCOULÉ",
+    "dailyDone": "RÉSULTAT DU JOUR"
   },
   "premium": {
     "title": "PREMIUM",
@@ -79,7 +90,10 @@
     "premiumStatus": "Premium",
     "premiumActive": "Actif",
     "restorePurchases": "Restaurer les achats",
-    "adPrivacy": "Confidentialité des pubs"
+    "adPrivacy": "Confidentialité des pubs",
+    "bestTimed": "Record contre la montre",
+    "bestDaily": "Record du défi du jour",
+    "howToPlay": "Comment jouer"
   },
   "fruits": {
     "cherry": "cerise",
@@ -106,5 +120,54 @@
     "shakeHint": "Secouez le téléphone pour mélanger les fruits",
     "pickFruit": "Touchez un fruit pour le faire exploser",
     "pickUpgrade": "Touchez un fruit pour le faire grandir d'un niveau"
+  },
+  "jars": {
+    "title": "BOCAUX",
+    "stars": "{n} ★",
+    "locked": "{n} ★ pour débloquer",
+    "comingSoon": "Bientôt",
+    "nextGame": "Pour la prochaine partie",
+    "classic": "Classique",
+    "vase": "Vase",
+    "bowl": "Bol",
+    "shelf": "Étagère",
+    "flask": "Fiole",
+    "slope": "Pente",
+    "hourglass": "Sablier",
+    "swing": "Balançoire"
+  },
+  "missions": {
+    "title": "COMMANDES",
+    "getFruit": "Obtiens : {fruit}",
+    "collectFruits": "Récolte : {fruit} × {n}",
+    "mergeStreak": "{n} fusions d’affilée",
+    "combo": "Deux fusions en un lancer",
+    "economy": "{fruit} en {n} lancers",
+    "bonusBomb": "Explose : {fruit}",
+    "score": "Marque {n} points",
+    "clean": "{n} lancers sans toucher la ligne",
+    "done": "COMMANDE RÉUSSIE !",
+    "reward": "Récompense",
+    "doneTotal": "Réussies : {n}",
+    "stars": "Étoiles : {n}",
+    "earned": "Étoiles cette partie : +{n}",
+    "nextJar": "Prochain bocal dans {n} ★",
+    "allJars": "Tous les bocaux débloqués",
+    "dropsLeft": "{n} lancers restants"
+  },
+  "gameCenter": {
+    "leaderboards": "Classements",
+    "achievements": "Succès"
+  },
+  "onboarding": {
+    "step1Title": "LÂCHE",
+    "step1": "Touche ou fais glisser : le fruit tombe dans le bocal.",
+    "step2Title": "FUSIONNE",
+    "step2": "Deux fruits identiques qui se touchent fusionnent en un plus gros — de la cerise à la pastèque. Ne laisse pas la pile dépasser la ligne !",
+    "step3Title": "BONUS ET COMMANDES",
+    "step3": "Secousse, bombe et croissance aident quand le bocal est plein. Réussis des commandes pour des étoiles : elles débloquent de nouveaux bocaux.",
+    "next": "Suivant",
+    "skip": "Passer",
+    "start": "C’est parti !"
   }
 }

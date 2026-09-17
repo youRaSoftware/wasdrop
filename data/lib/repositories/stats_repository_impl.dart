@@ -14,6 +14,8 @@ class StatsRepositoryImpl implements StatsRepository {
       gamesPlayed: _provider.gamesPlayed,
       totalMerges: _provider.totalMerges,
       bestTier: BallTier.fromNumber(_provider.bestTierNumber),
+      bestTimed: _provider.bestTimed,
+      bestDaily: _provider.bestDaily,
     );
   }
 
@@ -24,6 +26,8 @@ class StatsRepositoryImpl implements StatsRepository {
       gamesPlayed: stats.gamesPlayed,
       totalMerges: stats.totalMerges,
       bestTierNumber: stats.bestTier?.number ?? 0,
+      bestTimed: stats.bestTimed,
+      bestDaily: stats.bestDaily,
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:core_ui/core_ui.dart';
 import 'package:domain/domain.dart';
@@ -14,6 +15,7 @@ import 'ball_body.dart';
 import 'bonus_effects.dart';
 import 'fruit_sprites.dart';
 import 'fx_sprites.dart';
+import 'jar_geometry.dart';
 import 'jar_physics_world.dart';
 import 'jar_walls.dart';
 import 'merge_effects.dart';
@@ -44,6 +46,16 @@ class WasDropGame extends Forge2DGame
   /// Сохранённая партия — шары восстанавливаются в [onLoad].
   final GameSnapshot? resumeFrom;
 
+  /// Форма стакана (стенки и дно); по умолчанию классический.
+  final JarShape jarShape;
+
+  /// Контур стакана в мировых единицах (пересчитывается в [_layoutWorld]).
+  late JarGeometry jar = JarGeometry(
+    jarShape,
+    width: worldWidth,
+    height: worldHeight,
+  );
+
   /// Спрайты фруктов по тирам (грузятся один раз в [onLoad]).
   @override
   final FruitSprites fruitSprites = FruitSprites.shared;
@@ -53,8 +65,13 @@ class WasDropGame extends Forge2DGame
 
   final math.Random _random = math.Random();
 
-  WasDropGame({required this.cubit, required this.settings, this.resumeFrom})
-      : super(
+  WasDropGame({
+    required this.cubit,
+    required this.settings,
+    this.resumeFrom,
+    JarShape? jarShape,
+  })  : jarShape = jarShape ?? JarShapes.byId(JarShapes.defaultId),
+        super(
           world: JarPhysicsWorld.standard(),
           lengthUnitsPerMeter: PhysicsTuning.unitsPerMeter,
         );
@@ -157,7 +174,7 @@ class WasDropGame extends Forge2DGame
       world.add(BallBody(
         tier: b.tier,
         initialPosition: Vector2(
-          b.x.clamp(r, worldWidth - r),
+          jar.clampX(b.x, worldHeight - b.bottomOffset, r),
           math.max(r, worldHeight - b.bottomOffset),
         ),
         initialAngle: b.angle,
@@ -197,17 +214,10 @@ class WasDropGame extends Forge2DGame
     worldHeight = worldWidth * canvasSize.y / canvasSize.x;
     camera.viewfinder.visibleGameSize = Vector2(worldWidth, worldHeight);
 
+    jar = JarGeometry(jarShape, width: worldWidth, height: worldHeight);
     final Body? oldWalls = _walls;
     if (oldWalls != null) world.destroyBody(oldWalls);
-    // Скосы под визуальное скругление углов (AppDimens.jarInnerCornerRadius
-    // px → мировые единицы).
-    _walls = buildJarWalls(
-      world,
-      width: worldWidth,
-      height: worldHeight,
-      chamfer: AppDimens.jarInnerCornerRadius * worldWidth / canvasSize.x,
-      topMargin: wallTopMargin,
-    );
+    _walls = buildJarWalls(world, jar, topMargin: wallTopMargin);
   }
 
   // --- Ввод -----------------------------------------------------------------
@@ -252,12 +262,11 @@ class WasDropGame extends Forge2DGame
     _aimX = screenToWorld(canvasPosition).x;
   }
 
+  /// Подвешенный шар не заходит в стенку: просвет берётся по контуру
+  /// стакана на высоте шара (у вазы и колбы горло уже мира).
   double _clampAim(double x) {
     final double r = AppDimens.ballRadii[cubit.state.current.index];
-    return x.clamp(
-      r + AppDimens.jarWallWidth,
-      worldWidth - r - AppDimens.jarWallWidth,
-    );
+    return jar.clampX(x, spawnY + r, r + AppDimens.jarWallWidth);
   }
 
   void _drop() {
@@ -306,10 +315,13 @@ class WasDropGame extends Forge2DGame
     a.removeFromParent();
     b.removeFromParent();
     if (next != null) _spawnInside(next, mid, velocity);
-    // Вспышка + всплывающее «+N» (мокап, кадр 4). Для джекпота t11+t11
-    // шара нет — эффект рисуем по размеру исчезнувших шаров.
+    // Вспышка + всплывающее «+N» (мокап, кадр 4). Джекпот t11+t11: шара
+    // нет, оба арбуза исчезают — вспышка вдвое больше и дрожь камеры.
     final BallTier effectTier = next ?? a.tier;
-    final double effectRadius = AppDimens.ballRadii[effectTier.index];
+    final bool jackpot = next == null;
+    final double effectRadius =
+        AppDimens.ballRadii[effectTier.index] * (jackpot ? 1.8 : 1);
+    if (jackpot) _cameraShakeLeft = PhysicsTuning.shakeCameraDuration;
     world.addAll(<Component>[
       MergeFlash(
         center: mid,
@@ -338,8 +350,8 @@ class WasDropGame extends Forge2DGame
     final double r = AppDimens.ballRadii[tier.index];
     // У вытянутых фруктов габарит больше номинального радиуса.
     final double e = fruitSprites[tier]?.extent(r) ?? r;
-    final double x = at.x.clamp(e, worldWidth - e);
     final double y = math.min(at.y, worldHeight - e);
+    final double x = jar.clampX(at.x, y, e);
     if (x > at.x) velocity.x = math.max(velocity.x, 0);
     if (x < at.x) velocity.x = math.min(velocity.x, 0);
     if (y < at.y) velocity.y = math.min(velocity.y, 0);
@@ -469,7 +481,7 @@ class WasDropGame extends Forge2DGame
   /// фитиля — кадры взрыва и толчок соседей. Публичный для тестов.
   void explode(BallBody b) {
     if (!b.isMounted || b.isRemoving || b.merging) return;
-    cubit.useBomb();
+    cubit.useBomb(b.tier);
     b.merging = true;
     b.showSquishFace();
     world.add(BombFuse(
@@ -527,6 +539,7 @@ class WasDropGame extends Forge2DGame
               b.settled &&
               b.body.position.y - AppDimens.ballRadii[b.tier.index] < deadlineY,
         );
+    if (overLine && overLineTime == 0) cubit.onLineTouched();
     overLineTime = overLine ? overLineTime + dt : 0;
     if (overLineTime > 1.5) {
       overLineTime = 0;
@@ -583,14 +596,33 @@ class _JarOverlay extends Component with HasGameReference<WasDropGame> {
       );
     }
 
+    // Тревога: пока фрукт лежит выше линии, верх стакана заливается
+    // пульсирующим красным градиентом.
+    if (g.overLineTime > 0) {
+      final double pulse =
+          0.55 + 0.45 * math.sin(g.overLineTime * 2 * math.pi * 1.6);
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, WasDropGame.worldWidth, WasDropGame.deadlineY),
+        Paint()
+          ..shader = ui.Gradient.linear(
+            Offset.zero,
+            const Offset(0, WasDropGame.deadlineY),
+            <Color>[
+              theme.deadlineAlert.withValues(alpha: 0.28 * pulse),
+              theme.deadlineAlert.withValues(alpha: 0),
+            ],
+          ),
+      );
+    }
     final Paint deadlinePaint = Paint()
       ..color = g.overLineTime > 0 ? theme.deadlineAlert : theme.deadline
       ..strokeWidth = 1.5
       ..strokeCap = StrokeCap.round;
+    final (double lineL, double lineR) = g.jar.spanAt(WasDropGame.deadlineY);
     _dashedLine(
       canvas,
-      Offset(0, WasDropGame.deadlineY),
-      Offset(WasDropGame.worldWidth, WasDropGame.deadlineY),
+      Offset(lineL, WasDropGame.deadlineY),
+      Offset(lineR, WasDropGame.deadlineY),
       dash: 9,
       gap: 7,
       paint: deadlinePaint,

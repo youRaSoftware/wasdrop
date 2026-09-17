@@ -8,6 +8,7 @@ import 'package:navigation/navigation.dart';
 import '../config/app_config.dart';
 import '../services/ads_service.dart';
 import '../services/audio_service.dart';
+import '../services/game_center_service.dart';
 import '../services/premium_service.dart';
 import '../services/review_service.dart';
 import '../services/settings_service.dart';
@@ -39,4 +40,9 @@ Future<void> setupAppScope(Flavor flavor) async {
   unawaited(ads.init());
 
   appLocator.registerSingleton<ReviewService>(ReviewService());
+
+  // Game Center: тихий вход в фоне.
+  final GameCenterService gameCenter = GameCenterService();
+  appLocator.registerSingleton<GameCenterService>(gameCenter);
+  unawaited(gameCenter.init());
 }

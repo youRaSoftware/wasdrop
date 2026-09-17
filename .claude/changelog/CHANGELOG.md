@@ -47,6 +47,13 @@ On release, rename `[Unreleased]` to `[X.Y.Z] — YYYY-MM-DD` and start a fresh 
 - Исправлено: рекорд в меню показывал 0 после партии — теперь он обновляется и сохраняется сразу, как только счёт его превысил (и в HUD тоже); плашка рекорда в меню стала крупнее
 - Исправлено: после «Продолжить» и сразу «Заново» из паузы новые фрукты зависали в воздухе — старая куча оставалась в физике невидимой; заодно автосохранение в такой паузе больше не теряет фрукты партии
 - Новое: «Оценить приложение» в настройках («О приложении») — открывает страницу отзыва в App Store
+- Новое: стаканы разной формы — Классика, Ваза, Чаша, Полка открыты сразу, Колба, Наклон и Песочные часы открываются за звёзды заказов (Качели — скоро); выбор в меню («Стакан: …») и в паузе, действует на следующую партию; сохранённая партия помнит свой стакан
+- Новое: заказы — три цели в каждой партии («Получи: лимон», «4 слияния подряд», «Дыня за 40 бросков»…); за выполнение — очки, заряд бонуса и звезда, звёзды открывают стаканы; панель над стаканом, экран заказов (тап по панели или из паузы), всплывашка «Заказ выполнен!»
+- Новое: режимы «На время» (две минуты на счёт, таймер в HUD) и «Вызов дня» (у всех одинаковые фрукты и заказы, один зачёт в день); у каждого режима свой рекорд
+- Новое: Game Center — таблицы рекордов по режимам и десять достижений (первый лимон … арбуз, очки, партии, заказы); кнопка-кубок в меню и «Рекорды» на экране проигрыша
+- Новое: подсказка «Как играть» при первом запуске (три шага) и в настройках
+- Изменено: новая иконка приложения — смеющийся арбуз на оранжевом фоне (iOS, Android, экран запуска)
+- Улучшено: верх стакана тревожно мигает, пока фрукт лежит выше линии; слияние двух арбузов — джекпот с большой вспышкой
 - Новое: экран настроек (⚙️ в меню): тумблеры «Звуки», «Музыка», «Вибрация», «Линия прицела»; статистика — рекорд, сыгранные игры, слияния, самый большой фрукт — со сбросом; цепочка всех 11 фруктов с названиями; версия и лицензии
 
 ### EN
@@ -87,4 +94,11 @@ On release, rename `[Unreleased]` to `[X.Y.Z] — YYYY-MM-DD` and start a fresh 
 - Fixed: the menu showed a best score of 0 after a game — the record now updates and is saved the moment the score beats it (in the HUD too); the record chip in the menu is bigger
 - Fixed: after «Continue» followed straight by «Restart» from the pause menu, new fruit hung in mid-air — the old pile stayed in the physics world invisibly; autosave in that pause no longer loses the game's fruit either
 - New: «Rate the app» in Settings («About») — opens the App Store review page
+- New: jars of different shapes — Classic, Vase, Bowl and Shelf are open from the start, Flask, Slope and Hourglass unlock with mission stars (Swing — coming soon); pick one in the menu («Jar: …») or from the pause menu, it applies to the next game; a saved game remembers its jar
+- New: orders — three goals in every game («Get a lemon», «4 merges in a row», «Melon within 40 drops»…); completing one gives points, a booster charge and a star, stars unlock jars; a panel above the jar, an orders screen (tap the panel or open from pause), an «Order done!» pop-up
+- New: «Time attack» (two minutes, a clock in the HUD) and «Daily challenge» (the same fruit and orders for everyone, one attempt a day) modes, each with its own best score
+- New: Game Center — per-mode leaderboards and ten achievements (first lemon … watermelon, points, games, orders); a trophy button in the menu and «Leaderboards» on the game over screen
+- New: a «How to play» walkthrough on first launch (three steps) and in Settings
+- Changed: new app icon — a laughing watermelon on orange (iOS, Android, launch screen)
+- Improved: the top of the jar pulses red while a fruit sits above the line; merging two watermelons is a jackpot with a big flash
 - New: settings screen (⚙️ in the menu): Sounds, Music, Vibration and Aim line toggles; statistics — best score, games played, merges, biggest fruit — with a reset; the chain of all 11 fruits with names; version and licenses

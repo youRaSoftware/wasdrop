@@ -16,7 +16,12 @@ enum AppIcons {
   shake('shake'),
   bomb('bomb'),
   upgrade('upgrade'),
-  crown('crown');
+  crown('crown'),
+  missions('missions'),
+  streak('streak'),
+  star('star'),
+  combo('combo'),
+  jar('jar');
 
   final String file;
 

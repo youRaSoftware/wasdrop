@@ -10,6 +10,7 @@ class SettingsHiveProvider {
   bool get hapticsOn => (_box.get('hapticsOn') as bool?) ?? false;
   bool get aimLineOn => (_box.get('aimLineOn') as bool?) ?? true;
   String? get themeId => _box.get('themeId') as String?;
+  String? get jarId => _box.get('jarId') as String?;
 
   /// Код языка; null — системный.
   String? get localeCode => _box.get('locale') as String?;
@@ -21,6 +22,7 @@ class SettingsHiveProvider {
     required bool aimLineOn,
     required String themeId,
     required String? localeCode,
+    required String jarId,
   }) async {
     await _box.putAll(<String, Object>{
       'soundOn': soundOn,
@@ -28,6 +30,7 @@ class SettingsHiveProvider {
       'hapticsOn': hapticsOn,
       'aimLineOn': aimLineOn,
       'themeId': themeId,
+      'jarId': jarId,
     });
     if (localeCode == null) {
       await _box.delete('locale');

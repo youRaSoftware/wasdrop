@@ -35,6 +35,10 @@ class SettingsService {
   Future<void> setThemeId(String id) =>
       _update(settings.value.copyWith(themeId: id));
 
+  /// Стакан для следующей партии (`JarShapes`).
+  Future<void> setJarId(String id) =>
+      _update(settings.value.copyWith(jarId: id));
+
   /// Язык интерфейса; null — системный. Сам переключатель EasyLocalization
   /// дёргает виджет (`context.setLocale` / `context.resetLocale`).
   Future<void> setLocale(String? code) => _update(

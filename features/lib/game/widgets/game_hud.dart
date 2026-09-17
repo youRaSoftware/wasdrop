@@ -1,5 +1,6 @@
 import 'package:core/core.dart';
 import 'package:core_ui/core_ui.dart';
+import 'package:domain/domain.dart';
 import 'package:flutter/material.dart';
 
 import '../cubit/game_cubit.dart';
@@ -7,6 +8,10 @@ import '../engine/fruit_assets.dart';
 
 class GameHud extends StatelessWidget {
   static const Key pauseButtonKey = Key('hud_pause');
+  static const Key timerKey = Key('hud_timer');
+
+  static String _clock(int seconds) =>
+      '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
 
   const GameHud({super.key});
 
@@ -40,6 +45,15 @@ class GameHud extends StatelessWidget {
               ],
             ),
           ),
+          if (state.mode == GameMode.timed && state.secondsLeft != null)
+            _ModeChip(
+              key: timerKey,
+              text: _clock(state.secondsLeft!),
+              alert: state.secondsLeft! <= 10,
+            )
+          else if (state.mode == GameMode.daily)
+            _ModeChip(text: context.tr(LocaleKeys.hud_daily)),
+          if (state.mode != GameMode.classic) const SizedBox(width: 8),
           // Следующий шар.
           Container(
             width: AppDimens.minTapTarget,
@@ -64,6 +78,40 @@ class GameHud extends StatelessWidget {
             child: const AppIcon(AppIcons.pause, size: 22),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Пилюля режима в HUD: таймер «На время» (красный на последних секундах)
+/// или метка ежедневного вызова.
+class _ModeChip extends StatelessWidget {
+  final String text;
+  final bool alert;
+
+  const _ModeChip({required this.text, this.alert = false, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: AppDimens.minTapTarget,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppDimens.minTapTarget / 2),
+        border: Border.all(
+          color: alert ? AppColors.alert : AppColors.stroke,
+          width: 2,
+        ),
+      ),
+      child: Text(
+        text,
+        style: AppFonts.button.copyWith(
+          fontSize: 15,
+          fontFeatures: const <FontFeature>[FontFeature.tabularFigures()],
+          color: alert ? AppColors.alert : AppColors.textPrimary,
+        ),
       ),
     );
   }

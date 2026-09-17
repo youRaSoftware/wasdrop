@@ -2,11 +2,12 @@ part of 'game_cubit.dart';
 
 enum GameStatus { playing, paused, gameOver }
 
-/// Бонусы под стаканом. Кнопка взводит бонус ([GameState.armed]): встряска
-/// ждёт тряски телефона, бомбочка и увеличение — тапа по фрукту.
-enum Bonus { shake, bomb, upgrade }
-
 class GameState extends Equatable {
+  final GameMode mode;
+
+  /// Осталось секунд («На время»); null в других режимах.
+  final int? secondsLeft;
+
   final int score;
   final int bestScore;
   final GameStatus status;
@@ -36,6 +37,23 @@ class GameState extends Equatable {
   final int bombRefills;
   final int upgradeRefills;
 
+  /// Текущие заказы (три; выполненный сразу заменяется новым).
+  final List<Mission> missions;
+
+  /// Последний выполненный заказ и порядковый номер выполнения за партию
+  /// (форма показывает всплывашку, когда номер меняется).
+  final Mission? completedMission;
+  final int completedCount;
+
+  /// Звёзд заработано за партию.
+  final int starsEarned;
+
+  /// Открыт экран заказов (партия на паузе).
+  final bool missionsOpen;
+
+  /// Показан онбординг «как играть» (первый запуск; движок стоит).
+  final bool onboardingOpen;
+
   /// Идёт показ ролика (кнопки рекламы заблокированы, движок на паузе).
   final bool adBusy;
 
@@ -43,6 +61,8 @@ class GameState extends Equatable {
   final bool adUnavailable;
 
   const GameState({
+    this.mode = GameMode.classic,
+    this.secondsLeft,
     required this.score,
     required this.bestScore,
     required this.status,
@@ -59,6 +79,12 @@ class GameState extends Equatable {
     this.shakeRefills = GameRules.refillsPerBonus,
     this.bombRefills = GameRules.refillsPerBonus,
     this.upgradeRefills = GameRules.refillsPerBonus,
+    this.missions = const <Mission>[],
+    this.completedMission,
+    this.completedCount = 0,
+    this.starsEarned = 0,
+    this.missionsOpen = false,
+    this.onboardingOpen = false,
     this.adBusy = false,
     this.adUnavailable = false,
   });
@@ -82,6 +108,10 @@ class GameState extends Equatable {
         Bonus.upgrade => GameRules.upgradesPerGame,
       };
 
+  /// Продолжение после проигрыша — только в классике (в «На время» и
+  /// ежедневном вызове зачёт честный).
+  bool get canContinue => mode == GameMode.classic && continues > 0;
+
   /// Кнопка бонуса без зарядов предлагает пополнение — только с
   /// монетизацией (за ролик / премиуму); в 1.0 заряды 3 / 1 / 1 на партию
   /// без пополнения (решение 2026-09-14).
@@ -94,6 +124,7 @@ class GameState extends Equatable {
   /// [bestTier] сбрасывается в null, только если передать `bestTier: null`
   /// явно через [resetBestTier]; [armed] снимается через [disarm].
   GameState copyWith({
+    int? secondsLeft,
     int? score,
     int? bestScore,
     GameStatus? status,
@@ -112,10 +143,18 @@ class GameState extends Equatable {
     int? shakeRefills,
     int? bombRefills,
     int? upgradeRefills,
+    List<Mission>? missions,
+    Mission? completedMission,
+    int? completedCount,
+    int? starsEarned,
+    bool? missionsOpen,
+    bool? onboardingOpen,
     bool? adBusy,
     bool? adUnavailable,
   }) {
     return GameState(
+      mode: mode,
+      secondsLeft: secondsLeft ?? this.secondsLeft,
       score: score ?? this.score,
       bestScore: bestScore ?? this.bestScore,
       status: status ?? this.status,
@@ -132,6 +171,12 @@ class GameState extends Equatable {
       shakeRefills: shakeRefills ?? this.shakeRefills,
       bombRefills: bombRefills ?? this.bombRefills,
       upgradeRefills: upgradeRefills ?? this.upgradeRefills,
+      missions: missions ?? this.missions,
+      completedMission: completedMission ?? this.completedMission,
+      completedCount: completedCount ?? this.completedCount,
+      starsEarned: starsEarned ?? this.starsEarned,
+      missionsOpen: missionsOpen ?? this.missionsOpen,
+      onboardingOpen: onboardingOpen ?? this.onboardingOpen,
       adBusy: adBusy ?? this.adBusy,
       adUnavailable: adUnavailable ?? this.adUnavailable,
     );
@@ -139,6 +184,8 @@ class GameState extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
+        mode,
+        secondsLeft,
         score,
         bestScore,
         status,
@@ -157,5 +204,11 @@ class GameState extends Equatable {
         upgradeRefills,
         adBusy,
         adUnavailable,
+        missions,
+        completedMission,
+        completedCount,
+        starsEarned,
+        missionsOpen,
+        onboardingOpen,
       ];
 }

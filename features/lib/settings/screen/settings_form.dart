@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../game/engine/fruit_assets.dart';
+import '../../game/widgets/onboarding_overlay.dart';
 import '../cubit/settings_cubit.dart';
 import '../widgets/fruit_chain.dart';
 import '../widgets/language_overlay.dart';
@@ -25,6 +26,7 @@ import '../widgets/theme_label.dart';
 /// в [SettingsCubit].
 class SettingsForm extends StatelessWidget {
   static const Key languageRowKey = Key('settings_language');
+  static const Key howToPlayKey = Key('settings_how_to_play');
   static const Key premiumRowKey = Key('settings_premium');
   static const Key rateAppKey = Key('settings_rate_app');
 
@@ -147,6 +149,12 @@ class SettingsForm extends StatelessWidget {
                                     value: value.aimLineOn,
                                     onChanged: settings.setAimLineOn,
                                   ),
+                                  SettingsLinkRow(
+                                    key: SettingsForm.howToPlayKey,
+                                    label: context
+                                        .tr(LocaleKeys.settings_howToPlay),
+                                    onPressed: cubit.showHelp,
+                                  ),
                                   Padding(
                                     padding: const EdgeInsets.only(
                                       top: 6,
@@ -210,6 +218,14 @@ class SettingsForm extends StatelessWidget {
                           SettingsValueRow(
                             label: context.tr(LocaleKeys.settings_best),
                             value: '${stats.bestScore}',
+                          ),
+                          SettingsValueRow(
+                            label: context.tr(LocaleKeys.settings_bestTimed),
+                            value: '${stats.bestTimed}',
+                          ),
+                          SettingsValueRow(
+                            label: context.tr(LocaleKeys.settings_bestDaily),
+                            value: '${stats.bestDaily}',
                           ),
                           SettingsValueRow(
                             label: context.tr(LocaleKeys.settings_gamesPlayed),
@@ -301,6 +317,7 @@ class SettingsForm extends StatelessWidget {
               onConfirm: cubit.confirmReset,
               onCancel: cubit.cancelReset,
             ),
+          if (state.showingHelp) OnboardingOverlay(onDone: cubit.closeHelp),
           if (state.choosingLanguage)
             ValueListenableBuilder<SettingsModel>(
               valueListenable: settings.settings,

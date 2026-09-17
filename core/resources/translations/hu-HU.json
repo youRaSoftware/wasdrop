@@ -3,10 +3,17 @@
     "play": "JÁTÉK",
     "best": "Rekord: {score}",
     "continue": "FOLYTATÁS",
-    "newGame": "Új játék"
+    "newGame": "Új játék",
+    "jar": "Edény",
+    "timed": "Időre",
+    "daily": "Napi kihívás",
+    "dailyDone": "Ma: {score}",
+    "bestTimed": "Időre: {score}",
+    "bestDaily": "Kihívás: {score}"
   },
   "hud": {
-    "best": "REKORD {score}"
+    "best": "REKORD {score}",
+    "daily": "NAPI"
   },
   "pause": {
     "title": "SZÜNET",
@@ -15,7 +22,9 @@
     "menu": "Menü",
     "sound": "Hang",
     "vibration": "Rezgés",
-    "wallpapers": "HÁTTEREK"
+    "wallpapers": "HÁTTEREK",
+    "changeJar": "Edény cseréje",
+    "missions": "Megbízások"
   },
   "gameOver": {
     "title": "JÁTÉK VÉGE",
@@ -26,7 +35,9 @@
     "continueAd": "Folytatás hirdetéssel",
     "continueFree": "Folytatás",
     "adUnavailable": "A reklám most nem elérhető",
-    "removeAds": "Reklámok eltávolítása"
+    "removeAds": "Reklámok eltávolítása",
+    "timeUp": "LEJÁRT AZ IDŐ",
+    "dailyDone": "NAPI EREDMÉNY"
   },
   "premium": {
     "title": "PRÉMIUM",
@@ -79,7 +90,10 @@
     "premiumStatus": "Prémium",
     "premiumActive": "Aktív",
     "restorePurchases": "Vásárlások visszaállítása",
-    "adPrivacy": "Hirdetési adatvédelem"
+    "adPrivacy": "Hirdetési adatvédelem",
+    "bestTimed": "Rekord időre",
+    "bestDaily": "Napi kihívás rekord",
+    "howToPlay": "Hogyan kell játszani"
   },
   "fruits": {
     "cherry": "cseresznye",
@@ -106,5 +120,54 @@
     "shakeHint": "Rázd meg a telefont a gyümölcsök összekeveréséhez",
     "pickFruit": "Koppints egy gyümölcsre, hogy felrobbantsd",
     "pickUpgrade": "Koppints egy gyümölcsre, hogy egy szinttel nagyobb legyen"
+  },
+  "jars": {
+    "title": "EDÉNYEK",
+    "stars": "{n} ★",
+    "locked": "{n} ★ a feloldáshoz",
+    "comingSoon": "Hamarosan",
+    "nextGame": "A következő játékra érvényes",
+    "classic": "Klasszikus",
+    "vase": "Váza",
+    "bowl": "Tál",
+    "shelf": "Polc",
+    "flask": "Lombik",
+    "slope": "Lejtő",
+    "hourglass": "Homokóra",
+    "swing": "Hinta"
+  },
+  "missions": {
+    "title": "MEGBÍZÁSOK",
+    "getFruit": "Szerezz: {fruit}",
+    "collectFruits": "Gyűjts: {fruit} × {n}",
+    "mergeStreak": "{n} egyesítés egymás után",
+    "combo": "Két egyesítés egy dobásból",
+    "economy": "{fruit} {n} dobáson belül",
+    "bonusBomb": "Robbants fel: {fruit}",
+    "score": "Érj el {n} pontot",
+    "clean": "{n} dobás a vonal érintése nélkül",
+    "done": "MEGBÍZÁS KÉSZ!",
+    "reward": "Jutalom",
+    "doneTotal": "Teljesítve: {n}",
+    "stars": "Csillagok: {n}",
+    "earned": "Csillagok ebben a játékban: +{n}",
+    "nextJar": "Következő edény: {n} ★",
+    "allJars": "Minden edény feloldva",
+    "dropsLeft": "Még {n} dobás"
+  },
+  "gameCenter": {
+    "leaderboards": "Ranglisták",
+    "achievements": "Eredmények"
+  },
+  "onboarding": {
+    "step1Title": "DOBD",
+    "step1": "Koppints vagy húzd: a gyümölcs az edénybe esik.",
+    "step2Title": "EGYESÍTSD",
+    "step2": "Két egyforma gyümölcs érintkezéskor a következővé egyesül — a cseresznyétől a görögdinnyéig. Ne hagyd, hogy a kupac a vonal fölé érjen!",
+    "step3Title": "BÓNUSZOK ÉS MEGBÍZÁSOK",
+    "step3": "A rázás, a bomba és a növesztés segít, ha szűk az edény. Teljesíts megbízásokat csillagokért — új edényeket nyitnak.",
+    "next": "Tovább",
+    "skip": "Kihagyás",
+    "start": "Játsszunk!"
   }
 }

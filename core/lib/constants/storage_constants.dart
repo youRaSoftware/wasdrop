@@ -7,4 +7,7 @@ class StorageConstants {
 
   /// Кэш покупки «Премиум навсегда» (`PremiumRepository`).
   static const String premiumBox = 'premiumBox';
+
+  /// Прогресс: звёзды заказов, счётчики, онбординг (`ProgressRepository`).
+  static const String progressBox = 'progressBox';
 }

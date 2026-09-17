@@ -120,6 +120,12 @@ class AudioService {
     _haptic(HapticFeedback.selectionClick);
   }
 
+  /// Заказ выполнен — звук рекорда потише и лёгкая хаптика.
+  void missionDone() {
+    _sfx(_record, 0.5);
+    _haptic(HapticFeedback.mediumImpact);
+  }
+
   /// Шар брошен.
   void drop() {
     _sfx(_drop, 0.7);

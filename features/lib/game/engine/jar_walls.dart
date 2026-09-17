@@ -1,5 +1,6 @@
 import 'package:flame_forge2d/flame_forge2d.dart';
 
+import 'jar_geometry.dart';
 import 'physics_tuning.dart';
 
 /// Маркер `userData` статического тела стенок и дна стакана.
@@ -10,62 +11,73 @@ class JarWalls {
   const JarWalls();
 }
 
-/// Строит статическое тело стенок и дна для мира [width] × [height]
-/// (игра — стакан, сплеш — края экрана) и возвращает его; при ресайзе
-/// старое тело уничтожается снаружи и строится новое.
+/// Строит статическое тело стенок и дна по контуру [jar] и возвращает
+/// его; при ресайзе старое тело уничтожается снаружи и строится новое.
 ///
-/// Стенки — толстые коробки за пределами видимой области, а не тонкие
-/// отрезки: шар, вдавленный ударом сверху в тонкий Segment, проходил сквозь
-/// него (центр пересекал линию — и его выталкивало вниз). У коробки центр
-/// остаётся внутри, и солвер возвращает шар в стакан. [chamfer] > 0 —
-/// 45° скосы в нижних углах под визуальное скругление стакана: прямой
-/// физический угол давал бы фрукту закатиться под скругление и обрезаться.
-/// [topMargin] — насколько боковые стенки продолжаются выше верха мира
+/// Стенка — цепочка толстых четырёхугольников (по одному на отрезок
+/// контура, [thickness] наружу), а не тонкие отрезки: шар, вдавленный
+/// ударом в тонкий Segment, проходил сквозь него (центр пересекал линию —
+/// и его выталкивало не в ту сторону). Внешняя кромка построена миттером
+/// ([JarGeometry.offsetOutward]), так что соседние коробки стыкуются без
+/// щелей по внутренней кромке; небольшой [Polygon.radius] сглаживает
+/// стыки, чтобы катящийся фрукт не цеплялся за вершины дискретизированных
+/// дуг. [topMargin] — насколько боковые стенки продолжаются выше верха
 /// (игра передаёт большой запас: подброшенный встряской фрукт не должен
-/// перелететь через стенку); по умолчанию — на толщину стенки.
+/// перелететь через стенку); по умолчанию — на толщину стенки. [extras]
+/// (полка) — отдельные выпуклые многоугольники.
 Body buildJarWalls(
-  Forge2DWorld world, {
-  required double width,
-  required double height,
-  double chamfer = 0,
+  Forge2DWorld world,
+  JarGeometry jar, {
   double thickness = 40,
   double? topMargin,
 }) {
-  final double w = width;
-  final double h = height;
   final double t = thickness;
-  final double top = topMargin ?? thickness;
-  List<Vector2> rect(double x1, double y1, double x2, double y2) => <Vector2>[
-        Vector2(x1, y1),
-        Vector2(x2, y1),
-        Vector2(x2, y2),
-        Vector2(x1, y2),
-      ];
-  final List<List<Vector2>> boxes = <List<Vector2>>[
-    rect(-t, -top, 0, h + t), // левая
-    rect(w, -top, w + t, h + t), // правая
-    rect(-t, h, w + t, h + t), // дно
-  ];
-  if (chamfer > 0) {
-    boxes.addAll(<List<Vector2>>[
-      <Vector2>[Vector2(0, h - chamfer), Vector2(chamfer, h), Vector2(0, h)],
-      <Vector2>[
-        Vector2(w, h - chamfer),
-        Vector2(w, h),
-        Vector2(w - chamfer, h),
-      ],
-    ]);
-  }
+  final List<Vector2> inner = jar.wallWithMargin(topMargin ?? thickness);
+  final List<Vector2> outer = JarGeometry.offsetOutward(inner, t);
+
   final Body walls = world.createBody(
     BodyDef(type: BodyType.static, userData: const JarWalls()),
   );
-  for (final List<Vector2> corners in boxes) {
+  final ShapeDef material = ShapeDef(
+    material: SurfaceMaterial(friction: PhysicsTuning.wallFriction),
+  );
+  for (int i = 0; i < inner.length - 1; i++) {
+    final List<Vector2> quad = <Vector2>[
+      inner[i],
+      inner[i + 1],
+      outer[i + 1],
+      outer[i],
+    ];
+    if (_area(quad) < 1e-3) continue;
     walls.createShape(
-      Polygon(corners),
-      ShapeDef(
-        material: SurfaceMaterial(friction: PhysicsTuning.wallFriction),
-      ),
+      Polygon(quad, radius: PhysicsTuning.wallJointRadius),
+      material,
     );
   }
+  for (final List<Vector2> extra in jar.extras) {
+    if (extra.length < 3) continue;
+    // Выпуклая оболочка (Polygon её строит сам); скруглённые торцы
+    // полки заданы точками контура, ≤ 8 вершин Box2D — прореживаем.
+    final List<Vector2> pts = extra.length <= 8 ? extra : _thin(extra, 8);
+    walls.createShape(Polygon(pts, radius: 1), material);
+  }
   return walls;
+}
+
+double _area(List<Vector2> p) {
+  double a = 0;
+  for (int i = 0; i < p.length; i++) {
+    final Vector2 u = p[i];
+    final Vector2 v = p[(i + 1) % p.length];
+    a += u.x * v.y - v.x * u.y;
+  }
+  return a.abs() / 2;
+}
+
+List<Vector2> _thin(List<Vector2> pts, int max) {
+  final List<Vector2> out = <Vector2>[];
+  for (int i = 0; i < max; i++) {
+    out.add(pts[(i * pts.length / max).floor()]);
+  }
+  return out;
 }

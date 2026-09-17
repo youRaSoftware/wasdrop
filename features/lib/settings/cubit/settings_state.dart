@@ -12,6 +12,9 @@ class SettingsState extends Equatable {
   /// Показан оверлей выбора языка.
   final bool choosingLanguage;
 
+  /// Показан оверлей «Как играть».
+  final bool showingHelp;
+
   /// UMP требует пункт «Настройки рекламы» (регион с обязательным согласием).
   final bool adPrivacyRequired;
 
@@ -20,6 +23,7 @@ class SettingsState extends Equatable {
     this.version = '',
     this.confirmingReset = false,
     this.choosingLanguage = false,
+    this.showingHelp = false,
     this.adPrivacyRequired = false,
   });
 
@@ -28,6 +32,7 @@ class SettingsState extends Equatable {
     String? version,
     bool? confirmingReset,
     bool? choosingLanguage,
+    bool? showingHelp,
     bool? adPrivacyRequired,
   }) {
     return SettingsState(
@@ -35,6 +40,7 @@ class SettingsState extends Equatable {
       version: version ?? this.version,
       confirmingReset: confirmingReset ?? this.confirmingReset,
       choosingLanguage: choosingLanguage ?? this.choosingLanguage,
+      showingHelp: showingHelp ?? this.showingHelp,
       adPrivacyRequired: adPrivacyRequired ?? this.adPrivacyRequired,
     );
   }
@@ -45,6 +51,7 @@ class SettingsState extends Equatable {
         version,
         confirmingReset,
         choosingLanguage,
+        showingHelp,
         adPrivacyRequired,
       ];
 }

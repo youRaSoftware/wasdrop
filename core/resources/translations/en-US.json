@@ -3,10 +3,17 @@
     "play": "PLAY",
     "best": "Best {score}",
     "continue": "CONTINUE",
-    "newGame": "New game"
+    "newGame": "New game",
+    "jar": "Jar",
+    "timed": "Time attack",
+    "daily": "Daily challenge",
+    "dailyDone": "Done today: {score}",
+    "bestTimed": "Time attack best {score}",
+    "bestDaily": "Daily best {score}"
   },
   "hud": {
-    "best": "BEST {score}"
+    "best": "BEST {score}",
+    "daily": "DAILY"
   },
   "pause": {
     "title": "PAUSE",
@@ -15,7 +22,9 @@
     "menu": "Menu",
     "sound": "Sound",
     "vibration": "Vibration",
-    "wallpapers": "WALLPAPERS"
+    "wallpapers": "WALLPAPERS",
+    "changeJar": "Change jar",
+    "missions": "Orders"
   },
   "gameOver": {
     "title": "GAME OVER",
@@ -26,7 +35,9 @@
     "continueAd": "Continue with an ad",
     "continueFree": "Continue",
     "adUnavailable": "Ads are unavailable right now",
-    "removeAds": "Remove ads"
+    "removeAds": "Remove ads",
+    "timeUp": "TIME'S UP",
+    "dailyDone": "DAILY RESULT"
   },
   "premium": {
     "title": "PREMIUM",
@@ -79,7 +90,10 @@
     "premiumStatus": "Premium",
     "premiumActive": "Active",
     "restorePurchases": "Restore purchases",
-    "adPrivacy": "Ad privacy settings"
+    "adPrivacy": "Ad privacy settings",
+    "bestTimed": "Time attack best",
+    "bestDaily": "Daily challenge best",
+    "howToPlay": "How to play"
   },
   "fruits": {
     "cherry": "cherry",
@@ -106,5 +120,54 @@
     "shakeHint": "Shake your phone to mix up the fruits",
     "pickFruit": "Tap a fruit to blow it up",
     "pickUpgrade": "Tap a fruit to grow it one level"
+  },
+  "jars": {
+    "title": "JARS",
+    "stars": "{n} ★",
+    "locked": "{n} ★ to unlock",
+    "comingSoon": "Coming soon",
+    "nextGame": "Applies to the next game",
+    "classic": "Classic",
+    "vase": "Vase",
+    "bowl": "Bowl",
+    "shelf": "Shelf",
+    "flask": "Flask",
+    "slope": "Slope",
+    "hourglass": "Hourglass",
+    "swing": "Swing"
+  },
+  "missions": {
+    "title": "ORDERS",
+    "getFruit": "Get a {fruit}",
+    "collectFruits": "Get {fruit} × {n}",
+    "mergeStreak": "{n} merges in a row",
+    "combo": "Two merges in one drop",
+    "economy": "{fruit} within {n} drops",
+    "bonusBomb": "Bomb a {fruit}",
+    "score": "Score {n} points",
+    "clean": "{n} drops without touching the line",
+    "done": "ORDER DONE!",
+    "reward": "Reward",
+    "doneTotal": "Done: {n}",
+    "stars": "Stars: {n}",
+    "earned": "Stars this game: +{n}",
+    "nextJar": "Next jar in {n} ★",
+    "allJars": "All jars unlocked",
+    "dropsLeft": "{n} drops left"
+  },
+  "gameCenter": {
+    "leaderboards": "Leaderboards",
+    "achievements": "Achievements"
+  },
+  "onboarding": {
+    "step1Title": "DROP",
+    "step1": "Tap or drag to drop the fruit into the jar.",
+    "step2Title": "MERGE",
+    "step2": "Two equal fruits that touch merge into the next one — from cherry to watermelon. Don’t let the pile rise above the line!",
+    "step3Title": "BOOSTERS & ORDERS",
+    "step3": "Shake, bomb and grow help when the jar gets crowded. Complete orders for stars — they unlock new jars.",
+    "next": "Next",
+    "skip": "Skip",
+    "start": "Let’s play!"
   }
 }

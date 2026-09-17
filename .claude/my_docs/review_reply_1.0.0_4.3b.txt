@@ -1,0 +1,32 @@
+Ответ в Resolution Center на отказ 4.3(b) по сборке 1.0.0 (2026-09-17).
+Отправлять из App Store Connect → приложение → App Review → Reply. Без новой сборки.
+Тон: вежливый вопрос, без спора. Цель — получить конкретику, а не переубедить.
+
+----------------------------------------------------------------------
+
+Hello,
+
+Thank you for reviewing Fruity Drop. We understand the concern behind Guideline 4.3(b) and we are not resubmitting the same build. Before we start the next round of work, we would appreciate any specifics on what the reviewer found lacking, so that our changes address the actual problem rather than our guess at it.
+
+For context, Fruity Drop is not built on a template or a purchased source: every asset and every system was made for this app.
+
+- Original artwork: all eleven fruits are hand-drawn characters with two expressions each; they squash and "oof" on impact.
+- A custom physics model: fruit bodies are derived from the artwork itself, so elongated fruits (grapes, lemon, strawberry) roll and wobble unevenly and can settle on their side.
+- Three boosters (shake the device to loosen the pile, a bomb, a grow-one-fruit booster), each with its own animation and charge limit per game.
+- Six wallpaper themes, a saved-game system (a game can be closed and resumed later), full localisation into six languages (English, Russian, German, French, Hungarian, Japanese), and native iPad layout.
+- No ads, no tracking, no accounts, and it works fully offline.
+
+We recognise that the core "drop and merge" loop is a known genre, and we are planning further additions for the next submission (Game Center leaderboards and achievements, additional game modes, a daily challenge). If there are particular aspects of the design, content, or concept the reviewer would like to see improved, that guidance would help us focus the work.
+
+Thank you for your time.
+
+Yury Fyodorov
+Fruity Drop
+
+----------------------------------------------------------------------
+
+Заметки:
+- Слова suika / watermelon game в ответе намеренно отсутствуют.
+- Список «planned» совпадает с планом 1.1 в plans/plan.md; не обещать того, чего не будет в следующей сборке.
+- Если ответят шаблоном («we cannot provide specifics») — не переписываться дальше, идти по плану 1.1.
+- Апелляцию в App Review Board не подавать: без новых фактов по 4.3(b) её отклоняют, а лишняя переписка в этом статусе не помогает.

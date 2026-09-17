@@ -8,6 +8,7 @@ import 'package:flutter/material.dart' show Color;
 
 import '../../game/engine/ball_body.dart';
 import '../../game/engine/fruit_sprites.dart';
+import '../../game/engine/jar_geometry.dart';
 import '../../game/engine/jar_physics_world.dart';
 import '../../game/engine/jar_walls.dart';
 import '../../game/engine/physics_tuning.dart';
@@ -95,7 +96,10 @@ class SplashGame extends Forge2DGame implements FruitSpriteProvider {
     camera.viewfinder.visibleGameSize = Vector2(worldWidth, worldHeight);
     final Body? oldWalls = _walls;
     if (oldWalls != null) world.destroyBody(oldWalls);
-    _walls = buildJarWalls(world, width: worldWidth, height: worldHeight);
+    _walls = buildJarWalls(
+      world,
+      JarGeometry(JarShape.rectangle, width: worldWidth, height: worldHeight),
+    );
   }
 
   @override

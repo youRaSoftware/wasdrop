@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import 'jar_shape.dart';
+
 /// Пользовательские настройки (Hive-бокс `settingsBox`).
 class SettingsModel extends Equatable {
   /// Тема-обои по умолчанию (описания тем — `GameThemes` в core_ui).
@@ -22,6 +24,9 @@ class SettingsModel extends Equatable {
   /// Код языка интерфейса (`en`, `ru`, …); null — системный язык.
   final String? localeCode;
 
+  /// Последний выбранный стакан (`JarShapes`); партия помнит свой в снимке.
+  final String jarId;
+
   const SettingsModel({
     required this.soundOn,
     required this.musicOn,
@@ -29,6 +34,7 @@ class SettingsModel extends Equatable {
     required this.aimLineOn,
     this.themeId = defaultThemeId,
     this.localeCode,
+    this.jarId = JarShapes.defaultId,
   });
 
   const SettingsModel.empty()
@@ -47,6 +53,7 @@ class SettingsModel extends Equatable {
     String? themeId,
     String? localeCode,
     bool resetLocale = false,
+    String? jarId,
   }) {
     return SettingsModel(
       soundOn: soundOn ?? this.soundOn,
@@ -55,10 +62,18 @@ class SettingsModel extends Equatable {
       aimLineOn: aimLineOn ?? this.aimLineOn,
       themeId: themeId ?? this.themeId,
       localeCode: resetLocale ? null : (localeCode ?? this.localeCode),
+      jarId: jarId ?? this.jarId,
     );
   }
 
   @override
-  List<Object?> get props =>
-      <Object?>[soundOn, musicOn, hapticsOn, aimLineOn, themeId, localeCode];
+  List<Object?> get props => <Object?>[
+        soundOn,
+        musicOn,
+        hapticsOn,
+        aimLineOn,
+        themeId,
+        localeCode,
+        jarId,
+      ];
 }

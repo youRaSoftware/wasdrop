@@ -1,12 +1,22 @@
 library domain;
 
 export 'enums/ball_tier.dart';
+export 'enums/bonus.dart';
+export 'enums/game_mode.dart';
+export 'models/game_achievement.dart';
+export 'models/game_launch.dart';
 export 'models/game_rules.dart';
 export 'models/game_snapshot.dart';
 export 'models/game_stats_model.dart';
+export 'models/jar_shape.dart';
+export 'models/mission.dart';
+export 'models/mission_generator.dart';
+export 'models/mission_tracker.dart';
 export 'models/premium_products.dart';
+export 'models/progress_model.dart';
 export 'models/settings_model.dart';
 export 'repositories/game_repository.dart';
 export 'repositories/premium_repository.dart';
+export 'repositories/progress_repository.dart';
 export 'repositories/settings_repository.dart';
 export 'repositories/stats_repository.dart';

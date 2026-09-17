@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 import '../cubit/game_cubit.dart';
 import 'game_form.dart';
 
-/// Игровой экран. [resumeFrom] — сохранённая партия из меню («Продолжить»):
-/// счёт и очередь идут в кубит, шары — в движок.
+/// Игровой экран. [launch] — режим и (для классики) сохранённая партия из
+/// меню («Продолжить»): счёт и очередь идут в кубит, шары — в движок.
 class GameScreen extends StatelessWidget {
-  final GameSnapshot? resumeFrom;
+  final GameLaunch launch;
 
-  const GameScreen({this.resumeFrom, super.key});
+  const GameScreen({this.launch = const GameLaunch(), super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +22,12 @@ class GameScreen extends StatelessWidget {
         audio: appLocator<AudioService>(),
         premium: appLocator<PremiumService>(),
         ads: appLocator<AdsService>(),
-        resumeFrom: resumeFrom,
+        progressRepository: appLocator<ProgressRepository>(),
+        gameCenter: appLocator<GameCenterService>(),
+        mode: launch.mode,
+        resumeFrom: launch.resumeFrom,
       ),
-      child: GameForm(resumeFrom: resumeFrom),
+      child: GameForm(resumeFrom: launch.resumeFrom),
     );
   }
 }

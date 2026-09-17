@@ -11,18 +11,24 @@ class StatsHiveProvider {
 
   /// Номер самого крупного фрукта (1…11), 0 — ещё не было.
   int get bestTierNumber => (_box.get('bestTier') as int?) ?? 0;
+  int get bestTimed => (_box.get('bestTimed') as int?) ?? 0;
+  int get bestDaily => (_box.get('bestDaily') as int?) ?? 0;
 
   Future<void> save({
     required int bestScore,
     required int gamesPlayed,
     required int totalMerges,
     required int bestTierNumber,
+    required int bestTimed,
+    required int bestDaily,
   }) async {
     await _box.putAll(<String, int>{
       'bestScore': bestScore,
       'gamesPlayed': gamesPlayed,
       'totalMerges': totalMerges,
       'bestTier': bestTierNumber,
+      'bestTimed': bestTimed,
+      'bestDaily': bestDaily,
     });
   }
 }

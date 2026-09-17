@@ -12,11 +12,17 @@ class PauseOverlay extends StatelessWidget {
   final VoidCallback onResume;
   final VoidCallback onRestart;
   final VoidCallback onMenu;
+  final VoidCallback onMissions;
+
+  /// «Заново» скрыта в ежедневном вызове (один зачёт в день).
+  final bool canRestart;
 
   const PauseOverlay({
     required this.onResume,
     required this.onRestart,
     required this.onMenu,
+    required this.onMissions,
+    this.canRestart = true,
     super.key,
   });
 
@@ -42,17 +48,30 @@ class PauseOverlay extends StatelessWidget {
             label: context.tr(LocaleKeys.pause_resume),
             onPressed: onResume,
           ),
-          const SizedBox(height: 12),
-          SecondaryButton(
-            label: context.tr(LocaleKeys.pause_restart),
-            icon: const AppIcon(AppIcons.restart, size: 20),
-            onPressed: onRestart,
-          ),
+          if (canRestart) ...<Widget>[
+            const SizedBox(height: 12),
+            SecondaryButton(
+              label: context.tr(LocaleKeys.pause_restart),
+              icon: const AppIcon(AppIcons.restart, size: 20),
+              onPressed: onRestart,
+            ),
+          ],
           const SizedBox(height: 4),
-          AppTextButton(
-            label: context.tr(LocaleKeys.pause_menu),
-            icon: const AppIcon(AppIcons.menuHome, size: 20),
-            onPressed: onMenu,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              AppTextButton(
+                label: context.tr(LocaleKeys.pause_missions),
+                icon: const AppIcon(AppIcons.missions, size: 20),
+                onPressed: onMissions,
+              ),
+              const SizedBox(width: 12),
+              AppTextButton(
+                label: context.tr(LocaleKeys.pause_menu),
+                icon: const AppIcon(AppIcons.menuHome, size: 20),
+                onPressed: onMenu,
+              ),
+            ],
           ),
           const Divider(color: AppColors.stroke),
           const SizedBox(height: 4),
@@ -91,7 +110,13 @@ class PauseOverlay extends StatelessWidget {
                       );
                     },
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 12),
+                  // Стакан меняется для следующей партии (текущая идёт в своём).
+                  AppTextButton(
+                    label: context.tr(LocaleKeys.pause_changeJar),
+                    icon: const AppIcon(AppIcons.jar, size: 20),
+                    onPressed: () => context.pushNamed('jars'),
+                  ),
                 ],
               );
             },

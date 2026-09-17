@@ -2,6 +2,8 @@ import 'package:equatable/equatable.dart';
 
 import '../enums/ball_tier.dart';
 import 'game_rules.dart';
+import 'jar_shape.dart';
+import 'mission.dart';
 
 /// Шар в сохранённой партии. Координаты — мировые единицы (ширина мира 360);
 /// [bottomOffset] — расстояние от центра до дна: высота мира зависит от
@@ -51,6 +53,12 @@ class GameSnapshot extends Equatable {
   final List<BallSnapshot> balls;
   final DateTime savedAt;
 
+  /// Стакан партии (`JarShapes`); снимки до 1.1 — классический.
+  final String jarId;
+
+  /// Текущие заказы; пустой список (снимок до 1.1) — кубит раздаст новые.
+  final List<Mission> missions;
+
   const GameSnapshot({
     required this.score,
     required this.current,
@@ -66,6 +74,8 @@ class GameSnapshot extends Equatable {
     this.shakeRefills = GameRules.refillsPerBonus,
     this.bombRefills = GameRules.refillsPerBonus,
     this.upgradeRefills = GameRules.refillsPerBonus,
+    this.jarId = JarShapes.defaultId,
+    this.missions = const <Mission>[],
   });
 
   @override
@@ -84,5 +94,7 @@ class GameSnapshot extends Equatable {
         upgradeRefills,
         balls,
         savedAt,
+        jarId,
+        missions,
       ];
 }

@@ -3,6 +3,8 @@ import 'package:core_ui/core_ui.dart';
 import 'package:domain/domain.dart';
 import 'package:flutter/material.dart';
 
+import '../../jars/widgets/jar_label.dart';
+
 import '../widgets/menu_fruit_pile.dart';
 
 /// Меню (мокап, кадр 1): лого, плашка рекорда, ИГРАТЬ, звук / настройки над
@@ -18,8 +20,12 @@ class MenuScreen extends StatefulWidget {
 
   static const Key playButtonKey = Key('menu_play');
   static const Key newGameButtonKey = Key('menu_new_game');
+  static const Key jarButtonKey = Key('menu_jar');
+  static const Key timedButtonKey = Key('menu_timed');
+  static const Key dailyButtonKey = Key('menu_daily');
   static const Key settingsButtonKey = Key('menu_settings');
   static const Key soundButtonKey = Key('menu_sound');
+  static const Key leaderboardButtonKey = Key('menu_leaderboard');
 
   const MenuScreen({super.key});
 
@@ -35,6 +41,11 @@ class _MenuScreenState extends State<MenuScreen>
   )..forward();
 
   int _bestScore = 0;
+  int _bestTimed = 0;
+  int _bestDaily = 0;
+
+  /// Сегодняшний вызов уже сыгран — кнопка показывает счёт и не активна.
+  int? _dailyToday;
 
   /// Сохранённая партия — если есть, ИГРАТЬ становится «Продолжить».
   GameSnapshot? _savedGame;
@@ -54,10 +65,16 @@ class _MenuScreenState extends State<MenuScreen>
   Future<void> _loadStats() async {
     final GameStatsModel stats = await appLocator<StatsRepository>().getStats();
     final GameSnapshot? saved = await appLocator<GameRepository>().load();
+    final ProgressModel progress =
+        await appLocator<ProgressRepository>().getProgress();
     if (!mounted) return;
     setState(() {
       _bestScore = stats.bestScore;
+      _bestTimed = stats.bestTimed;
+      _bestDaily = stats.bestDaily;
       _savedGame = saved;
+      _dailyToday =
+          progress.dailyPlayed(dailySeed()) ? progress.dailyScore : null;
     });
   }
 
@@ -66,6 +83,11 @@ class _MenuScreenState extends State<MenuScreen>
     if (!mounted) return;
     context.goNamed('game');
   }
+
+  // Как и классика — через `go`: игра возвращается в меню `goNamed('menu')`,
+  // и свежий экран заново читает рекорды и зачёт дня.
+  void _startMode(GameMode mode) =>
+      context.goNamed('game', extra: GameLaunch(mode: mode));
 
   Animation<double> _step(double from, double to) {
     return CurvedAnimation(
@@ -77,6 +99,7 @@ class _MenuScreenState extends State<MenuScreen>
   @override
   Widget build(BuildContext context) {
     final SettingsService settings = appLocator<SettingsService>();
+    final GameCenterService gameCenter = appLocator<GameCenterService>();
     final GameTheme theme = AppThemeScope.of(context);
 
     final bool wide = MediaQuery.sizeOf(context).width >= MenuScreen.wideScreen;
@@ -179,7 +202,9 @@ class _MenuScreenState extends State<MenuScreen>
                                 height: 64,
                                 onPressed: () => context.goNamed(
                                   'game',
-                                  extra: _savedGame,
+                                  extra: _savedGame == null
+                                      ? const GameLaunch()
+                                      : GameLaunch.resume(_savedGame!),
                                 ),
                               ),
                             ),
@@ -191,6 +216,72 @@ class _MenuScreenState extends State<MenuScreen>
                                 onPressed: _startNewGame,
                               ),
                             ],
+                            const SizedBox(height: 10),
+                            // Режимы: «На время» и ежедневный вызов (один
+                            // зачёт в день — после него кнопка показывает счёт).
+                            Row(
+                              children: <Widget>[
+                                Expanded(
+                                  child: _ModeButton(
+                                    key: MenuScreen.timedButtonKey,
+                                    label: context.tr(LocaleKeys.menu_timed),
+                                    sub: _bestTimed > 0
+                                        ? context.tr(
+                                            LocaleKeys.menu_best,
+                                            namedArgs: <String, String>{
+                                              'score': '$_bestTimed',
+                                            },
+                                          )
+                                        : null,
+                                    onPressed: () => _startMode(GameMode.timed),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: _ModeButton(
+                                    key: MenuScreen.dailyButtonKey,
+                                    label: context.tr(LocaleKeys.menu_daily),
+                                    sub: _dailyToday != null
+                                        ? context.tr(
+                                            LocaleKeys.menu_dailyDone,
+                                            namedArgs: <String, String>{
+                                              'score': '$_dailyToday',
+                                            },
+                                          )
+                                        : _bestDaily > 0
+                                            ? context.tr(
+                                                LocaleKeys.menu_best,
+                                                namedArgs: <String, String>{
+                                                  'score': '$_bestDaily',
+                                                },
+                                              )
+                                            : null,
+                                    onPressed: _dailyToday != null
+                                        ? null
+                                        : () => _startMode(GameMode.daily),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            // Выбор стакана — действует на новую партию.
+                            ValueListenableBuilder<SettingsModel>(
+                              valueListenable: settings.settings,
+                              builder: (BuildContext context,
+                                  SettingsModel value, Widget? _) {
+                                final JarShape jar =
+                                    JarShapes.byId(value.jarId);
+                                return SecondaryButton(
+                                  key: MenuScreen.jarButtonKey,
+                                  label: '${context.tr(LocaleKeys.menu_jar)}: '
+                                      '${jarLabel(context, jar)}',
+                                  icon: const AppIcon(AppIcons.jar, size: 20),
+                                  outlined: true,
+                                  height: 48,
+                                  onPressed: () => context.pushNamed('jars'),
+                                );
+                              },
+                            ),
                           ],
                         ),
                       ),
@@ -228,6 +319,22 @@ class _MenuScreenState extends State<MenuScreen>
                               _loadStats();
                             },
                             child: const AppIcon(AppIcons.settings),
+                          ),
+                          // Game Center — только после входа.
+                          ValueListenableBuilder<bool>(
+                            valueListenable: gameCenter.isSignedIn,
+                            builder: (BuildContext context, bool signedIn,
+                                Widget? _) {
+                              if (!signedIn) return const SizedBox.shrink();
+                              return Padding(
+                                padding: const EdgeInsets.only(left: 16),
+                                child: IconCircleButton(
+                                  key: MenuScreen.leaderboardButtonKey,
+                                  onPressed: gameCenter.showLeaderboards,
+                                  child: const AppIcon(AppIcons.trophy),
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -271,6 +378,74 @@ class _Reveal extends StatelessWidget {
           child: child,
         ),
       ),
+    );
+  }
+}
+
+/// Кнопка режима в меню: название и подпись (рекорд или сегодняшний счёт);
+/// без [onPressed] — приглушена (вызов дня уже сыгран).
+class _ModeButton extends StatelessWidget {
+  final String label;
+  final String? sub;
+  final VoidCallback? onPressed;
+
+  const _ModeButton({
+    required this.label,
+    required this.onPressed,
+    this.sub,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bool enabled = onPressed != null;
+    return AppPressable(
+      onPressed: onPressed,
+      builder: (BuildContext context, double pressed, Widget? _) {
+        return Opacity(
+          opacity: enabled ? 1 - 0.3 * pressed : 0.55,
+          child: Container(
+            height: 56,
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppDimens.buttonRadius),
+              border: Border.all(color: AppColors.stroke, width: 2),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                // Длинные названия (немецкий, японский) ужимаются, не режутся.
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    style: AppFonts.button.copyWith(
+                      fontSize: 14,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                if (sub != null) ...<Widget>[
+                  const SizedBox(height: 2),
+                  Text(
+                    sub!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppFonts.best.copyWith(
+                      fontSize: 10,
+                      color: AppColors.textSecondary,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
