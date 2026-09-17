@@ -18,4 +18,10 @@ abstract final class GameRules {
 
   /// Длительность партии «На время», секунд.
   static const int timedSeconds = 120;
+
+  /// Потолок зарядов с учётом наград за заказы: заказ может добавить заряд,
+  /// но бонусы остаются редкими (встряска ≤ 4, бомбочка и увеличение ≤ 2).
+  static const int maxShakes = shakesPerGame + 1;
+  static const int maxBombs = bombsPerGame + 1;
+  static const int maxUpgrades = upgradesPerGame + 1;
 }

@@ -40,6 +40,12 @@ Bundle / application id: `com.wasdrop` (prod), `com.wasdrop.dev` (dev).
 
 ## Подпись
 
+Типовые сбои экспорта (архив при этом годный, повторять только экспорт: `script/build.sh prod ipa --upload-only`):
+- «No Accounts» / «No signing certificate "iOS Distribution"» / «Failed to Use Accounts» — истекла сессия Apple ID в Xcode → Settings → Accounts; перезайти (команда `4YLBF6N3R4`).
+- «Provisioning profile … doesn't include the Game Center capability» — новый entitlement (с 1.1: Game Center) ещё не в профиле; открыть `ios/Runner.xcworkspace` → Runner → Signing & Capabilities, Xcode сам добавит capability к App ID и обновит профиль (нужен вход в аккаунт).
+- `flutter build ipa` возвращает 0 даже при провале экспорта — скрипт сверяет дату .ipa с архивом и предупреждает.
+
+
 - **Android:** `android/key.properties` (не в git, шаблон — `android/key.properties.example`) + keystore. Без него release подписывается debug-ключом.
 - **iOS:** команда Apple Developer — **Pavel Hrytsenka, Team ID `4YLBF6N3R4`** (та же, что у rvach), `DEVELOPMENT_TEAM` во всех конфигурациях pbxproj, автоматическая подпись. `script/build.sh` проверяет Team ID перед архивом и пишет его в `ios/exportOptions.plist` (создаётся при первом `--upload`, не в git). Для загрузки в App Store Connect нужен сертификат Apple Distribution этой команды — Xcode создаст его сам при `-allowProvisioningUpdates`, если Apple ID Павла добавлен в Xcode → Settings → Accounts на этом Mac (локально сейчас есть только Apple Development).
 

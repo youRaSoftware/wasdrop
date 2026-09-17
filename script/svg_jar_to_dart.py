@@ -30,9 +30,9 @@ JARS = [
     ('bowl', 'jar_3_bowl.svg', 0, False),
     ('shelf', 'jar_4_shelf.svg', 0, False),
     ('flask', 'jar_5_flask.svg', 10, False),
-    ('slope', 'jar_6_slope.svg', 15, False),
-    ('hourglass', 'jar_7_hourglass.svg', 20, False),
-    ('swing', 'jar_8_swing.svg', 30, True),
+    ('slope', 'jar_6_slope.svg', 25, False),
+    ('hourglass', 'jar_7_hourglass.svg', 45, False),
+    ('swing', 'jar_8_swing.svg', 70, True),
 ]
 
 TOKEN = re.compile(r'[MmLlHhVvQqCcZz]|-?\d*\.?\d+(?:e-?\d+)?')

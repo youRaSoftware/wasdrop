@@ -82,7 +82,19 @@ case "$TARGET" in
             flutter build ipa "${FLUTTER_ARGS[@]}"
             echo ""
             echo "✅ Archive: build/ios/archive/Runner.xcarchive"
-            ls build/ios/ipa/*.ipa 2>/dev/null | sed 's/^/✅ IPA: /' || true
+            # `flutter build ipa` exits 0 even when the IPA export fails (it only
+            # prints the xcodebuild errors), so don't trust a stale .ipa from an
+            # earlier run: it must be newer than the archive we just made.
+            IPA=$(ls -t build/ios/ipa/*.ipa 2>/dev/null | head -1 || true)
+            if [ -n "$IPA" ] && [ "$IPA" -nt build/ios/archive/Runner.xcarchive/Info.plist ]; then
+                echo "✅ IPA: $IPA"
+            else
+                echo "⚠️  IPA export failed (see the xcodebuild errors above); the archive is fine."
+                echo "   «No Accounts» / «No signing certificate» — sign in again in Xcode → Settings → Accounts."
+                echo "   «Provisioning profile doesn't include the … capability» — open ios/Runner.xcworkspace,"
+                echo "   Runner → Signing & Capabilities, let Xcode refresh the profile, then rerun with --upload-only."
+                if [ "$UPLOAD" != "--upload" ]; then exit 1; fi
+            fi
         fi
 
         if [ "$UPLOAD" = "--upload" ] || [ "$UPLOAD" = "--upload-only" ]; then
@@ -116,6 +128,10 @@ EOF
                 -allowProvisioningUpdates; then
                 echo ""
                 echo "❌ Upload failed."
+                echo "   «No Accounts» / «Failed to Use Accounts» — the Apple ID session in Xcode → Settings →"
+                echo "   Accounts has expired: sign in again (team $IOS_TEAM_ID) and rerun with --upload-only."
+                echo "   «Profile doesn't include the … capability» — Runner → Signing & Capabilities in Xcode"
+                echo "   registers the capability on the App ID and refreshes the profile; then rerun."
                 echo "   «Error Downloading App Information» means App Store Connect has no app with this"
                 echo "   bundle id yet: create it at https://appstoreconnect.apple.com/apps (team $IOS_TEAM_ID,"
                 echo "   Bundle ID com.wasdrop${FLAVOR/prod/}) and rerun: script/build.sh $FLAVOR ipa --upload-only"

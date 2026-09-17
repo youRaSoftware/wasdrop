@@ -40,11 +40,11 @@ enum GameAchievement {
   static Iterable<GameAchievement> forFruit(BallTier produced) =>
       values.where((GameAchievement a) => a.tier == produced);
 
-  static Iterable<GameAchievement> forScore(int score) => values
-      .where((GameAchievement a) => a.score != null && score >= a.score!);
+  static Iterable<GameAchievement> forScore(int score) =>
+      values.where((GameAchievement a) => a.score != null && score >= a.score!);
 
-  static Iterable<GameAchievement> forGames(int games) => values
-      .where((GameAchievement a) => a.games != null && games >= a.games!);
+  static Iterable<GameAchievement> forGames(int games) =>
+      values.where((GameAchievement a) => a.games != null && games >= a.games!);
 
   static Iterable<GameAchievement> forMissions(int missions) => values.where(
       (GameAchievement a) => a.missions != null && missions >= a.missions!);

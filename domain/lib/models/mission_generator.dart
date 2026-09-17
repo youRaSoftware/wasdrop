@@ -9,6 +9,11 @@ import 'mission.dart';
 /// — крупнее фрукты, длиннее серии, экономия и бомбочка. Типы трёх текущих
 /// заказов не повторяются; [random] с seed даёт одинаковые заказы
 /// (ежедневный вызов).
+///
+/// Награда — всегда звезда; очков заказы не дают (счёт только от слияний,
+/// иначе лидерборды и достижения за очки обесцениваются), а заряд бонуса —
+/// только за трудные заказы (серия ≥ 5, сбор ≥ 4, экономия, бомбочка по
+/// цели, ≥ 10 чистых бросков), с потолком `GameRules.max*` в кубите.
 class MissionGenerator {
   final Random random;
 
@@ -100,10 +105,7 @@ class MissionGenerator {
           type: type,
           tier: tier,
           target: 1,
-          reward: MissionReward(
-            points: 50 * tier.number,
-            bonus: step >= 2 ? _anyBonus() : null,
-          ),
+          reward: MissionReward(bonus: step >= 3 ? _anyBonus() : null),
         );
       case MissionType.collectFruits:
         final BallTier tier = _pickTier(
@@ -121,22 +123,22 @@ class MissionGenerator {
           type: type,
           tier: tier,
           target: n,
-          reward:
-              MissionReward(points: 30 * tier.number * n, bonus: _anyBonus()),
+          reward: MissionReward(bonus: n >= 4 ? _anyBonus() : null),
         );
       case MissionType.mergeStreak:
+        final int streak = _range(3 + step, 4 + 2 * step);
         return Mission(
           id: id,
           type: type,
-          target: _range(3 + step, 4 + 2 * step),
-          reward: MissionReward(bonus: Bonus.shake, points: 100 * (step + 1)),
+          target: streak,
+          reward: MissionReward(bonus: streak >= 5 ? Bonus.shake : null),
         );
       case MissionType.combo:
         return Mission(
           id: id,
           type: type,
           target: 1,
-          reward: MissionReward(bonus: _anyBonus(), points: 150),
+          reward: const MissionReward(),
         );
       case MissionType.economy:
         final BallTier tier = _pickTier(
@@ -152,7 +154,7 @@ class MissionGenerator {
           type: type,
           tier: tier,
           target: drops,
-          reward: MissionReward(bonus: Bonus.bomb, points: 100 * tier.number),
+          reward: const MissionReward(bonus: Bonus.bomb),
         );
       case MissionType.bonusBomb:
         final BallTier tier = _pickTier(
@@ -164,7 +166,7 @@ class MissionGenerator {
           type: type,
           tier: tier,
           target: 1,
-          reward: const MissionReward(bonus: Bonus.bomb, points: 200),
+          reward: const MissionReward(bonus: Bonus.bomb),
         );
       case MissionType.score:
         return Mission(
@@ -176,17 +178,15 @@ class MissionGenerator {
             2 => _range(20, 40) * 100,
             _ => _range(50, 90) * 100,
           },
-          reward: MissionReward(
-            bonus: step >= 1 ? Bonus.upgrade : null,
-            points: 100 * (step + 1),
-          ),
+          reward: MissionReward(bonus: step >= 2 ? Bonus.upgrade : null),
         );
       case MissionType.clean:
+        final int clean = _range(6 + 2 * step, 10 + 3 * step);
         return Mission(
           id: id,
           type: type,
-          target: _range(6 + 2 * step, 10 + 3 * step),
-          reward: MissionReward(bonus: Bonus.shake, points: 100 * (step + 1)),
+          target: clean,
+          reward: MissionReward(bonus: clean >= 10 ? Bonus.shake : null),
         );
     }
   }

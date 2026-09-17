@@ -48,6 +48,11 @@ class ProgressModel extends Equatable {
   bool dailyPlayed(int seed) => dailyPlayedSeed == seed;
 
   @override
-  List<Object?> get props =>
-      <Object?>[stars, missionsDone, onboardingDone, dailyPlayedSeed, dailyScore];
+  List<Object?> get props => <Object?>[
+        stars,
+        missionsDone,
+        onboardingDone,
+        dailyPlayedSeed,
+        dailyScore
+      ];
 }

@@ -149,7 +149,7 @@ const JarShape _flask = JarShape(
 
 const JarShape _slope = JarShape(
   id: 'slope',
-  starsToUnlock: 15,
+  starsToUnlock: 25,
   wall: <JarPoint>[
     JarPoint(0.0000, 0.0000),
     JarPoint(0.0000, 0.8471),
@@ -163,7 +163,7 @@ const JarShape _slope = JarShape(
 
 const JarShape _hourglass = JarShape(
   id: 'hourglass',
-  starsToUnlock: 20,
+  starsToUnlock: 45,
   wall: <JarPoint>[
     JarPoint(0.0000, 0.0000),
     JarPoint(0.0042, 0.0597),
@@ -228,7 +228,7 @@ const JarShape _hourglass = JarShape(
 
 const JarShape _swing = JarShape(
   id: 'swing',
-  starsToUnlock: 30,
+  starsToUnlock: 70,
   comingSoon: true,
   wall: <JarPoint>[
     JarPoint(0.0000, 0.0000),

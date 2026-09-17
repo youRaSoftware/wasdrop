@@ -249,13 +249,14 @@ class GameCubit extends Cubit<GameState> {
     int upgrades = base.upgrades;
     for (final Mission m in step.completed) {
       score += m.reward.points;
+      // Заряды с потолком: бонусы остаются редкими.
       switch (m.reward.bonus) {
         case Bonus.shake:
-          shakes++;
+          shakes = min(shakes + 1, GameRules.maxShakes);
         case Bonus.bomb:
-          bombs++;
+          bombs = min(bombs + 1, GameRules.maxBombs);
         case Bonus.upgrade:
-          upgrades++;
+          upgrades = min(upgrades + 1, GameRules.maxUpgrades);
         case null:
           break;
       }

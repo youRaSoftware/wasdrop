@@ -96,7 +96,9 @@
 - Иконка `upgrade.svg` — если дизайн не пришлёт, оставить.
 - Снять пометки «плейсхолдер» со звука (`CLAUDE.md`, `STORE_BRIEF.md`, `core/resources/audio/README.md`).
 
-## 6. Выпуск (Этап F)
+## 6. Выпуск (Этап F) — в работе
+
+Решение 2026-09-17: версия остаётся 1.0.0 (ни одна не вышла), поднимается только build number. Тексты листинга на 6 языков и Notes for Review — `my_docs/STORE_LISTINGS.md` (готово 2026-09-17).
 ASC-настройка (Game Center) → TestFlight 10–20 тестеров, 2 недели → листинг (описание без suika/watermelon game, скриншоты: заказы, стаканы, режимы, Game Center) → `STORE_WHATS_NEW.md` → `release_notes_1.1.0.txt` → Notes for Review → отправка не раньше 2026-10-08.
 
 ## 7. Порядок и вехи
