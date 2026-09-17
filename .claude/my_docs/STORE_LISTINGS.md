@@ -1,6 +1,6 @@
 # Листинг App Store — версия 1.0.0 (повторная отправка после 4.3(b))
 
-Дата: 2026-09-17. Версия остаётся 1.0.0 (ни одна ещё не вышла), меняется build number. Лимиты — `STORE_BRIEF.md` § 7. **Слова suika / watermelon game / «игра про арбуз» не используются нигде**: ни в описании, ни в ключевых словах, ни в заметке ревьюеру. Позиционирование: заказы, стаканы, режимы, Game Center, персонажи.
+Дата: 2026-09-17. После второго письма App Review (4.1(a) Copycats: «description, name, icons, and screenshots include references to Suika Game») — метаданные в ASC заменить на эти целиком, keywords проверить на suika/watermelon, скриншоты новые без арбуза в главной роли, иконка — `TZ_APP_ICON_V3.md`. Версия остаётся 1.0.0 (ни одна ещё не вышла), меняется build number. Лимиты — STORE_BRIEF.md § 7. **Слова suika / watermelon game / «игра про арбуз» не используются нигде**: ни в описании, ни в ключевых словах, ни в заметке ревьюеру. Позиционирование: заказы, стаканы, режимы, Game Center, персонажи.
 
 Keywords: до 100 символов, через запятую без пробелов, не повторяют слова из Name и Subtitle (они и так индексируются). Promotional Text можно менять без новой сборки.
 
@@ -10,16 +10,15 @@ Name во всех локалях: **Fruity Drop: Merge Puzzle** (25).
 
 ## en-US
 
-**Subtitle** (≤30): `Orders, jars & fruit friends` (28)
+**Subtitle** (≤30): Orders, jars & fruit friends (28)
 
 **Promotional Text** (≤170):
-`Every game brings three orders to fill, seven jar shapes to unlock and a daily challenge shared with everyone. Cosy physics, no ads, works offline.`
+Every game brings three orders to fill, seven jar shapes to unlock and a daily challenge shared with everyone. Cosy physics, no ads, works offline.
 
 **Keywords** (≤100):
-`fruit,game,relaxing,casual,physics,cozy,combine,jar,orders,daily,challenge,offline,family,kids,brain`
+fruit,game,relaxing,casual,physics,cozy,combine,jar,orders,daily,challenge,offline,family,kids,brain
 
 **Description** (≤4000):
-```
 Fruity Drop is a cosy puzzle about fruit with faces. Drop them into a jar, let two of a kind touch, and they grow into the next fruit — from a tiny cherry all the way to a watermelon. Keep the pile below the line and see how far you can go.
 
 WHAT MAKES IT DIFFERENT
@@ -43,7 +42,6 @@ NO STRINGS ATTACHED
 No ads, no accounts, no internet needed — Game Center is the only online feature, and only if you sign in. Plays in six languages on iPhone and iPad.
 
 A quiet game for a coffee break, a queue, or a long evening.
-```
 
 **Notes for Review** — см. раздел в конце.
 
@@ -51,16 +49,15 @@ A quiet game for a coffee break, a queue, or a long evening.
 
 ## ru
 
-**Subtitle**: `Заказы, стаканы и фрукты` (24)
+**Subtitle**: Заказы, стаканы и фрукты (24)
 
 **Promotional Text**:
-`В каждой партии — три заказа, семь форм стакана за звёзды и вызов дня, общий для всех игроков. Уютная физика, без рекламы, работает офлайн.`
+В каждой партии — три заказа, семь форм стакана за звёзды и вызов дня, общий для всех игроков. Уютная физика, без рекламы, работает офлайн.
 
 **Keywords**:
-`фрукты,игра,расслабляющая,казуальная,физика,уютная,слияние,стакан,заказы,вызов,офлайн,семейная,дети`
+фрукты,игра,расслабляющая,казуальная,физика,уютная,слияние,стакан,заказы,вызов,офлайн,семейная,дети
 
 **Description**:
-```
 Fruity Drop — уютная головоломка про фрукты с лицами. Бросайте их в стакан: два одинаковых при касании вырастают в следующий — от крошечной вишни до арбуза. Не давайте куче подняться выше линии и смотрите, как далеко получится зайти.
 
 ЧЕМ ОТЛИЧАЕТСЯ
@@ -84,22 +81,20 @@ Fruity Drop — уютная головоломка про фрукты с ли�
 Без рекламы, без аккаунтов, без интернета — Game Center единственная онлайн-функция, и только если вы в него вошли. Шесть языков, iPhone и iPad.
 
 Тихая игра на кофейную паузу, очередь или долгий вечер.
-```
 
 ---
 
 ## de-DE
 
-**Subtitle**: `Aufträge, Gläser & Früchte` (26)
+**Subtitle**: Aufträge, Gläser & Früchte (26)
 
 **Promotional Text**:
-`Jede Partie bringt drei Aufträge, sieben Glasformen zum Freischalten und eine tägliche Challenge für alle Spieler. Gemütliche Physik, keine Werbung, offline spielbar.`
+Jede Partie bringt drei Aufträge, sieben Glasformen zum Freischalten und eine tägliche Challenge für alle Spieler. Gemütliche Physik, keine Werbung, offline spielbar.
 
 **Keywords**:
-`obst,spiel,entspannend,casual,physik,gemütlich,kombinieren,glas,aufträge,täglich,challenge,offline`
+obst,spiel,entspannend,casual,physik,gemütlich,kombinieren,glas,aufträge,täglich,challenge,offline
 
 **Description**:
-```
 Fruity Drop ist ein gemütliches Puzzle über Früchte mit Gesichtern. Lass sie ins Glas fallen: Berühren sich zwei gleiche, wachsen sie zur nächsten Frucht — von der winzigen Kirsche bis zur Wassermelone. Halte den Haufen unter der Linie und schau, wie weit du kommst.
 
 WAS ES BESONDERS MACHT
@@ -123,22 +118,20 @@ OHNE HAKEN
 Keine Werbung, keine Konten, kein Internet nötig — Game Center ist die einzige Online-Funktion, und nur wenn du dich anmeldest. Sechs Sprachen, iPhone und iPad.
 
 Ein ruhiges Spiel für die Kaffeepause, die Warteschlange oder einen langen Abend.
-```
 
 ---
 
 ## fr-FR
 
-**Subtitle**: `Commandes, bocaux et fruits` (27)
+**Subtitle**: Commandes, bocaux et fruits (27)
 
 **Promotional Text**:
-`Chaque partie apporte trois commandes, sept formes de bocal à débloquer et un défi du jour partagé par tous les joueurs. Physique douillette, sans pub, hors ligne.`
+Chaque partie apporte trois commandes, sept formes de bocal à débloquer et un défi du jour partagé par tous les joueurs. Physique douillette, sans pub, hors ligne.
 
 **Keywords**:
-`fruits,jeu,relaxant,casual,physique,douillet,combiner,bocal,commandes,défi,quotidien,famille`
+fruits,jeu,relaxant,casual,physique,douillet,combiner,bocal,commandes,défi,quotidien,famille
 
 **Description**:
-```
 Fruity Drop est un puzzle douillet sur des fruits qui ont un visage. Lâche-les dans le bocal : deux fruits identiques qui se touchent grandissent en un plus gros — de la petite cerise jusqu'à la pastèque. Garde la pile sous la ligne et vois jusqu'où tu peux aller.
 
 CE QUI LE REND DIFFÉRENT
@@ -162,22 +155,20 @@ SANS PIÈGE
 Pas de pub, pas de compte, pas besoin d'Internet — Game Center est la seule fonction en ligne, et seulement si tu t'y connectes. Six langues, iPhone et iPad.
 
 Un jeu tranquille pour la pause café, la file d'attente ou une longue soirée.
-```
 
 ---
 
 ## hu
 
-**Subtitle**: `Megbízások, edények, gyümölcs` (29)
+**Subtitle**: Megbízások, edények, gyümölcs (29)
 
 **Promotional Text**:
-`Minden játék három megbízást hoz, hét feloldható edényformát és egy napi kihívást, ami minden játékosnak ugyanaz. Barátságos fizika, reklám nélkül, offline is.`
+Minden játék három megbízást hoz, hét feloldható edényformát és egy napi kihívást, ami minden játékosnak ugyanaz. Barátságos fizika, reklám nélkül, offline is.
 
 **Keywords**:
-`gyümölcs,játék,pihentető,casual,fizika,kombinálás,edény,megbízás,napi,kihívás,offline,család,gyerek`
+gyümölcs,játék,pihentető,casual,fizika,kombinálás,edény,megbízás,napi,kihívás,offline,család,gyerek
 
 **Description**:
-```
 A Fruity Drop egy barátságos fejtörő arcos gyümölcsökről. Ejtsd őket az edénybe: ha két egyforma összeér, a következő gyümölccsé nőnek — az apró cseresznyétől a görögdinnyéig. Tartsd a kupacot a vonal alatt, és nézd meg, meddig jutsz.
 
 MITŐL MÁS
@@ -201,23 +192,21 @@ NINCS TRÜKK
 Nincs reklám, nincs fiók, nem kell internet — a Game Center az egyetlen online funkció, és csak ha bejelentkezel. Hat nyelv, iPhone és iPad.
 
 Csendes játék kávészünetre, sorban állásra vagy egy hosszú estére.
-```
 
 ---
 
 ## ja
 
-**Subtitle**: `オーダー・ジャー・果物たち` (13)
+**Subtitle**: オーダー・ジャー・果物たち (13)
 
 **Promotional Text**:
-`毎ゲーム3つのオーダー、スターで解放する7種のジャー、みんな同じデイリーチャレンジ。心地よい物理、広告なし、オフラインで遊べます。`
+毎ゲーム3つのオーダー、スターで解放する7種のジャー、みんな同じデイリーチャレンジ。心地よい物理、広告なし、オフラインで遊べます。
 
 **Keywords**:
-`フルーツ,ゲーム,リラックス,カジュアル,物理,合体,ジャー,オーダー,デイリー,チャレンジ,オフライン,家族,子供`
+フルーツ,ゲーム,リラックス,カジュアル,物理,合体,ジャー,オーダー,デイリー,チャレンジ,オフライン,家族,子供
 
 **Description**:
-```
-Fruity Dropは、顔のある果物たちの心地よいパズル。ジャーに落として、同じ果物同士が触れると次の果物に育ちます — 小さなさくらんぼからスイカまで。山をラインの下に保って、どこまで行けるか試しましょう。
+Fruity Dropは、顔のある果物たちの心地よいパズル。ジャーに落として、同じ果物同士が触れると次の果物に育ちます — 小さなさくらんぼからいちばん大きな果物まで。山をラインの下に保って、どこまで行けるか試しましょう。
 
 ここが違う
 
@@ -240,13 +229,11 @@ Fruity Dropは、顔のある果物たちの心地よいパズル。ジャーに
 広告なし、アカウントなし、インターネット不要 — オンライン機能はGame Centerだけで、それもサインインしたときだけ。6言語対応、iPhoneとiPad。
 
 コーヒーブレイクや待ち時間、長い夜のための静かなゲームです。
-```
 
 ---
 
 ## Notes for Review (App Review Information → Notes, на английском)
 
-```
 Thank you for reviewing Fruity Drop again. This build addresses the Guideline 4.3(b) feedback on our previous submission: we did not resubmit the same app — the concept has been extended so that the core "drop and merge" loop is only one layer of the game.
 
 What is new since the rejected build:
@@ -266,14 +253,13 @@ Everything in the app is original: eleven hand-drawn fruit characters with two e
 The app has no ads, no accounts, no tracking and no in-app purchases in this version, and works fully offline.
 
 Test tips: the daily challenge allows one attempt per day; to see it again, change the device date. Shaking the device is used by the "Shake" booster after tapping its button.
-```
 
 ---
 
 ## Что ещё вставить в ASC
 
-- **Support URL**: сайт из `AppConstants` (pyf.app), **Privacy Policy URL**: `https://www.pyf.app/en/apps/fruity-drop/privacy`.
+- **Support URL**: сайт из AppConstants (pyf.app), **Privacy Policy URL**: https://www.pyf.app/en/apps/fruity-drop/privacy.
 - **App Privacy**: Data Not Collected (аналитики и рекламы в этой сборке нет; Game Center — данные обрабатывает Apple, декларировать не нужно).
 - **Категории**: Games → Puzzle, вторая — Casual.
 - **What's New**: у первой версии поля нет.
-- **Скриншоты**: новые, по брифу `STORE_SCREENSHOTS_BRIEF.md` (кадры: заказы над стаканом, экран стаканов, вызов дня, Game Center, персонажи).
+- **Скриншоты**: новые, по брифу STORE_SCREENSHOTS_BRIEF.md (кадры: заказы над стаканом, экран стаканов, вызов дня, Game Center, персонажи).

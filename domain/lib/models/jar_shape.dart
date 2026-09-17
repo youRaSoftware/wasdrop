@@ -91,10 +91,13 @@ class JarShape extends Equatable {
 }
 
 /// Каталог стаканов в порядке показа; открытие — за звёзды заказов.
+/// Стаканы с [JarShape.comingSoon] («Качели», v1.2) в [all] не попадают:
+/// заглушек «скоро» в интерфейсе не показываем (App Review, guideline 2.1).
 abstract final class JarShapes {
   static const String defaultId = 'classic';
 
-  static List<JarShape> get all => _all;
+  static List<JarShape> get all =>
+      _all.where((JarShape j) => !j.comingSoon).toList();
 
   static JarShape byId(String? id) => _all.firstWhere(
         (JarShape j) => j.id == id,
