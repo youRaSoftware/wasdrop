@@ -466,7 +466,7 @@
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "Fruity Drop";
-				GAD_APPLICATION_ID = "ca-app-pub-3940256099942544~1458002511";
+				GAD_APPLICATION_ID = "ca-app-pub-4328252525346020~2444274395";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -689,7 +689,7 @@
 			baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "Fruity Drop";
-				GAD_APPLICATION_ID = "ca-app-pub-3940256099942544~1458002511";
+				GAD_APPLICATION_ID = "ca-app-pub-4328252525346020~2444274395";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -829,7 +829,7 @@
 			baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "Fruity Drop";
-				GAD_APPLICATION_ID = "ca-app-pub-3940256099942544~1458002511";
+				GAD_APPLICATION_ID = "ca-app-pub-4328252525346020~2444274395";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -858,7 +858,7 @@
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "Fruity Drop";
-				GAD_APPLICATION_ID = "ca-app-pub-3940256099942544~1458002511";
+				GAD_APPLICATION_ID = "ca-app-pub-4328252525346020~2444274395";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -997,7 +997,7 @@
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "Fruity Drop";
-				GAD_APPLICATION_ID = "ca-app-pub-3940256099942544~1458002511";
+				GAD_APPLICATION_ID = "ca-app-pub-4328252525346020~2444274395";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -1125,7 +1125,7 @@
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "Fruity Drop";
-				GAD_APPLICATION_ID = "ca-app-pub-3940256099942544~1458002511";
+				GAD_APPLICATION_ID = "ca-app-pub-4328252525346020~2444274395";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

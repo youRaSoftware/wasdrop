@@ -13,7 +13,7 @@ Bundle / application id: `com.wasdrop` (prod), `com.wasdrop.dev` (dev).
 
 1. **Версия.** Поднять `version:` в `pubspec.yaml` (SemVer + build number `+N`).
 2. **Changelog.** В `.claude/changelog/CHANGELOG.md` переименовать `[Unreleased]` в `[X.Y.Z] — YYYY-MM-DD`, завести новый пустой `[Unreleased]`.
-3. **Тексты для сторов.** Сохранить в `.claude/my_docs/release_notes_X.Y.Z.txt` (RU/EN, «Что нового» для App Store и Google Play — обычно копия секции changelog).
+3. **Тексты для сторов.** Взять черновик из `.claude/my_docs/STORE_WHATS_NEW.md` (раздел «Черновик следующей версии»), перевести на шесть языков стора (лимиты — `STORE_BRIEF.md`, § 7) и сохранить в `.claude/my_docs/release_notes_X.Y.Z.txt`; в журнале перенести пункты в раздел версии, черновик очистить.
 4. **Проверка.**
    ```bash
    script/prebuild_script.sh

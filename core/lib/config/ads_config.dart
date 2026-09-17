@@ -1,9 +1,9 @@
 /// Идентификаторы AdMob. В dev (`AppConfig.useTestAds`) — официальные
 /// тестовые блоки Google; в prod — свои из консоли AdMob.
 ///
-/// TODO(admob): после создания аккаунта AdMob вписать реальные ID в
-/// [prodAppId], [prodContinueUnitId], [prodRefillUnitId] и в
-/// `GAD_APPLICATION_ID` prod-конфигураций `ios/Runner.xcodeproj`.
+/// Prod-значения — из консоли AdMob (приложение «Fruity Drop», iOS);
+/// [prodAppId] продублирован в `GAD_APPLICATION_ID` prod-конфигураций
+/// `ios/Runner.xcodeproj`.
 abstract final class AdsConfig {
   /// App ID тестового приложения Google (iOS).
   static const String testAppId = 'ca-app-pub-3940256099942544~1458002511';
@@ -12,9 +12,15 @@ abstract final class AdsConfig {
   static const String testRewardedUnitId =
       'ca-app-pub-3940256099942544/1712485313';
 
-  static const String prodAppId = 'TODO';
-  static const String prodContinueUnitId = 'TODO';
-  static const String prodRefillUnitId = 'TODO';
+  static const String prodAppId = 'ca-app-pub-4328252525346020~2444274395';
+
+  /// «Продолжить за рекламу» на экране проигрыша.
+  static const String prodContinueUnitId =
+      'ca-app-pub-4328252525346020/3396420109';
+
+  /// Пополнение зарядов бонуса.
+  static const String prodRefillUnitId =
+      'ca-app-pub-4328252525346020/3145138669';
 
   /// Таймаут загрузки ролика: дольше — считаем, что рекламы нет.
   static const Duration loadTimeout = Duration(seconds: 8);
