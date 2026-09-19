@@ -21,6 +21,7 @@ import 'package:features/game/screen/game_form.dart';
 import 'package:features/game/widgets/bonus_bar.dart';
 import 'package:features/game/widgets/game_hud.dart';
 import 'package:features/game/widgets/game_over_overlay.dart';
+import 'package:features/game/widgets/garden_intro_overlay.dart';
 import 'package:features/game/widgets/mission_toast.dart';
 import 'package:features/game/widgets/missions_overlay.dart';
 import 'package:features/game/widgets/missions_panel.dart';
@@ -33,6 +34,7 @@ import 'package:features/splash/engine/splash_game.dart';
 import 'package:features/splash/screen/splash_screen.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame/game.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -47,6 +49,22 @@ void main() {
 
   testWidgets('menu → settings → game → physics → drop',
       (WidgetTester tester) async {
+    // Layout overflows are reported by the framework at teardown with a
+    // defunct element chain; print the widget chain while it is alive.
+    final FlutterExceptionHandler? previous = FlutterError.onError;
+    FlutterError.onError = (FlutterErrorDetails d) {
+      if (d.exceptionAsString().contains('overflowed')) {
+        final String chain = d.informationCollector
+                ?.call()
+                .map((DiagnosticsNode n) => n.toStringDeep())
+                .join(' | ') ??
+            '';
+        debugPrint('SMOKE OVERFLOW: ${d.exceptionAsString()} :: '
+            '${chain.replaceAll('\n', ' ').substring(0, chain.length.clamp(0, 1200))}');
+      }
+      previous?.call(d);
+    };
+    addTearDown(() => FlutterError.onError = previous);
     await mainCommon(Flavor.dev);
     // Release the background music player, otherwise its frame callback
     // trips the binding's leak check at the end of the test.
@@ -54,6 +72,7 @@ void main() {
     // A previous (interrupted) run may have left a saved game or a language:
     // start from a clean slate so the menu shows «Play».
     await appLocator<GameRepository>().clear();
+    await appLocator<GameRepository>().clear(mode: GameMode.garden);
     await appLocator<SettingsService>().setLocale(null);
     await appLocator<SettingsService>().setJarId(JarShapes.defaultId);
     {
@@ -548,7 +567,14 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     await tester.tap(find.text(LocaleKeys.pause_menu.tr()));
     await tester.pump(const Duration(milliseconds: 1500));
-    expect(find.text(LocaleKeys.menu_continue.tr()), findsOneWidget);
+    // The same «Continue» label may also sit on the garden card.
+    expect(
+      find.descendant(
+        of: find.byKey(MenuScreen.playButtonKey),
+        matching: find.text(LocaleKeys.menu_continue.tr()),
+      ),
+      findsOneWidget,
+    );
     expect(find.byKey(MenuScreen.newGameButtonKey), findsOneWidget);
     await tester.tap(find.byKey(MenuScreen.playButtonKey));
     await tester.pump(const Duration(seconds: 2));
@@ -774,6 +800,54 @@ void main() {
     // Reset the day so the next run can play it again.
     await progressRepo.saveProgress(afterDaily.copyWith(dailyPlayedSeed: 0));
     debugPrint('SMOKE modes OK: daily=${afterDaily.dailyScore}');
+
+    // --- Wonder Garden: the mode card opens the intro on the first visit;
+    // the game runs in garden mode with a purple-ringed special fruit
+    // showing up in the «next» slot within a few drops; the run is saved
+    // under its own key and the menu card offers to continue it.
+    await gameRepo.clear(mode: GameMode.garden);
+    await progressRepo.saveProgress(
+      (await progressRepo.getProgress()).copyWith(gardenIntroDone: false),
+    );
+    await tester.tap(find.byKey(MenuScreen.gardenButtonKey));
+    await tester.pump(const Duration(seconds: 2));
+    expect(find.byType(GardenIntroOverlay), findsOneWidget);
+    await tester.pump(const Duration(seconds: 2)); // screenshot window
+    await tester.tap(find.byKey(GardenIntroOverlay.okKey));
+    await tester.pump(const Duration(milliseconds: 500));
+    final WasDropGame gardenGame = tester
+        .widget<GameWidget<WasDropGame>>(find.byType(GameWidget<WasDropGame>))
+        .game!;
+    expect(gardenGame.cubit.mode, GameMode.garden);
+    expect(gardenGame.paused, isFalse);
+    // Feed drops until a special fruit reaches the «next» slot.
+    for (int i = 0; i < 30 && gardenGame.cubit.state.nextSpecial == null; i++) {
+      gardenGame.cubit.onDropped();
+      await tester.pump(const Duration(milliseconds: 30));
+    }
+    expect(gardenGame.cubit.state.nextSpecial, isNotNull);
+    await tester.pump(const Duration(seconds: 2)); // screenshot window
+    gardenGame.cubit.onMerge(BallTier.t2);
+    await gardenGame.cubit.saveSnapshot(
+      gardenGame.captureBalls(),
+      jarId: gardenGame.jarShape.id,
+    );
+    expect(await gameRepo.load(mode: GameMode.garden), isNotNull);
+    expect(await gameRepo.load(), isNull, reason: 'classic slot untouched');
+    await tester.tap(find.byKey(GameHud.pauseButtonKey));
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(find.text(LocaleKeys.pause_menu.tr()));
+    await tester.pump(const Duration(milliseconds: 1500));
+    expect(
+      find.descendant(
+        of: find.byKey(MenuScreen.gardenButtonKey),
+        matching: find.text(LocaleKeys.menu_continue.tr()),
+      ),
+      findsOneWidget,
+      reason: 'the garden card offers to continue',
+    );
+    await gameRepo.clear(mode: GameMode.garden);
+    debugPrint('SMOKE garden OK');
     await gameRepo.clear();
   });
 }

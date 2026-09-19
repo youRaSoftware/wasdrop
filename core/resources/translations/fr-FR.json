@@ -9,7 +9,10 @@
     "daily": "Défi du jour",
     "dailyDone": "Aujourd’hui : {score}",
     "bestTimed": "Contre la montre : {score}",
-    "bestDaily": "Défi : {score}"
+    "bestDaily": "Défi : {score}",
+    "garden": "Jardin magique",
+    "jars": "Bocaux",
+    "new": "NOUVEAU"
   },
   "hud": {
     "best": "RECORD {score}",
@@ -153,7 +156,9 @@
     "earned": "Étoiles cette partie : +{n}",
     "nextJar": "Prochain bocal dans {n} ★",
     "allJars": "Tous les bocaux débloqués",
-    "dropsLeft": "{n} lancers restants"
+    "dropsLeft": "{n} lancers restants",
+    "mergeRainbow": "Fusionne un Arc-en-ciel × {n}",
+    "popBubbles": "Emporte {n} fruits avec des Bulles"
   },
   "gameCenter": {
     "leaderboards": "Classements",
@@ -169,5 +174,14 @@
     "next": "Suivant",
     "skip": "Passer",
     "start": "C’est parti !"
+  },
+  "garden": {
+    "title": "JARDIN MAGIQUE",
+    "intro": "Des fruits spéciaux se glissent dans la file. Chacun tord une règle :",
+    "rainbow": "Arc-en-ciel fusionne avec le premier fruit qu’il touche",
+    "bubble": "Bulle enveloppe le fruit sur lequel elle tombe et l’emporte",
+    "rotten": "Pourri ne fusionne jamais — explose-le ou fusionne à côté (+50)",
+    "ice": "Glaçon gèle un fruit pendant 3 lancers",
+    "ok": "Compris, on joue !"
   }
 }

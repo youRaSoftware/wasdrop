@@ -21,7 +21,8 @@ enum AppIcons {
   streak('streak'),
   star('star'),
   combo('combo'),
-  jar('jar');
+  jar('jar'),
+  garden('garden');
 
   final String file;
 

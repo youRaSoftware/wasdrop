@@ -4,7 +4,9 @@ import 'package:domain/domain.dart';
 import 'package:flutter/material.dart';
 
 import '../cubit/game_cubit.dart';
+import '../engine/ball_body.dart';
 import '../engine/fruit_assets.dart';
+import 'garden_intro_overlay.dart';
 
 class GameHud extends StatelessWidget {
   static const Key pauseButtonKey = Key('hud_pause');
@@ -64,11 +66,13 @@ class GameHud extends StatelessWidget {
               color: AppColors.surface,
               border: Border.all(color: AppColors.stroke, width: 2),
             ),
-            child: BallView(
-              tier: state.next,
-              diameter: 26,
-              image: FruitAssets.idle(state.next),
-            ),
+            child: state.nextSpecial != null
+                ? _SpecialNext(kind: state.nextSpecial!)
+                : BallView(
+                    tier: state.next,
+                    diameter: 26,
+                    image: FruitAssets.idle(state.next),
+                  ),
           ),
           const SizedBox(width: 8),
           IconCircleButton(
@@ -113,6 +117,54 @@ class _ModeChip extends StatelessWidget {
           color: alert ? AppColors.alert : AppColors.textPrimary,
         ),
       ),
+    );
+  }
+}
+
+/// Особый фрукт в окошке «следующий»: спрайт и пульсирующее кольцо цвета
+/// фрукта, чтобы игрок его заметил.
+class _SpecialNext extends StatefulWidget {
+  final SpecialKind kind;
+
+  const _SpecialNext({required this.kind});
+
+  @override
+  State<_SpecialNext> createState() => _SpecialNextState();
+}
+
+class _SpecialNextState extends State<_SpecialNext>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1200),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final Color color = BallBody.specialColor(widget.kind);
+    return AnimatedBuilder(
+      animation: _pulse,
+      builder: (BuildContext context, Widget? child) {
+        final double t = Curves.easeInOut.transform(_pulse.value);
+        return Container(
+          width: 34 + 6 * t,
+          height: 34 + 6 * t,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+                color: color.withValues(alpha: 0.5 + 0.5 * t), width: 2),
+          ),
+          child: child,
+        );
+      },
+      child: GardenIntroOverlay.sprite(widget.kind, 28),
     );
   }
 }

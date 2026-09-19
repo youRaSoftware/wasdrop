@@ -13,6 +13,10 @@ class GameState extends Equatable {
   final GameStatus status;
   final BallTier current;
   final BallTier next;
+
+  /// Особые фрукты в окошках («Сад чудес»); null — обычный фрукт [current]/[next].
+  final SpecialKind? currentSpecial;
+  final SpecialKind? nextSpecial;
   final bool isNewRecord;
 
   /// Слияний за текущую партию.
@@ -54,6 +58,9 @@ class GameState extends Equatable {
   /// Показан онбординг «как играть» (первый запуск; движок стоит).
   final bool onboardingOpen;
 
+  /// Показана справка «Сада чудес» (первый вход в режим; движок стоит).
+  final bool gardenIntroOpen;
+
   /// Идёт показ ролика (кнопки рекламы заблокированы, движок на паузе).
   final bool adBusy;
 
@@ -68,6 +75,8 @@ class GameState extends Equatable {
     required this.status,
     required this.current,
     required this.next,
+    this.currentSpecial,
+    this.nextSpecial,
     this.isNewRecord = false,
     this.merges = 0,
     this.bestTier,
@@ -85,6 +94,7 @@ class GameState extends Equatable {
     this.starsEarned = 0,
     this.missionsOpen = false,
     this.onboardingOpen = false,
+    this.gardenIntroOpen = false,
     this.adBusy = false,
     this.adUnavailable = false,
   });
@@ -110,7 +120,7 @@ class GameState extends Equatable {
 
   /// Продолжение после проигрыша — только в классике (в «На время» и
   /// ежедневном вызове зачёт честный).
-  bool get canContinue => mode == GameMode.classic && continues > 0;
+  bool get canContinue => mode.allowsContinue && continues > 0;
 
   /// Кнопка бонуса без зарядов предлагает пополнение — только с
   /// монетизацией (за ролик / премиуму); в 1.0 заряды 3 / 1 / 1 на партию
@@ -122,7 +132,8 @@ class GameState extends Equatable {
       refills(bonus) > 0;
 
   /// [bestTier] сбрасывается в null, только если передать `bestTier: null`
-  /// явно через [resetBestTier]; [armed] снимается через [disarm].
+  /// явно через [resetBestTier]; [armed] снимается через [disarm]; особые
+  /// фрукты очереди задаются парой [queueSpecials] (null — оставить).
   GameState copyWith({
     int? secondsLeft,
     int? score,
@@ -149,6 +160,8 @@ class GameState extends Equatable {
     int? starsEarned,
     bool? missionsOpen,
     bool? onboardingOpen,
+    bool? gardenIntroOpen,
+    (SpecialKind?, SpecialKind?)? queueSpecials,
     bool? adBusy,
     bool? adUnavailable,
   }) {
@@ -160,6 +173,8 @@ class GameState extends Equatable {
       status: status ?? this.status,
       current: current ?? this.current,
       next: next ?? this.next,
+      currentSpecial: queueSpecials == null ? currentSpecial : queueSpecials.$1,
+      nextSpecial: queueSpecials == null ? nextSpecial : queueSpecials.$2,
       isNewRecord: isNewRecord ?? this.isNewRecord,
       merges: merges ?? this.merges,
       bestTier: resetBestTier ? null : (bestTier ?? this.bestTier),
@@ -177,6 +192,7 @@ class GameState extends Equatable {
       starsEarned: starsEarned ?? this.starsEarned,
       missionsOpen: missionsOpen ?? this.missionsOpen,
       onboardingOpen: onboardingOpen ?? this.onboardingOpen,
+      gardenIntroOpen: gardenIntroOpen ?? this.gardenIntroOpen,
       adBusy: adBusy ?? this.adBusy,
       adUnavailable: adUnavailable ?? this.adUnavailable,
     );
@@ -191,6 +207,8 @@ class GameState extends Equatable {
         status,
         current,
         next,
+        currentSpecial,
+        nextSpecial,
         isNewRecord,
         merges,
         bestTier,
@@ -210,5 +228,6 @@ class GameState extends Equatable {
         starsEarned,
         missionsOpen,
         onboardingOpen,
+        gardenIntroOpen,
       ];
 }

@@ -25,6 +25,11 @@ class GameCubit extends Cubit<GameState> {
   /// идёт; ноль — проигрыш «время вышло».
   Timer? _clock;
 
+  /// «Сад чудес»: сколько бросков сделано и с какого броска ждать каждый
+  /// особый фрукт (интервал ± 2 от `SpecialKind.every`).
+  int _drops = 0;
+  final Map<SpecialKind, int> _specialDueAt = <SpecialKind, int>{};
+
   /// Заказы: генератор (с seed — для ежедневного вызова), трекер
   /// прогресса, следующий id и уровень игрока (заказов выполнено всего).
   final MissionGenerator _missions;
@@ -72,6 +77,7 @@ class GameCubit extends Cubit<GameState> {
               (mode == GameMode.daily
                   ? Random(dailySeed(now) * 31 + 7)
                   : Random()),
+          garden: mode == GameMode.garden,
         ),
         super(
           resumeFrom == null
@@ -86,6 +92,7 @@ class GameCubit extends Cubit<GameState> {
                       mode == GameMode.timed ? GameRules.timedSeconds : null,
                 )
               : GameState(
+                  mode: mode,
                   score: resumeFrom.score,
                   bestScore: resumeFrom.score,
                   status: GameStatus.paused,
@@ -101,8 +108,18 @@ class GameCubit extends Cubit<GameState> {
                   bombRefills: resumeFrom.bombRefills,
                   upgradeRefills: resumeFrom.upgradeRefills,
                   missions: resumeFrom.missions,
+                  currentSpecial: resumeFrom.currentSpecial,
+                  nextSpecial: resumeFrom.nextSpecial,
                 ),
         ) {
+    if (mode == GameMode.garden) {
+      // Восстановленная партия: счётчик бросков неизвестен — считаем, что
+      // особые уже разрешены.
+      _drops = resumeFrom == null ? 0 : 20;
+      for (final SpecialKind k in SpecialKind.values) {
+        _scheduleSpecial(k);
+      }
+    }
     if (resumeFrom != null && resumeFrom.missions.isNotEmpty) {
       _nextMissionId =
           resumeFrom.missions.map((Mission m) => m.id).reduce(max) + 1;
@@ -130,7 +147,8 @@ class GameCubit extends Cubit<GameState> {
     if (left == null ||
         state.status != GameStatus.playing ||
         state.adBusy ||
-        state.onboardingOpen) {
+        state.onboardingOpen ||
+        state.gardenIntroOpen) {
       return;
     }
     if (left <= 1) {
@@ -146,6 +164,7 @@ class GameCubit extends Cubit<GameState> {
         GameMode.classic => stats.bestScore,
         GameMode.timed => stats.bestTimed,
         GameMode.daily => stats.bestDaily,
+        GameMode.garden => stats.bestGarden,
       };
 
   GameStatsModel _withBest(GameStatsModel stats, int score) => switch (mode) {
@@ -155,6 +174,8 @@ class GameCubit extends Cubit<GameState> {
           stats.copyWith(bestTimed: max(stats.bestTimed, score)),
         GameMode.daily =>
           stats.copyWith(bestDaily: max(stats.bestDaily, score)),
+        GameMode.garden =>
+          stats.copyWith(bestGarden: max(stats.bestGarden, score)),
       };
 
   Future<void> _init({required bool resume}) async {
@@ -170,11 +191,16 @@ class GameCubit extends Cubit<GameState> {
     if (!resume && !_progress.onboardingDone) {
       _safeEmit(state.copyWith(onboardingOpen: true));
     }
+    // Первый вход в «Сад чудес» — справка по особым фруктам.
+    if (mode == GameMode.garden && !_progress.gardenIntroDone) {
+      _safeEmit(state.copyWith(gardenIntroOpen: true));
+    }
     _startBest = _bestOf(stats);
     _safeEmit(state.copyWith(
       bestScore: max(_bestOf(stats), state.score),
       current: resume ? null : _rollTier(),
       next: resume ? null : _rollTier(),
+      queueSpecials: resume ? null : (null, _rollSpecial(hasOther: false)),
     ));
   }
 
@@ -192,6 +218,70 @@ class GameCubit extends Cubit<GameState> {
       if (roll < 0) return BallTier.values[firstDropTier.index + i];
     }
     return firstDropTier;
+  }
+
+  // --- Сад чудес -------------------------------------------------------------
+
+  void _scheduleSpecial(SpecialKind kind) {
+    final int base = max(_drops, kind.minDrop);
+    _specialDueAt[kind] = base + kind.every - 2 + _random.nextInt(5);
+  }
+
+  /// Особый фрукт для следующего окошка (только в саду): чей срок подошёл;
+  /// в очереди не бывает двух особых сразу ([hasOther] — в соседнем окошке
+  /// уже особый).
+  SpecialKind? _rollSpecial({required bool hasOther}) {
+    if (mode != GameMode.garden || hasOther) return null;
+    for (final SpecialKind kind in SpecialKind.values) {
+      if (_drops + 1 >= (_specialDueAt[kind] ?? 0)) {
+        _scheduleSpecial(kind);
+        return kind;
+      }
+    }
+    return null;
+  }
+
+  /// Справка «Сада чудес» закрыта — больше не показываем.
+  Future<void> finishGardenIntro() async {
+    if (!state.gardenIntroOpen) return;
+    _safeEmit(state.copyWith(gardenIntroOpen: false));
+    _progress = _progress.copyWith(gardenIntroDone: true);
+    await progressRepository.saveProgress(_progress);
+  }
+
+  /// Радужка слилась с фруктом тира [tier]: очки как за обычное слияние.
+  void onRainbowMerge(BallTier tier) {
+    audio.merge(tier);
+    final BallTier? produced = tier.next;
+    final int score = state.score + tier.mergeScore;
+    final bool newBest = score > state.bestScore;
+    GameState next = state.copyWith(
+      score: score,
+      bestScore: newBest ? score : null,
+      merges: state.merges + 1,
+      bestTier: _maxTier(state.bestTier, produced),
+    );
+    next =
+        _withMissionEvent(next, MergeEvent(produced: produced, score: score));
+    _safeEmit(_withMissionEvent(next, RainbowEvent(produced)));
+    if (newBest) unawaited(_persistBest(score));
+    if (produced != null) {
+      unawaited(gameCenter.unlock(GameAchievement.forFruit(produced)));
+    }
+  }
+
+  /// Пузырик унёс фрукт (заказ «унеси N фруктов»).
+  void onBubblePopped() {
+    audio.drop();
+    _safeEmit(_withMissionEvent(state, const BubblePopEvent()));
+  }
+
+  /// Гнилушка съедена слиянием рядом: +[SpecialKind.rottenReward].
+  void onRottenCleared() {
+    final int score = state.score + SpecialKind.rottenReward;
+    final bool newBest = score > state.bestScore;
+    _safeEmit(state.copyWith(score: score, bestScore: newBest ? score : null));
+    if (newBest) unawaited(_persistBest(score));
   }
 
   /// Движок сообщает о слиянии двух шаров тира [tier].
@@ -309,8 +399,14 @@ class GameCubit extends Cubit<GameState> {
   /// Движок сообщает, что текущий шар брошен.
   void onDropped() {
     audio.drop();
+    _drops++;
+    final SpecialKind? current = state.nextSpecial;
     _safeEmit(_withMissionEvent(
-      state.copyWith(current: state.next, next: _rollTier()),
+      state.copyWith(
+        current: state.next,
+        next: _rollTier(),
+        queueSpecials: (current, _rollSpecial(hasOther: current != null)),
+      ),
       const DropEvent(),
     ));
   }
@@ -425,8 +521,9 @@ class GameCubit extends Cubit<GameState> {
     return true;
   }
 
-  /// Движок взорвал выбранный фрукт [tier]: заряд списан, режим выбора снят.
-  void useBomb(BallTier tier) {
+  /// Движок взорвал выбранный фрукт [tier] (null — особый): заряд списан,
+  /// режим выбора снят.
+  void useBomb(BallTier? tier) {
     if (state.armed != Bonus.bomb || state.bombs <= 0) return;
     audio.bomb();
     _safeEmit(_withMissionEvent(
@@ -452,35 +549,39 @@ class GameCubit extends Cubit<GameState> {
   /// меню. Законченная или пустая партия снимок стирает.
   /// [jarId] — стакан партии (движок знает форму, кубит — нет).
   Future<void> saveSnapshot(List<BallSnapshot> balls, {required String jarId}) {
-    if (mode != GameMode.classic ||
+    if (!mode.isResumable ||
         state.status == GameStatus.gameOver ||
         (balls.isEmpty && state.score == 0)) {
-      return gameRepository.clear();
+      return gameRepository.clear(mode: mode);
     }
-    return gameRepository.save(GameSnapshot(
-      score: state.score,
-      current: state.current,
-      next: state.next,
-      merges: state.merges,
-      bestTier: state.bestTier,
-      shakes: state.shakes,
-      bombs: state.bombs,
-      upgrades: state.upgrades,
-      continues: state.continues,
-      shakeRefills: state.shakeRefills,
-      bombRefills: state.bombRefills,
-      upgradeRefills: state.upgradeRefills,
-      balls: balls,
-      savedAt: DateTime.now(),
-      jarId: jarId,
-      missions: state.missions,
-    ));
+    return gameRepository.save(
+        mode: mode,
+        GameSnapshot(
+          score: state.score,
+          current: state.current,
+          next: state.next,
+          merges: state.merges,
+          bestTier: state.bestTier,
+          shakes: state.shakes,
+          bombs: state.bombs,
+          upgrades: state.upgrades,
+          continues: state.continues,
+          shakeRefills: state.shakeRefills,
+          bombRefills: state.bombRefills,
+          upgradeRefills: state.upgradeRefills,
+          balls: balls,
+          savedAt: DateTime.now(),
+          jarId: jarId,
+          missions: state.missions,
+          currentSpecial: state.currentSpecial,
+          nextSpecial: state.nextSpecial,
+        ));
   }
 
   Future<void> gameOver() async {
     final bool isRecord = state.score > _startBest;
     audio.gameOver(isRecord: isRecord);
-    unawaited(gameRepository.clear());
+    unawaited(gameRepository.clear(mode: mode));
     // Партия с продолжением уже посчитана при первом проигрыше.
     final GameStatsModel stats = await _saveRun(state, countGame: !_continued);
     _safeEmit(state.copyWith(
@@ -537,7 +638,7 @@ class GameCubit extends Cubit<GameState> {
     if (!_runSaved) {
       unawaited(_saveRun(state, countGame: !_continued && state.score > 0));
     }
-    unawaited(gameRepository.clear());
+    unawaited(gameRepository.clear(mode: mode));
     _runSaved = false;
     _continued = false;
     _savedMerges = 0;
@@ -563,8 +664,13 @@ class GameCubit extends Cubit<GameState> {
       completedCount: 0,
       starsEarned: 0,
       secondsLeft: mode == GameMode.timed ? GameRules.timedSeconds : null,
+      queueSpecials: (null, null),
     ));
     _tracker.reset();
+    _drops = 0;
+    for (final SpecialKind k in SpecialKind.values) {
+      _scheduleSpecial(k);
+    }
   }
 
   @override

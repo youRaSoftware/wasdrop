@@ -9,7 +9,10 @@
     "daily": "Napi kihívás",
     "dailyDone": "Ma: {score}",
     "bestTimed": "Időre: {score}",
-    "bestDaily": "Kihívás: {score}"
+    "bestDaily": "Kihívás: {score}",
+    "garden": "Csodakert",
+    "jars": "Edények",
+    "new": "ÚJ"
   },
   "hud": {
     "best": "REKORD {score}",
@@ -153,7 +156,9 @@
     "earned": "Csillagok ebben a játékban: +{n}",
     "nextJar": "Következő edény: {n} ★",
     "allJars": "Minden edény feloldva",
-    "dropsLeft": "Még {n} dobás"
+    "dropsLeft": "Még {n} dobás",
+    "mergeRainbow": "Egyesíts Szivárványt × {n}",
+    "popBubbles": "Vigyél el {n} gyümölcsöt Buborékkal"
   },
   "gameCenter": {
     "leaderboards": "Ranglisták",
@@ -169,5 +174,14 @@
     "next": "Tovább",
     "skip": "Kihagyás",
     "start": "Játsszunk!"
+  },
+  "garden": {
+    "title": "CSODAKERT",
+    "intro": "Különleges gyümölcsök lopakodnak a sorba. Mindegyik felrúg egy szabályt:",
+    "rainbow": "A Szivárvány az első érintett gyümölccsel egyesül",
+    "bubble": "A Buborék beburkolja a gyümölcsöt, amire esik, és elviszi",
+    "rotten": "A Rothadt sosem egyesül — robbantsd fel, vagy egyesíts mellette (+50)",
+    "ice": "A Jég 3 dobásra lefagyaszt egy gyümölcsöt",
+    "ok": "Értem, játsszunk!"
   }
 }

@@ -13,6 +13,7 @@ class StatsHiveProvider {
   int get bestTierNumber => (_box.get('bestTier') as int?) ?? 0;
   int get bestTimed => (_box.get('bestTimed') as int?) ?? 0;
   int get bestDaily => (_box.get('bestDaily') as int?) ?? 0;
+  int get bestGarden => (_box.get('bestGarden') as int?) ?? 0;
 
   Future<void> save({
     required int bestScore,
@@ -21,6 +22,7 @@ class StatsHiveProvider {
     required int bestTierNumber,
     required int bestTimed,
     required int bestDaily,
+    required int bestGarden,
   }) async {
     await _box.putAll(<String, int>{
       'bestScore': bestScore,
@@ -29,6 +31,7 @@ class StatsHiveProvider {
       'bestTier': bestTierNumber,
       'bestTimed': bestTimed,
       'bestDaily': bestDaily,
+      'bestGarden': bestGarden,
     });
   }
 }

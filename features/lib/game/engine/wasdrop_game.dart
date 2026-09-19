@@ -20,6 +20,8 @@ import 'jar_physics_world.dart';
 import 'jar_walls.dart';
 import 'merge_effects.dart';
 import 'physics_tuning.dart';
+import 'special_effects.dart';
+import 'special_sprites.dart';
 
 /// Физическое ядро игры. Мир — [AppDimens.worldWidth] (360) в ширину, высота
 /// берётся из пропорции виджета стакана, так что физическое дно совпадает
@@ -37,7 +39,7 @@ import 'physics_tuning.dart';
 /// в [PhysicsTuning]; здесь только правила игры.
 class WasDropGame extends Forge2DGame
     with TapCallbacks, DragCallbacks
-    implements FruitSpriteProvider {
+    implements FruitSpriteProvider, SpecialSpriteProvider {
   final GameCubit cubit;
 
   /// Настройки (линия прицела); движок читает их напрямую, без DI.
@@ -62,6 +64,10 @@ class WasDropGame extends Forge2DGame
 
   /// Спрайты бонусов: бомбочка и кадры взрыва.
   final FxSprites fxSprites = FxSprites();
+
+  /// Спрайты особых фруктов «Сада чудес» (грузятся только в этом режиме).
+  @override
+  final SpecialSprites specialSprites = SpecialSprites();
 
   final math.Random _random = math.Random();
 
@@ -132,6 +138,7 @@ class WasDropGame extends Forge2DGame
     world.subStepCount = PhysicsTuning.subSteps;
     await fruitSprites.load(images);
     await fxSprites.load(images);
+    if (cubit.mode == GameMode.garden) await specialSprites.load(images);
     camera.viewfinder.anchor = Anchor.topLeft;
     _layoutWorld(size);
     final GameSnapshot? snapshot = resumeFrom;
@@ -170,7 +177,7 @@ class WasDropGame extends Forge2DGame
   /// мира зависит от экрана), угол и скорость — как в момент сохранения.
   void _restore(GameSnapshot snapshot) {
     for (final BallSnapshot b in snapshot.balls) {
-      final double r = AppDimens.ballRadii[b.tier.index];
+      final double r = b.special?.radius ?? AppDimens.ballRadii[b.tier.index];
       world.add(BallBody(
         tier: b.tier,
         initialPosition: Vector2(
@@ -180,6 +187,9 @@ class WasDropGame extends Forge2DGame
         initialAngle: b.angle,
         initialVelocity: Vector2(b.vx, b.vy),
         onMerge: merge,
+        special: b.special,
+        onSpecial: handleSpecial,
+        frozen: b.frozen,
       ));
     }
   }
@@ -197,6 +207,8 @@ class WasDropGame extends Forge2DGame
             angle: b.body.angle,
             vx: b.body.linearVelocity.x,
             vy: b.body.linearVelocity.y,
+            special: b.special,
+            frozen: b.frozen,
           ),
         )
         .toList();
@@ -264,8 +276,13 @@ class WasDropGame extends Forge2DGame
 
   /// Подвешенный шар не заходит в стенку: просвет берётся по контуру
   /// стакана на высоте шара (у вазы и колбы горло уже мира).
+  /// Радиус подвешенного фрукта (особый — свой).
+  double get _currentRadius =>
+      cubit.state.currentSpecial?.radius ??
+      AppDimens.ballRadii[cubit.state.current.index];
+
   double _clampAim(double x) {
-    final double r = AppDimens.ballRadii[cubit.state.current.index];
+    final double r = _currentRadius;
     return jar.clampX(x, spawnY + r, r + AppDimens.jarWallWidth);
   }
 
@@ -278,7 +295,10 @@ class WasDropGame extends Forge2DGame
       tier: tier,
       initialPosition: Vector2(aimX, spawnY),
       onMerge: merge,
+      special: cubit.state.currentSpecial,
+      onSpecial: handleSpecial,
     ));
+    thawTick();
     cubit.onDropped();
     Future<void>.delayed(dropCooldown, () {
       canDrop = true;
@@ -315,6 +335,7 @@ class WasDropGame extends Forge2DGame
     a.removeFromParent();
     b.removeFromParent();
     if (next != null) _spawnInside(next, mid, velocity);
+    _clearRottenNear(mid);
     // Вспышка + всплывающее «+N» (мокап, кадр 4). Джекпот t11+t11: шара
     // нет, оба арбуза исчезают — вспышка вдвое больше и дрожь камеры.
     final BallTier effectTier = next ?? a.tier;
@@ -333,6 +354,135 @@ class WasDropGame extends Forge2DGame
         start: Vector2(mid.x, mid.y - effectRadius - 6),
       ),
     ]);
+  }
+
+  // --- Сад чудес -------------------------------------------------------------
+
+  /// Особый фрукт сработал: Радужка коснулась [other] (сливается с ним и
+  /// даёт его следующий тир), Льдинка коснулась [other] (замораживает его
+  /// и тает), Пузырик отжил своё ([other] null — лопается).
+  void handleSpecial(BallBody special, BallBody? other) {
+    if (special.isRemoving) return;
+    switch (special.special!) {
+      case SpecialKind.rainbow:
+        if (other == null || special.merging || !other.canMerge) return;
+        special.merging = true;
+        other.merging = true;
+        other.showSquishFace();
+        final BallTier? next = other.tier.next;
+        final Vector2 mid = (special.body.position + other.body.position) / 2;
+        final Vector2 velocity = other.body.linearVelocity.clone();
+        cubit.onRainbowMerge(other.tier);
+        special.removeFromParent();
+        other.removeFromParent();
+        if (next != null) _spawnInside(next, mid, velocity);
+        final double r = AppDimens.ballRadii[(next ?? other.tier).index];
+        world.addAll(<Component>[
+          MergeFlash(
+            center: mid,
+            radius: r * 1.3,
+            color: BallBody.specialColor(SpecialKind.rainbow),
+          ),
+          ScorePopup(
+            text: '+${other.tier.mergeScore}',
+            start: Vector2(mid.x, mid.y - r - 6),
+          ),
+        ]);
+        _clearRottenNear(mid);
+      case SpecialKind.ice:
+        if (other == null || special.merging || !other.canMerge) return;
+        special.merging = true;
+        other.frozen = SpecialKind.frozenDrops;
+        _burst(special, iceCrack: true);
+        special.removeFromParent();
+      case SpecialKind.bubble:
+        if (special.merging) return;
+        special.merging = true;
+        if (other == null || !other.canMerge) {
+          // На дне, у стенки или на особом — просто лопается.
+          _burst(special, iceCrack: false);
+          special.removeFromParent();
+          return;
+        }
+        // Обволакивает фрукт и уносит из стакана: оба исчезают.
+        other.merging = true;
+        other.showSquishFace();
+        final Vector2 start = other.body.position.clone();
+        final double fr = other.radius;
+        special.removeFromParent();
+        other.removeFromParent();
+        world.add(BubbleCarry(
+          start: start,
+          bubble: specialSprites[SpecialKind.bubble],
+          fruit: fruitSprites[other.tier],
+          tier: other.tier,
+          bubbleRadius: math.max(SpecialKind.bubble.radius, fr * 1.25),
+          fruitRadius: fr,
+          fallback: BallBody.specialColor(SpecialKind.bubble),
+          onPopped: (Vector2 at) => world.add(SpecialBurst(
+            center: at,
+            radius: SpecialKind.bubble.radius,
+            sprite: specialSprites.bubblePop,
+            fallback: BallBody.specialColor(SpecialKind.bubble),
+          )),
+        ));
+        cubit.onBubblePopped();
+      case SpecialKind.rotten:
+        break;
+    }
+  }
+
+  /// Лёд тает по броскам игрока. Оттаявший фрукт сам проверяет соседей:
+  /// контакт с таким же тиром начался ещё под льдом и заново не придёт.
+  void thawTick() {
+    for (final BallBody b in liveBalls()) {
+      if (b.frozen == 0 || --b.frozen > 0) continue;
+      _burst(b, iceCrack: true);
+      for (final BallBody other in liveBalls()) {
+        if (identical(other, b) || other.tier != b.tier) continue;
+        if (!b.canMerge || !other.canMerge) continue;
+        final double gap = b.body.position.distanceTo(other.body.position) -
+            b.radius -
+            other.radius;
+        if (gap <= PhysicsTuning.speculativeDistance) {
+          merge(b, other);
+          break;
+        }
+      }
+    }
+  }
+
+  /// Гнилушки рядом с точкой слияния [at] гибнут (+50 каждая).
+  void _clearRottenNear(Vector2 at) {
+    for (final BallBody b in liveBalls()) {
+      if (b.special != SpecialKind.rotten || b.merging) continue;
+      final double reach = b.radius * PhysicsTuning.rottenClearReach;
+      if (b.body.position.distanceTo(at) > reach + b.radius) continue;
+      b.merging = true;
+      world.add(MergeFlash(
+        center: b.body.position.clone(),
+        radius: b.radius,
+        color: BallBody.specialColor(SpecialKind.rotten),
+      ));
+      world.add(ScorePopup(
+        text: '+${SpecialKind.rottenReward}',
+        start: Vector2(b.body.position.x, b.body.position.y - b.radius - 6),
+      ));
+      b.removeFromParent();
+      cubit.onRottenCleared();
+    }
+  }
+
+  /// Спрайт-эффект над фруктом: осколки льда или брызги пузырика.
+  void _burst(BallBody at, {required bool iceCrack}) {
+    world.add(SpecialBurst(
+      center: at.body.position.clone(),
+      radius: at.radius,
+      sprite: iceCrack ? specialSprites.iceCrack : specialSprites.bubblePop,
+      fallback: BallBody.specialColor(
+        iceCrack ? SpecialKind.ice : SpecialKind.bubble,
+      ),
+    ));
   }
 
   /// Рождает шар тира [tier] с «попом» около [at]. Шар крупнее того, что
@@ -447,6 +597,10 @@ class WasDropGame extends Forge2DGame
     }
     if (cubit.state.armed == Bonus.bomb) {
       explode(hit);
+    } else if (hit.isSpecial) {
+      // Особый фрукт не растёт — только «ойкает».
+      hit.showSquishFace();
+      cubit.disarmBonus();
     } else {
       upgrade(hit);
     }
@@ -481,7 +635,7 @@ class WasDropGame extends Forge2DGame
   /// фитиля — кадры взрыва и толчок соседей. Публичный для тестов.
   void explode(BallBody b) {
     if (!b.isMounted || b.isRemoving || b.merging) return;
-    cubit.useBomb(b.tier);
+    cubit.useBomb(b.isSpecial ? null : b.tier);
     b.merging = true;
     b.showSquishFace();
     world.add(BombFuse(
@@ -536,6 +690,7 @@ class WasDropGame extends Forge2DGame
     final bool overLine = world.children.whereType<BallBody>().any(
           (BallBody b) =>
               b.isMounted &&
+              b.special != SpecialKind.bubble &&
               b.settled &&
               b.body.position.y - AppDimens.ballRadii[b.tier.index] < deadlineY,
         );
@@ -632,7 +787,7 @@ class _JarOverlay extends Component with HasGameReference<WasDropGame> {
     if (g.cubit.state.status != GameStatus.playing) return;
 
     final BallTier tier = g.cubit.state.current;
-    final double r = AppDimens.ballRadii[tier.index];
+    final double r = g._currentRadius;
     final double x = g.aimX;
     final Vector2 origin = Vector2(x, WasDropGame.spawnY + r);
 
@@ -657,6 +812,20 @@ class _JarOverlay extends Component with HasGameReference<WasDropGame> {
       );
     }
 
+    final SpecialKind? special = g.cubit.state.currentSpecial;
+    if (special != null) {
+      final FruitSprite? s = g.specialSprites[special];
+      if (s != null) {
+        s.render(canvas, center: Vector2(x, WasDropGame.spawnY), radius: r);
+      } else {
+        canvas.drawCircle(
+          Offset(x, WasDropGame.spawnY),
+          r,
+          Paint()..color = BallBody.specialColor(special),
+        );
+      }
+      return;
+    }
     final FruitSprite? sprite = g.fruitSprites[tier];
     if (sprite != null) {
       sprite.render(canvas, center: Vector2(x, WasDropGame.spawnY), radius: r);

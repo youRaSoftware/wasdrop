@@ -17,7 +17,10 @@ import 'mission.dart';
 class MissionGenerator {
   final Random random;
 
-  MissionGenerator(this.random);
+  /// «Сад чудес»: в пул добавляются заказы на особые фрукты.
+  final bool garden;
+
+  MissionGenerator(this.random, {this.garden = false});
 
   /// Сколько заказов висит одновременно.
   static const int slots = 3;
@@ -46,6 +49,16 @@ class MissionGenerator {
   }
 
   List<MissionType> _poolFor(int level) {
+    final List<MissionType> base = _basePool(level);
+    if (!garden) return base;
+    return <MissionType>[
+      ...base,
+      MissionType.mergeRainbow,
+      MissionType.popBubbles,
+    ];
+  }
+
+  List<MissionType> _basePool(int level) {
     if (level < 3) {
       return const <MissionType>[
         MissionType.getFruit,
@@ -64,7 +77,16 @@ class MissionGenerator {
         MissionType.clean,
       ];
     }
-    return MissionType.values;
+    return const <MissionType>[
+      MissionType.getFruit,
+      MissionType.collectFruits,
+      MissionType.mergeStreak,
+      MissionType.combo,
+      MissionType.economy,
+      MissionType.bonusBomb,
+      MissionType.score,
+      MissionType.clean,
+    ];
   }
 
   /// Ступень сложности 0…3 по уровню.
@@ -179,6 +201,20 @@ class MissionGenerator {
             _ => _range(50, 90) * 100,
           },
           reward: MissionReward(bonus: step >= 2 ? Bonus.upgrade : null),
+        );
+      case MissionType.mergeRainbow:
+        return Mission(
+          id: id,
+          type: type,
+          target: _range(1, 1 + step ~/ 2),
+          reward: MissionReward(bonus: step >= 2 ? Bonus.bomb : null),
+        );
+      case MissionType.popBubbles:
+        return Mission(
+          id: id,
+          type: type,
+          target: _range(2, 3 + step ~/ 2),
+          reward: const MissionReward(),
         );
       case MissionType.clean:
         final int clean = _range(6 + 2 * step, 10 + 3 * step);

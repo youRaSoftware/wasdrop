@@ -31,6 +31,9 @@ class AppColors {
   static const Color alert = Color(0xFFE5484D);
   static const Color scoreGain = Color(0xFF12A594);
   static const Color goldTop = Color(0xFFF8CF5B);
+
+  /// Акцент режима «Сад чудес» (рамка карточки, бейдж, Радужка).
+  static const Color garden = Color(0xFFC973F0);
   static const Color gold = Color(0xFFEFB008);
   static const Color goldText = Color(0xFF5C4703);
 

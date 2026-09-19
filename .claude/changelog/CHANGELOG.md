@@ -51,6 +51,7 @@ On release, rename `[Unreleased]` to `[X.Y.Z] — YYYY-MM-DD` and start a fresh 
 - Новое: стаканы разной формы — Классика, Ваза, Чаша, Полка открыты сразу, Колба (10 ★), Наклон (25 ★) и Песочные часы (45 ★) открываются за звёзды заказов; выбор в меню («Стакан: …») и в паузе, действует на следующую партию; сохранённая партия помнит свой стакан
 - Новое: заказы — три цели в каждой партии («Получи: лимон», «4 слияния подряд», «Дыня за 40 бросков»…); за выполнение — звезда, за трудные ещё и заряд бонуса, звёзды открывают стаканы; панель над стаканом, экран заказов (тап по панели или из паузы), всплывашка «Заказ выполнен!»
 - Новое: режимы «На время» (две минуты на счёт, таймер в HUD) и «Вызов дня» (у всех одинаковые фрукты и заказы, один зачёт в день); у каждого режима свой рекорд
+- Новое: режим «Сад чудес» — в очередь пробираются особые фрукты: Радужка сливается с любым, Пузырик уносит фрукт, на который упал, Гнилушка не сливается (взорви или слей рядом), Льдинка замораживает на три броска; свои заказы, рекорд и сохранение партии, справка при первом входе
 - Новое: Game Center — таблицы рекордов по режимам и десять достижений (первый лимон … арбуз, очки, партии, заказы); кнопка-кубок в меню и «Рекорды» на экране проигрыша
 - Новое: подсказка «Как играть» при первом запуске (три шага) и в настройках
 - Изменено: новая иконка приложения — персик, яблоко и вишня на небесно-голубом фоне (iOS, Android, экран запуска)
@@ -99,6 +100,7 @@ On release, rename `[Unreleased]` to `[X.Y.Z] — YYYY-MM-DD` and start a fresh 
 - New: jars of different shapes — Classic, Vase, Bowl and Shelf are open from the start, Flask, Slope and Hourglass unlock with mission stars; pick one in the menu («Jar: …») or from the pause menu, it applies to the next game; a saved game remembers its jar
 - New: orders — three goals in every game («Get a lemon», «4 merges in a row», «Melon within 40 drops»…); completing one gives a star, hard ones a booster charge too, stars unlock jars; a panel above the jar, an orders screen (tap the panel or open from pause), an «Order done!» pop-up
 - New: «Time attack» (two minutes, a clock in the HUD) and «Daily challenge» (the same fruit and orders for everyone, one attempt a day) modes, each with its own best score
+- New: «Wonder Garden» mode — special fruit sneak into the queue: Rainbow merges with anything, Bubble carries away the fruit it lands on, Rotten never merges (bomb it or merge next to it), Ice freezes a fruit for three drops; its own orders, best score and saved game, an intro on first visit
 - New: Game Center — per-mode leaderboards and ten achievements (first lemon … watermelon, points, games, orders); a trophy button in the menu and «Leaderboards» on the game over screen
 - New: a «How to play» walkthrough on first launch (three steps) and in Settings
 - Changed: new app icon — a peach, an apple and a cherry on sky blue (iOS, Android, launch screen)

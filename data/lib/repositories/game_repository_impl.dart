@@ -7,9 +7,12 @@ class GameRepositoryImpl implements GameRepository {
 
   GameRepositoryImpl(this._provider);
 
+  static String _key(GameMode mode) =>
+      mode == GameMode.classic ? 'snapshot' : 'snapshot_${mode.name}';
+
   @override
-  Future<GameSnapshot?> load() async {
-    final Map<String, dynamic>? data = _provider.read();
+  Future<GameSnapshot?> load({GameMode mode = GameMode.classic}) async {
+    final Map<String, dynamic>? data = _provider.read(_key(mode));
     if (data == null) return null;
     try {
       final List<BallSnapshot> balls = <BallSnapshot>[];
@@ -17,6 +20,7 @@ class GameRepositoryImpl implements GameRepository {
         final List<dynamic> v = raw as List<dynamic>;
         final BallTier? tier = BallTier.fromNumber(v[0] as int);
         if (tier == null) continue;
+        final int special = v.length > 6 ? v[6] as int : -1;
         balls.add(BallSnapshot(
           tier: tier,
           x: (v[1] as num).toDouble(),
@@ -24,6 +28,8 @@ class GameRepositoryImpl implements GameRepository {
           angle: (v[3] as num).toDouble(),
           vx: (v[4] as num).toDouble(),
           vy: (v[5] as num).toDouble(),
+          special: special < 0 ? null : SpecialKind.values[special],
+          frozen: v.length > 7 ? v[7] as int : 0,
         ));
       }
       return GameSnapshot(
@@ -50,17 +56,19 @@ class GameRepositoryImpl implements GameRepository {
               in (data['missions'] as List<dynamic>?) ?? const <dynamic>[])
             _missionFrom(raw as List<dynamic>),
         ],
+        currentSpecial: _special(data['currentSpecial'] as int?),
+        nextSpecial: _special(data['nextSpecial'] as int?),
       );
     } catch (_) {
       // Повреждённый или устаревший формат — партию не восстанавливаем.
-      await _provider.clear();
+      await _provider.clear(_key(mode));
       return null;
     }
   }
 
   @override
-  Future<void> save(GameSnapshot snapshot) {
-    return _provider.write(<String, dynamic>{
+  Future<void> save(GameSnapshot snapshot, {GameMode mode = GameMode.classic}) {
+    return _provider.write(_key(mode), <String, dynamic>{
       'score': snapshot.score,
       'current': snapshot.current.number,
       'next': snapshot.next.number,
@@ -90,15 +98,30 @@ class GameRepositoryImpl implements GameRepository {
             m.reward.points,
           ],
       ],
+      'currentSpecial': snapshot.currentSpecial?.index ?? -1,
+      'nextSpecial': snapshot.nextSpecial?.index ?? -1,
       'balls': <List<Object>>[
         for (final BallSnapshot b in snapshot.balls)
-          <Object>[b.tier.number, b.x, b.bottomOffset, b.angle, b.vx, b.vy],
+          <Object>[
+            b.tier.number,
+            b.x,
+            b.bottomOffset,
+            b.angle,
+            b.vx,
+            b.vy,
+            b.special?.index ?? -1,
+            b.frozen,
+          ],
       ],
     });
   }
 
   @override
-  Future<void> clear() => _provider.clear();
+  Future<void> clear({GameMode mode = GameMode.classic}) =>
+      _provider.clear(_key(mode));
+
+  static SpecialKind? _special(int? index) =>
+      index == null || index < 0 ? null : SpecialKind.values[index];
 
   static Mission _missionFrom(List<dynamic> v) {
     final int bonus = v[6] as int;

@@ -16,6 +16,7 @@ class GameStatsModel extends Equatable {
   /// Рекорды режимов «На время» и «Ежедневный вызов» ([bestScore] — классика).
   final int bestTimed;
   final int bestDaily;
+  final int bestGarden;
 
   const GameStatsModel({
     required this.bestScore,
@@ -24,6 +25,7 @@ class GameStatsModel extends Equatable {
     this.bestTier,
     this.bestTimed = 0,
     this.bestDaily = 0,
+    this.bestGarden = 0,
   });
 
   const GameStatsModel.empty() : this(bestScore: 0, gamesPlayed: 0);
@@ -35,6 +37,7 @@ class GameStatsModel extends Equatable {
     BallTier? bestTier,
     int? bestTimed,
     int? bestDaily,
+    int? bestGarden,
   }) {
     return GameStatsModel(
       bestScore: bestScore ?? this.bestScore,
@@ -43,6 +46,7 @@ class GameStatsModel extends Equatable {
       bestTier: bestTier ?? this.bestTier,
       bestTimed: bestTimed ?? this.bestTimed,
       bestDaily: bestDaily ?? this.bestDaily,
+      bestGarden: bestGarden ?? this.bestGarden,
     );
   }
 
@@ -54,5 +58,6 @@ class GameStatsModel extends Equatable {
         bestTier,
         bestTimed,
         bestDaily,
+        bestGarden,
       ];
 }

@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../enums/ball_tier.dart';
 import 'game_rules.dart';
+import '../enums/special_kind.dart';
 import 'jar_shape.dart';
 import 'mission.dart';
 
@@ -16,6 +17,12 @@ class BallSnapshot extends Equatable {
   final double vx;
   final double vy;
 
+  /// Особый фрукт («Сад чудес»); у обычного — null, [tier] тогда значим.
+  final SpecialKind? special;
+
+  /// Сколько бросков фрукт ещё заморожен льдинкой (0 — не заморожен).
+  final int frozen;
+
   const BallSnapshot({
     required this.tier,
     required this.x,
@@ -23,10 +30,13 @@ class BallSnapshot extends Equatable {
     required this.angle,
     required this.vx,
     required this.vy,
+    this.special,
+    this.frozen = 0,
   });
 
   @override
-  List<Object?> get props => <Object?>[tier, x, bottomOffset, angle, vx, vy];
+  List<Object?> get props =>
+      <Object?>[tier, x, bottomOffset, angle, vx, vy, special, frozen];
 }
 
 /// Сохранённая партия — восстанавливается из меню кнопкой «Продолжить».
@@ -59,6 +69,10 @@ class GameSnapshot extends Equatable {
   /// Текущие заказы; пустой список (снимок до 1.1) — кубит раздаст новые.
   final List<Mission> missions;
 
+  /// Особые фрукты в окошках «текущий»/«следующий» («Сад чудес»).
+  final SpecialKind? currentSpecial;
+  final SpecialKind? nextSpecial;
+
   const GameSnapshot({
     required this.score,
     required this.current,
@@ -76,6 +90,8 @@ class GameSnapshot extends Equatable {
     this.upgradeRefills = GameRules.refillsPerBonus,
     this.jarId = JarShapes.defaultId,
     this.missions = const <Mission>[],
+    this.currentSpecial,
+    this.nextSpecial,
   });
 
   @override
@@ -96,5 +112,7 @@ class GameSnapshot extends Equatable {
         savedAt,
         jarId,
         missions,
+        currentSpecial,
+        nextSpecial,
       ];
 }

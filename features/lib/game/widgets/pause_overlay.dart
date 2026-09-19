@@ -57,15 +57,17 @@ class PauseOverlay extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          // Wrap, а не Row: длинные переводы («Aufträge» + «Menü») уходят на
+          // вторую строку, а не вылезают за панель.
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 12,
             children: <Widget>[
               AppTextButton(
                 label: context.tr(LocaleKeys.pause_missions),
                 icon: const AppIcon(AppIcons.missions, size: 20),
                 onPressed: onMissions,
               ),
-              const SizedBox(width: 12),
               AppTextButton(
                 label: context.tr(LocaleKeys.pause_menu),
                 icon: const AppIcon(AppIcons.menuHome, size: 20),

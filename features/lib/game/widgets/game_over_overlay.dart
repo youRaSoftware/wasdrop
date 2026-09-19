@@ -101,22 +101,26 @@ class GameOverOverlay extends StatelessWidget {
                 children: <Widget>[
                   const AppIcon(AppIcons.star, size: 16),
                   const SizedBox(width: 5),
-                  Text(
-                    <String>[
-                      if (starsEarned > 0)
-                        context.tr(
-                          LocaleKeys.missions_earned,
-                          namedArgs: <String, String>{'n': '$starsEarned'},
-                        ),
-                      if (starsToNextJar != null && starsToNextJar! > 0)
-                        context.tr(
-                          LocaleKeys.missions_nextJar,
-                          namedArgs: <String, String>{'n': '$starsToNextJar'},
-                        ),
-                    ].join(' · '),
-                    style: AppFonts.best.copyWith(
-                      color: AppColors.textSecondary,
-                      letterSpacing: 0,
+                  // Две фразы через « · » могут не влезть в панель — переносим.
+                  Flexible(
+                    child: Text(
+                      textAlign: TextAlign.center,
+                      <String>[
+                        if (starsEarned > 0)
+                          context.tr(
+                            LocaleKeys.missions_earned,
+                            namedArgs: <String, String>{'n': '$starsEarned'},
+                          ),
+                        if (starsToNextJar != null && starsToNextJar! > 0)
+                          context.tr(
+                            LocaleKeys.missions_nextJar,
+                            namedArgs: <String, String>{'n': '$starsToNextJar'},
+                          ),
+                      ].join(' · '),
+                      style: AppFonts.best.copyWith(
+                        color: AppColors.textSecondary,
+                        letterSpacing: 0,
+                      ),
                     ),
                   ),
                 ],

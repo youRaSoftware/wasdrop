@@ -16,6 +16,7 @@ class StatsRepositoryImpl implements StatsRepository {
       bestTier: BallTier.fromNumber(_provider.bestTierNumber),
       bestTimed: _provider.bestTimed,
       bestDaily: _provider.bestDaily,
+      bestGarden: _provider.bestGarden,
     );
   }
 
@@ -28,6 +29,7 @@ class StatsRepositoryImpl implements StatsRepository {
       bestTierNumber: stats.bestTier?.number ?? 0,
       bestTimed: stats.bestTimed,
       bestDaily: stats.bestDaily,
+      bestGarden: stats.bestGarden,
     );
   }
 }

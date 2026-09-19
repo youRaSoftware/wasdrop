@@ -9,7 +9,10 @@
     "daily": "Tages-Challenge",
     "dailyDone": "Heute: {score}",
     "bestTimed": "Auf Zeit: {score}",
-    "bestDaily": "Challenge: {score}"
+    "bestDaily": "Challenge: {score}",
+    "garden": "Wundergarten",
+    "jars": "Gläser",
+    "new": "NEU"
   },
   "hud": {
     "best": "REKORD {score}",
@@ -153,7 +156,9 @@
     "earned": "Sterne in diesem Spiel: +{n}",
     "nextJar": "Nächstes Glas in {n} ★",
     "allJars": "Alle Gläser freigeschaltet",
-    "dropsLeft": "Noch {n} Würfe"
+    "dropsLeft": "Noch {n} Würfe",
+    "mergeRainbow": "Regenbogen verschmelzen × {n}",
+    "popBubbles": "{n} Früchte mit Blasen wegtragen"
   },
   "gameCenter": {
     "leaderboards": "Bestenlisten",
@@ -169,5 +174,14 @@
     "next": "Weiter",
     "skip": "Überspringen",
     "start": "Los geht’s!"
+  },
+  "garden": {
+    "title": "WUNDERGARTEN",
+    "intro": "Besondere Früchte schleichen sich in die Reihe. Jede bricht eine Regel:",
+    "rainbow": "Regenbogen verschmilzt mit der ersten Frucht, die sie berührt",
+    "bubble": "Blase umhüllt die Frucht, auf die sie fällt, und trägt sie davon",
+    "rotten": "Faulfrucht verschmilzt nie — sprenge sie oder fusioniere daneben (+50)",
+    "ice": "Eis friert eine Frucht 3 Würfe lang ein",
+    "ok": "Verstanden, los!"
   }
 }

@@ -3,6 +3,7 @@ library domain;
 export 'enums/ball_tier.dart';
 export 'enums/bonus.dart';
 export 'enums/game_mode.dart';
+export 'enums/special_kind.dart';
 export 'models/game_achievement.dart';
 export 'models/game_launch.dart';
 export 'models/game_rules.dart';

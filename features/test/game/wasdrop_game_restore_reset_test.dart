@@ -27,13 +27,17 @@ class _GameRepository implements GameRepository {
   GameSnapshot? snapshot;
 
   @override
-  Future<GameSnapshot?> load() async => snapshot;
+  Future<GameSnapshot?> load({GameMode mode = GameMode.classic}) async =>
+      snapshot;
 
   @override
-  Future<void> save(GameSnapshot value) async => snapshot = value;
+  Future<void> save(GameSnapshot value,
+          {GameMode mode = GameMode.classic}) async =>
+      snapshot = value;
 
   @override
-  Future<void> clear() async => snapshot = null;
+  Future<void> clear({GameMode mode = GameMode.classic}) async =>
+      snapshot = null;
 }
 
 class _SettingsRepository implements SettingsRepository {

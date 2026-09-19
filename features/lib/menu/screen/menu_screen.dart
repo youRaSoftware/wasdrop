@@ -23,6 +23,7 @@ class MenuScreen extends StatefulWidget {
   static const Key jarButtonKey = Key('menu_jar');
   static const Key timedButtonKey = Key('menu_timed');
   static const Key dailyButtonKey = Key('menu_daily');
+  static const Key gardenButtonKey = Key('menu_garden');
   static const Key settingsButtonKey = Key('menu_settings');
   static const Key soundButtonKey = Key('menu_sound');
   static const Key leaderboardButtonKey = Key('menu_leaderboard');
@@ -43,6 +44,11 @@ class _MenuScreenState extends State<MenuScreen>
   int _bestScore = 0;
   int _bestTimed = 0;
   int _bestDaily = 0;
+  int _bestGarden = 0;
+
+  /// Сохранённая партия «Сада чудес» (карточка режима продолжает её).
+  GameSnapshot? _savedGarden;
+  bool _gardenIsNew = true;
 
   /// Сегодняшний вызов уже сыгран — кнопка показывает счёт и не активна.
   int? _dailyToday;
@@ -65,6 +71,8 @@ class _MenuScreenState extends State<MenuScreen>
   Future<void> _loadStats() async {
     final GameStatsModel stats = await appLocator<StatsRepository>().getStats();
     final GameSnapshot? saved = await appLocator<GameRepository>().load();
+    final GameSnapshot? savedGarden =
+        await appLocator<GameRepository>().load(mode: GameMode.garden);
     final ProgressModel progress =
         await appLocator<ProgressRepository>().getProgress();
     if (!mounted) return;
@@ -72,7 +80,10 @@ class _MenuScreenState extends State<MenuScreen>
       _bestScore = stats.bestScore;
       _bestTimed = stats.bestTimed;
       _bestDaily = stats.bestDaily;
+      _bestGarden = stats.bestGarden;
       _savedGame = saved;
+      _savedGarden = savedGarden;
+      _gardenIsNew = !progress.gardenIntroDone;
       _dailyToday =
           progress.dailyPlayed(dailySeed()) ? progress.dailyScore : null;
     });
@@ -86,8 +97,14 @@ class _MenuScreenState extends State<MenuScreen>
 
   // Как и классика — через `go`: игра возвращается в меню `goNamed('menu')`,
   // и свежий экран заново читает рекорды и зачёт дня.
-  void _startMode(GameMode mode) =>
-      context.goNamed('game', extra: GameLaunch(mode: mode));
+  void _startMode(GameMode mode) => context.goNamed(
+        'game',
+        extra: GameLaunch(
+          mode: mode,
+          // «Сад чудес» продолжает свою сохранённую партию.
+          resumeFrom: mode == GameMode.garden ? _savedGarden : null,
+        ),
+      );
 
   Animation<double> _step(double from, double to) {
     return CurvedAnimation(
@@ -217,8 +234,10 @@ class _MenuScreenState extends State<MenuScreen>
                               ),
                             ],
                             const SizedBox(height: 10),
-                            // Режимы: «На время» и ежедневный вызов (один
-                            // зачёт в день — после него кнопка показывает счёт).
+                            // Режимы сеткой 2×2: «На время», «Вызов дня»
+                            // (один зачёт в день — после него кнопка
+                            // показывает счёт), «Сад чудес» (акцент и NEW до
+                            // первого входа) и выбор стакана.
                             Row(
                               children: <Widget>[
                                 Expanded(
@@ -264,21 +283,49 @@ class _MenuScreenState extends State<MenuScreen>
                               ],
                             ),
                             const SizedBox(height: 10),
-                            // Выбор стакана — действует на новую партию.
                             ValueListenableBuilder<SettingsModel>(
                               valueListenable: settings.settings,
                               builder: (BuildContext context,
                                   SettingsModel value, Widget? _) {
                                 final JarShape jar =
                                     JarShapes.byId(value.jarId);
-                                return SecondaryButton(
-                                  key: MenuScreen.jarButtonKey,
-                                  label: '${context.tr(LocaleKeys.menu_jar)}: '
-                                      '${jarLabel(context, jar)}',
-                                  icon: const AppIcon(AppIcons.jar, size: 20),
-                                  outlined: true,
-                                  height: 48,
-                                  onPressed: () => context.pushNamed('jars'),
+                                return Row(
+                                  children: <Widget>[
+                                    Expanded(
+                                      child: _ModeButton(
+                                        key: MenuScreen.gardenButtonKey,
+                                        label:
+                                            context.tr(LocaleKeys.menu_garden),
+                                        sub: _savedGarden != null
+                                            ? context
+                                                .tr(LocaleKeys.menu_continue)
+                                            : _bestGarden > 0
+                                                ? context.tr(
+                                                    LocaleKeys.menu_best,
+                                                    namedArgs: <String, String>{
+                                                      'score': '$_bestGarden',
+                                                    },
+                                                  )
+                                                : null,
+                                        accent: AppColors.garden,
+                                        badge: _gardenIsNew
+                                            ? context.tr(LocaleKeys.menu_new)
+                                            : null,
+                                        onPressed: () =>
+                                            _startMode(GameMode.garden),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: _ModeButton(
+                                        key: MenuScreen.jarButtonKey,
+                                        label: context.tr(LocaleKeys.menu_jars),
+                                        sub: jarLabel(context, jar),
+                                        onPressed: () =>
+                                            context.pushNamed('jars'),
+                                      ),
+                                    ),
+                                  ],
                                 );
                               },
                             ),
@@ -389,10 +436,16 @@ class _ModeButton extends StatelessWidget {
   final String? sub;
   final VoidCallback? onPressed;
 
+  /// Цвет рамки (акцент режима) и бейдж в углу («NEW»).
+  final Color? accent;
+  final String? badge;
+
   const _ModeButton({
     required this.label,
     required this.onPressed,
     this.sub,
+    this.accent,
+    this.badge,
     super.key,
   });
 
@@ -402,48 +455,75 @@ class _ModeButton extends StatelessWidget {
     return AppPressable(
       onPressed: onPressed,
       builder: (BuildContext context, double pressed, Widget? _) {
-        return Opacity(
-          opacity: enabled ? 1 - 0.3 * pressed : 0.55,
-          child: Container(
-            height: 56,
-            alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(AppDimens.buttonRadius),
-              border: Border.all(color: AppColors.stroke, width: 2),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                // Длинные названия (немецкий, японский) ужимаются, не режутся.
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    style: AppFonts.button.copyWith(
-                      fontSize: 14,
-                      color: AppColors.textPrimary,
-                    ),
+        final Widget card = Container(
+          height: 56,
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(AppDimens.buttonRadius),
+            border: Border.all(color: accent ?? AppColors.stroke, width: 2),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              // Длинные названия (немецкий, японский) ужимаются, не режутся.
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  style: AppFonts.button.copyWith(
+                    fontSize: 14,
+                    color: AppColors.textPrimary,
                   ),
                 ),
-                if (sub != null) ...<Widget>[
-                  const SizedBox(height: 2),
-                  Text(
-                    sub!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppFonts.best.copyWith(
-                      fontSize: 10,
-                      color: AppColors.textSecondary,
-                      letterSpacing: 0,
-                    ),
+              ),
+              if (sub != null) ...<Widget>[
+                const SizedBox(height: 2),
+                Text(
+                  sub!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppFonts.best.copyWith(
+                    fontSize: 10,
+                    color: AppColors.textSecondary,
+                    letterSpacing: 0,
                   ),
-                ],
+                ),
               ],
-            ),
+            ],
           ),
+        );
+        return Opacity(
+          opacity: enabled ? 1 - 0.3 * pressed : 0.55,
+          child: badge == null
+              ? card
+              : Stack(
+                  clipBehavior: Clip.none,
+                  children: <Widget>[
+                    card,
+                    Positioned(
+                      top: -8,
+                      right: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: accent ?? AppColors.accent,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          badge!,
+                          style: AppFonts.best.copyWith(
+                            fontSize: 9,
+                            color: AppColors.surface,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
         );
       },
     );

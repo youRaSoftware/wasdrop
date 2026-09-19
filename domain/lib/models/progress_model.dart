@@ -17,12 +17,16 @@ class ProgressModel extends Equatable {
   final int dailyPlayedSeed;
   final int dailyScore;
 
+  /// Справка «Сада чудес» показана (первый вход в режим).
+  final bool gardenIntroDone;
+
   const ProgressModel({
     required this.stars,
     required this.missionsDone,
     required this.onboardingDone,
     this.dailyPlayedSeed = 0,
     this.dailyScore = 0,
+    this.gardenIntroDone = false,
   });
 
   const ProgressModel.empty()
@@ -34,6 +38,7 @@ class ProgressModel extends Equatable {
     bool? onboardingDone,
     int? dailyPlayedSeed,
     int? dailyScore,
+    bool? gardenIntroDone,
   }) {
     return ProgressModel(
       stars: stars ?? this.stars,
@@ -41,6 +46,7 @@ class ProgressModel extends Equatable {
       onboardingDone: onboardingDone ?? this.onboardingDone,
       dailyPlayedSeed: dailyPlayedSeed ?? this.dailyPlayedSeed,
       dailyScore: dailyScore ?? this.dailyScore,
+      gardenIntroDone: gardenIntroDone ?? this.gardenIntroDone,
     );
   }
 

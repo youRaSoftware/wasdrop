@@ -1,8 +1,9 @@
+import '../enums/game_mode.dart';
 import '../models/game_snapshot.dart';
 
-/// Сохранённая партия (одна на устройство).
+/// Сохранённая партия — по одной на сохраняемый режим (классика, сад).
 abstract interface class GameRepository {
-  Future<GameSnapshot?> load();
-  Future<void> save(GameSnapshot snapshot);
-  Future<void> clear();
+  Future<GameSnapshot?> load({GameMode mode = GameMode.classic});
+  Future<void> save(GameSnapshot snapshot, {GameMode mode = GameMode.classic});
+  Future<void> clear({GameMode mode = GameMode.classic});
 }

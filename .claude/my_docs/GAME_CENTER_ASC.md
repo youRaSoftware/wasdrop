@@ -11,17 +11,18 @@
 | Classic | `com.wasdrop.leaderboard.classic` | Classic | Integer | High to Low | 0 … 1 000 000 |
 | Time attack | `com.wasdrop.leaderboard.timed` | Classic | Integer | High to Low | 0 … 1 000 000 |
 | Daily challenge | `com.wasdrop.leaderboard.daily` | **Recurring**, период 1 день, старт 00:00 UTC | Integer | High to Low | 0 … 1 000 000 |
+| Wonder Garden *(добавлен 2026-09-19 — завести)* | `com.wasdrop.leaderboard.garden` | Classic | Integer | High to Low | 0 … 1 000 000 |
 
 Локализованные названия (Leaderboard name; Score format suffix — пусто):
 
-| Locale | Classic | Time attack | Daily challenge |
-|---|---|---|---|
-| en-US | Classic | Time attack | Daily challenge |
-| ru | Классика | На время | Вызов дня |
-| de-DE | Klassik | Auf Zeit | Tages-Challenge |
-| fr-FR | Classique | Contre la montre | Défi du jour |
-| hu | Klasszikus | Időre | Napi kihívás |
-| ja | クラシック | タイムアタック | デイリーチャレンジ |
+| Locale | Classic | Time attack | Daily challenge | Wonder Garden |
+|---|---|---|---|---|
+| en-US | Classic | Time attack | Daily challenge | Wonder Garden |
+| ru | Классика | На время | Вызов дня | Сад чудес |
+| de-DE | Klassik | Auf Zeit | Tages-Challenge | Wundergarten |
+| fr-FR | Classique | Contre la montre | Défi du jour | Jardin magique |
+| hu | Klasszikus | Időre | Napi kihívás | Csodakert |
+| ja | クラシック | タイムアタック | デイリーチャレンジ | ふしぎな庭 |
 
 Leaderboard set не нужен. Для Daily в коде счёт отправляется в текущий период автоматически (recurring leaderboard принимает счёт в активную «occurrence»).
 

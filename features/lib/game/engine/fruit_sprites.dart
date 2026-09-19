@@ -8,7 +8,6 @@ import 'package:flame/extensions.dart';
 import 'package:flame/sprite.dart';
 import 'package:flame_forge2d/flame_forge2d.dart'
     show Circle, Polygon, ShapeGeometry;
-import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/services.dart' show AssetManifest, rootBundle;
 
 /// Кто умеет отдать спрайты фруктов (реализует `WasDropGame`); нужен, чтобы
@@ -200,7 +199,7 @@ class FruitSprites {
   /// силуэта и формы в [_directions] направлениях (остаток 2–3 %). Нижняя
   /// опорная точка совпадает с низом силуэта — фрукт стоит на дне.
   /// Под фруктом в PNG не должно быть теней — они стали бы «низом».
-  @visibleForTesting
+  /// Публичный: им же подгоняются спрайты особых фруктов (`SpecialSprites`).
   static Future<FruitBodyFit> measureBody(ui.Image image) async {
     final ByteData? data =
         await image.toByteData(format: ui.ImageByteFormat.rawRgba);

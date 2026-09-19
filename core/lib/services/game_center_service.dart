@@ -19,6 +19,7 @@ class GameCenterService {
     GameMode.classic: 'com.wasdrop.leaderboard.classic',
     GameMode.timed: 'com.wasdrop.leaderboard.timed',
     GameMode.daily: 'com.wasdrop.leaderboard.daily',
+    GameMode.garden: 'com.wasdrop.leaderboard.garden',
   };
 
   final ValueNotifier<bool> isSignedIn = ValueNotifier<bool>(false);

@@ -10,6 +10,7 @@ class ProgressHiveProvider {
   bool get onboardingDone => (_box.get('onboardingDone') as bool?) ?? false;
   int get dailyPlayedSeed => (_box.get('dailyPlayedSeed') as int?) ?? 0;
   int get dailyScore => (_box.get('dailyScore') as int?) ?? 0;
+  bool get gardenIntroDone => (_box.get('gardenIntroDone') as bool?) ?? false;
 
   Future<void> save({
     required int stars,
@@ -17,6 +18,7 @@ class ProgressHiveProvider {
     required bool onboardingDone,
     required int dailyPlayedSeed,
     required int dailyScore,
+    required bool gardenIntroDone,
   }) {
     return _box.putAll(<String, Object>{
       'stars': stars,
@@ -24,6 +26,7 @@ class ProgressHiveProvider {
       'onboardingDone': onboardingDone,
       'dailyPlayedSeed': dailyPlayedSeed,
       'dailyScore': dailyScore,
+      'gardenIntroDone': gardenIntroDone,
     });
   }
 }

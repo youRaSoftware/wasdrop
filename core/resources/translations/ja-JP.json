@@ -9,7 +9,10 @@
     "daily": "デイリーチャレンジ",
     "dailyDone": "今日: {score}",
     "bestTimed": "タイムアタック: {score}",
-    "bestDaily": "デイリー: {score}"
+    "bestDaily": "デイリー: {score}",
+    "garden": "ふしぎな庭",
+    "jars": "ジャー",
+    "new": "NEW"
   },
   "hud": {
     "best": "ベスト {score}",
@@ -153,7 +156,9 @@
     "earned": "このゲームのスター: +{n}",
     "nextJar": "次のジャーまで{n} ★",
     "allJars": "すべてのジャーが解放済み",
-    "dropsLeft": "残り{n}回"
+    "dropsLeft": "残り{n}回",
+    "mergeRainbow": "レインボーを合体 × {n}",
+    "popBubbles": "バブルで果物を{n}個運び去る"
   },
   "gameCenter": {
     "leaderboards": "ランキング",
@@ -169,5 +174,14 @@
     "next": "次へ",
     "skip": "スキップ",
     "start": "プレイ！"
+  },
+  "garden": {
+    "title": "ふしぎな庭",
+    "intro": "特別な果物が列に紛れ込みます。それぞれルールをひとつ変えます：",
+    "rainbow": "レインボーは最初に触れた果物と合体",
+    "bubble": "バブルは落ちた先の果物を包んで運び去る",
+    "rotten": "くさった実は合体しない — 爆破するか隣で合体（+50）",
+    "ice": "アイスは果物を3回分凍らせる",
+    "ok": "わかった、遊ぼう！"
   }
 }

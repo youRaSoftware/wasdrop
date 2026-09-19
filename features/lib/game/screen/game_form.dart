@@ -12,6 +12,7 @@ import '../engine/wasdrop_game.dart';
 import '../widgets/bonus_bar.dart';
 import '../widgets/game_hud.dart';
 import '../widgets/game_over_overlay.dart';
+import '../widgets/garden_intro_overlay.dart';
 import '../widgets/jar_painter.dart';
 import '../widgets/mission_toast.dart';
 import '../widgets/missions_overlay.dart';
@@ -182,7 +183,8 @@ class _GameFormState extends State<GameForm> with WidgetsBindingObserver {
     final bool isPremium = _cubit.adFree;
     _game.paused = state.status != GameStatus.playing ||
         state.adBusy ||
-        state.onboardingOpen;
+        state.onboardingOpen ||
+        state.gardenIntroOpen;
     // Низкий экран (iPhone SE): панель заказов кольцами в одну строку.
     final bool compactMissions =
         MediaQuery.sizeOf(context).height < GameForm.compactMissionsHeight;
@@ -303,7 +305,9 @@ class _GameFormState extends State<GameForm> with WidgetsBindingObserver {
                   adUnavailable: state.adUnavailable,
                 ),
               if (state.onboardingOpen)
-                OnboardingOverlay(onDone: _cubit.finishOnboarding),
+                OnboardingOverlay(onDone: _cubit.finishOnboarding)
+              else if (state.gardenIntroOpen)
+                GardenIntroOverlay(onDone: _cubit.finishGardenIntro),
             ],
           ),
         ),

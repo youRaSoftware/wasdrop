@@ -138,4 +138,20 @@ abstract final class PhysicsTuning {
   /// `deadlineY + continueClearDepth` (верхняя треть стакана) и любой, чей
   /// верх выше линии, — чтобы после продолжения было куда бросать.
   static const double continueClearDepth = 180;
+
+  // --- Сад чудес (особые фрукты) ----------------------------------------
+
+  /// Пузырик с фруктом всплывает из стакана с этой скоростью (ед/с) и
+  /// покачивается на ± [bubbleSway] ед.
+  static const double bubbleRise = 260;
+  static const double bubbleSway = 12;
+
+  /// Радиус «съедания» гнилушки слиянием рядом: доля её радиуса.
+  static const double rottenClearReach = 1.5;
+
+  /// Размер спрайта эффекта (брызги, осколки) относительно диаметра фрукта.
+  static const double specialBurstScale = 1.6;
+
+  /// Корка льда поверх замороженного фрукта — доля его диаметра.
+  static const double iceOverlayScale = 1.15;
 }

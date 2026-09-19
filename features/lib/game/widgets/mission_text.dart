@@ -4,6 +4,7 @@ import 'package:domain/domain.dart';
 import 'package:flutter/widgets.dart';
 
 import '../engine/fruit_assets.dart';
+import '../engine/special_sprites.dart';
 
 /// Текст заказа (`missions.<type>` с `{fruit}` и `{n}`).
 String missionText(BuildContext context, Mission m) {
@@ -21,6 +22,8 @@ String missionText(BuildContext context, Mission m) {
     MissionType.bonusBomb => LocaleKeys.missions_bonusBomb,
     MissionType.score => LocaleKeys.missions_score,
     MissionType.clean => LocaleKeys.missions_clean,
+    MissionType.mergeRainbow => LocaleKeys.missions_mergeRainbow,
+    MissionType.popBubbles => LocaleKeys.missions_popBubbles,
   };
   return context.tr(key, namedArgs: args);
 }
@@ -43,6 +46,8 @@ String missionCounter(BuildContext context, Mission m, {bool short = false}) {
     case MissionType.mergeStreak:
     case MissionType.score:
     case MissionType.clean:
+    case MissionType.mergeRainbow:
+    case MissionType.popBubbles:
       return '${m.progress.clamp(0, m.target)}/${m.target}';
   }
 }
@@ -55,6 +60,19 @@ Widget missionIcon(Mission m, {double size = 24}) {
       tier: tier,
       diameter: size,
       image: FruitAssets.idle(tier),
+    );
+  }
+  if (m.type == MissionType.mergeRainbow || m.type == MissionType.popBubbles) {
+    return Image.asset(
+      'assets/images/${SpecialSprites.fileName(
+        m.type == MissionType.mergeRainbow
+            ? SpecialKind.rainbow
+            : SpecialKind.bubble,
+        'idle',
+      )}',
+      package: SpecialSprites.package,
+      width: size,
+      height: size,
     );
   }
   final AppIcons icon = switch (m.type) {

@@ -15,6 +15,7 @@ class ProgressRepositoryImpl implements ProgressRepository {
       onboardingDone: _provider.onboardingDone,
       dailyPlayedSeed: _provider.dailyPlayedSeed,
       dailyScore: _provider.dailyScore,
+      gardenIntroDone: _provider.gardenIntroDone,
     );
   }
 
@@ -26,6 +27,7 @@ class ProgressRepositoryImpl implements ProgressRepository {
       onboardingDone: progress.onboardingDone,
       dailyPlayedSeed: progress.dailyPlayedSeed,
       dailyScore: progress.dailyScore,
+      gardenIntroDone: progress.gardenIntroDone,
     );
   }
 }

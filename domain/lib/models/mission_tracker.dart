@@ -19,9 +19,9 @@ class DropEvent extends MissionEvent {
   const DropEvent();
 }
 
-/// Бомбочка взорвала фрукт [tier].
+/// Бомбочка взорвала фрукт [tier] (null — особый фрукт).
 class BombEvent extends MissionEvent {
-  final BallTier tier;
+  final BallTier? tier;
 
   const BombEvent(this.tier);
 }
@@ -29,6 +29,18 @@ class BombEvent extends MissionEvent {
 /// Фрукт коснулся линии проигрыша (покоится выше неё).
 class LineTouchEvent extends MissionEvent {
   const LineTouchEvent();
+}
+
+/// «Сад чудес»: Радужка слилась с фруктом и дала [produced].
+class RainbowEvent extends MissionEvent {
+  final BallTier? produced;
+
+  const RainbowEvent(this.produced);
+}
+
+/// «Сад чудес»: Пузырик унёс фрукт.
+class BubblePopEvent extends MissionEvent {
+  const BubblePopEvent();
 }
 
 /// Результат шага трекера: обновлённые заказы, выполненные и провалившиеся
@@ -77,6 +89,8 @@ class MissionTracker {
       case LineTouchEvent():
         cleanDrops = 0;
       case BombEvent():
+      case RainbowEvent():
+      case BubblePopEvent():
         break;
     }
 
@@ -136,6 +150,10 @@ class MissionTracker {
         if (event is DropEvent || event is LineTouchEvent) {
           return _count(m, cleanDrops);
         }
+      case MissionType.mergeRainbow:
+        if (event is RainbowEvent) return _count(m, m.progress + 1);
+      case MissionType.popBubbles:
+        if (event is BubblePopEvent) return _count(m, m.progress + 1);
     }
     return m;
   }

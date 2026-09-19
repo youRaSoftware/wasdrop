@@ -9,7 +9,10 @@
     "daily": "Daily challenge",
     "dailyDone": "Done today: {score}",
     "bestTimed": "Time attack best {score}",
-    "bestDaily": "Daily best {score}"
+    "bestDaily": "Daily best {score}",
+    "garden": "Wonder Garden",
+    "jars": "Jars",
+    "new": "NEW"
   },
   "hud": {
     "best": "BEST {score}",
@@ -153,7 +156,9 @@
     "earned": "Stars this game: +{n}",
     "nextJar": "Next jar in {n} ★",
     "allJars": "All jars unlocked",
-    "dropsLeft": "{n} drops left"
+    "dropsLeft": "{n} drops left",
+    "mergeRainbow": "Merge a Rainbow × {n}",
+    "popBubbles": "Carry away {n} fruit with Bubbles"
   },
   "gameCenter": {
     "leaderboards": "Leaderboards",
@@ -169,5 +174,14 @@
     "next": "Next",
     "skip": "Skip",
     "start": "Let’s play!"
+  },
+  "garden": {
+    "title": "WONDER GARDEN",
+    "intro": "Special fruit sneak into the queue. Each one bends a rule:",
+    "rainbow": "Rainbow merges with any fruit it touches first",
+    "bubble": "Bubble wraps the fruit it lands on and carries it away",
+    "rotten": "Rotten never merges — bomb it or merge next to it (+50)",
+    "ice": "Ice freezes a fruit for 3 drops",
+    "ok": "Got it, let’s play!"
   }
 }

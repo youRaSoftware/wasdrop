@@ -1,10 +1,12 @@
 import 'package:core_ui/core_ui.dart';
 import 'package:domain/domain.dart';
+import 'package:flame/sprite.dart' show Sprite;
 import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:flutter/material.dart';
 
 import 'fruit_sprites.dart';
 import 'physics_tuning.dart';
+import 'special_sprites.dart';
 
 /// Физический фрукт. Форма тела берётся из спрайта (см. [FruitSprite.shape]:
 /// круг или скруглённый многоугольник для вытянутых фруктов); если для
@@ -38,6 +40,16 @@ class BallBody extends BodyComponent with ContactCallbacks {
 
   final void Function(BallBody a, BallBody b) onMerge;
 
+  /// Особый фрукт «Сада чудес»; у обычного — null ([tier] тогда значим).
+  final SpecialKind? special;
+
+  /// Особый фрукт коснулся [other] (Радужка, Льдинка) или сработал сам по
+  /// себе (Пузырик лопнул — [other] null). Разбирает `WasDropGame`.
+  final void Function(BallBody special, BallBody? other)? onSpecial;
+
+  /// Сколько бросков фрукт заморожен льдинкой (не сливается).
+  int frozen = 0;
+
   /// Анимировать появление (шар родился из слияния).
   final bool popIn;
 
@@ -60,14 +72,30 @@ class BallBody extends BodyComponent with ContactCallbacks {
     Vector2? initialVelocity,
     this.initialAngle = 0,
     this.popIn = false,
+    this.special,
+    this.onSpecial,
+    this.frozen = 0,
   })  : initialVelocity = initialVelocity ?? Vector2.zero(),
         super(renderBody: false);
 
-  /// Номинальный радиус тира; у вытянутых фруктов это средний полугабарит.
-  double get radius => AppDimens.ballRadii[tier.index];
+  /// Номинальный радиус: у особого — свой, у тира — из [AppDimens];
+  /// у вытянутых фруктов это средний полугабарит.
+  double get radius => special?.radius ?? AppDimens.ballRadii[tier.index];
+
+  bool get isSpecial => special != null;
+  bool get isFrozen => frozen > 0;
+
+  /// Обычный фрукт, который может сливаться (не особый, не замороженный,
+  /// не в процессе слияния).
+  bool get canMerge => special == null && frozen == 0 && !merging;
 
   /// Наименьший полугабарит тела (у круга — [radius]).
   double get minExtent => _sprite?.minExtent(radius) ?? radius;
+
+  SpecialSprites? get _specials {
+    final Object owner = game;
+    return owner is SpecialSpriteProvider ? owner.specialSprites : null;
+  }
 
   bool get settled => body.linearVelocity.length < PhysicsTuning.settledSpeed;
 
@@ -75,6 +103,7 @@ class BallBody extends BodyComponent with ContactCallbacks {
   bool get isSquished => _sinceSquish < faceDuration;
 
   FruitSprite? get _sprite {
+    if (special != null) return null;
     final Object owner = game;
     return owner is FruitSpriteProvider ? owner.fruitSprites[tier] : null;
   }
@@ -94,6 +123,7 @@ class BallBody extends BodyComponent with ContactCallbacks {
     );
     shapeSpecs = <ShapeSpec>[
       ShapeSpec(
+        // Особые фрукты — круги своего радиуса, форма по спрайту не нужна.
         _sprite?.shape(radius) ?? Circle(radius: radius),
         ShapeDef(
           density: PhysicsTuning.fruitDensity,
@@ -123,9 +153,27 @@ class BallBody extends BodyComponent with ContactCallbacks {
 
   @override
   void beginContact(Object other, Contact contact) {
-    if (other is BallBody && other.tier == tier) {
-      onMerge(this, other);
+    if (other is BallBody && special == null && other.special == null) {
+      if (other.tier == tier && canMerge && other.canMerge) {
+        onMerge(this, other);
+      } else {
+        _impact(other);
+      }
+    } else if (other is BallBody && special != null) {
+      switch (special!) {
+        case SpecialKind.rainbow:
+        case SpecialKind.ice:
+          if (other.canMerge) onSpecial?.call(this, other);
+        case SpecialKind.bubble:
+          // Обычный фрукт — уносит его; особый/замороженный — лопается.
+          onSpecial?.call(this, other.canMerge ? other : null);
+        case SpecialKind.rotten:
+          break;
+      }
+      _impact(other);
     } else {
+      // Пузырик на дне или у стенки просто лопается.
+      if (special == SpecialKind.bubble) onSpecial?.call(this, null);
       // Шар-шар: относительная скорость, чтобы «ойкнул» и тот, в кого
       // прилетели; стенки/дно: своя скорость.
       final double impact = other is BallBody
@@ -134,6 +182,14 @@ class BallBody extends BodyComponent with ContactCallbacks {
       if (impact > PhysicsTuning.squishSpeed) _squish();
     }
     super.beginContact(other, contact);
+  }
+
+  void _impact(BallBody other) {
+    final double impact = (_lastVelocity - other._lastVelocity).length;
+    if (impact > PhysicsTuning.squishSpeed) {
+      _squish();
+      other._squish();
+    }
   }
 
   void _squish() {
@@ -171,19 +227,74 @@ class BallBody extends BodyComponent with ContactCallbacks {
       canvas.scale(scale);
     }
 
-    final FruitSprite? sprite = _sprite;
-    if (sprite != null) {
-      sprite.render(
-        canvas,
-        center: Vector2.zero(),
-        radius: radius,
-        squished: isSquished,
-      );
+    final SpecialKind? kind = special;
+    if (kind != null) {
+      _renderSpecial(canvas, kind);
     } else {
-      paintBall(canvas, Offset.zero, radius, tier);
+      final FruitSprite? sprite = _sprite;
+      if (sprite != null) {
+        sprite.render(
+          canvas,
+          center: Vector2.zero(),
+          radius: radius,
+          squished: isSquished,
+        );
+      } else {
+        paintBall(canvas, Offset.zero, radius, tier);
+      }
+      if (isFrozen) _renderIce(canvas);
     }
     canvas.restore();
   }
+
+  /// Особый фрукт: спрайт по радиусу (тело — круг; спрайт чуть больше).
+  void _renderSpecial(Canvas canvas, SpecialKind kind) {
+    final FruitSprite? sprite = _specials?[kind];
+    if (sprite == null) {
+      canvas.drawCircle(
+        Offset.zero,
+        radius,
+        Paint()..color = specialColor(kind),
+      );
+      return;
+    }
+    sprite.render(
+      canvas,
+      center: Vector2.zero(),
+      radius: radius,
+      squished: isSquished,
+    );
+  }
+
+  /// Корка льда поверх замороженного фрукта (в осях мира, без поворота).
+  void _renderIce(Canvas canvas) {
+    final Sprite? overlay = _specials?.iceOverlay;
+    final double size = radius * 2 * PhysicsTuning.iceOverlayScale;
+    canvas.save();
+    canvas.rotate(-angle);
+    if (overlay == null) {
+      canvas.drawCircle(
+        Offset.zero,
+        size / 2,
+        Paint()..color = specialColor(SpecialKind.ice).withValues(alpha: 0.5),
+      );
+    } else {
+      overlay.render(
+        canvas,
+        position: Vector2(-size / 2, -size / 2),
+        size: Vector2.all(size),
+      );
+    }
+    canvas.restore();
+  }
+
+  /// Цвет особого фрукта (свечение в очереди, запасная отрисовка).
+  static Color specialColor(SpecialKind kind) => switch (kind) {
+        SpecialKind.rainbow => const Color(0xFFC973F0),
+        SpecialKind.bubble => const Color(0xFF5FA8CE),
+        SpecialKind.rotten => const Color(0xFF8FA23B),
+        SpecialKind.ice => const Color(0xFF8FC8E6),
+      };
 
   static final Map<BallTier, TextPainter> _emojiCache =
       <BallTier, TextPainter>{};
